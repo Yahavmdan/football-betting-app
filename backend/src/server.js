@@ -17,7 +17,7 @@ connectDB();
 const corsOptions = {
   origin: [
     'http://localhost:4200',
-    'https://YOUR-FRONTEND-URL.vercel.app',  // Replace with your actual Vercel URL
+    'https://football-betting-app-six.vercel.app',
     'https://*.vercel.app'  // Allow all Vercel preview deployments
   ],
   credentials: true,
