@@ -13,13 +13,28 @@ const app = express();
 
 connectDB();
 
-// CORS configuration for production
+// CORS configuration for development and production
 const corsOptions = {
-  origin: [
-    'http://localhost:4200',
-    'https://football-betting-app-six.vercel.app',
-    'https://*.vercel.app'  // Allow all Vercel preview deployments
-  ],
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+
+    // Allow all localhost origins for development
+    if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+      return callback(null, true);
+    }
+
+    // Allow Vercel production and preview deployments
+    const allowedOrigins = [
+      'https://football-betting-app-six.vercel.app',
+    ];
+
+    if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+      return callback(null, true);
+    }
+
+    callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
   optionsSuccessStatus: 200
 };

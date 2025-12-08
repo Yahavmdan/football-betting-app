@@ -99,24 +99,26 @@ exports.addMatchToGroup = async (req, res) => {
   }
 };
 
-// Fetch Israeli matches by querying team events (workaround for API bug)
+// Fetch ALL Israeli Premier League teams dynamically
+async function fetchIsraeliTeams() {
+  try {
+    const response = await axios.get(
+      `${process.env.FOOTBALL_API_URL}/${process.env.FOOTBALL_API_KEY}/search_all_teams.php?l=Israeli Premier League`
+    );
+
+    if (response.data.teams) {
+      return response.data.teams.map(team => team.idTeam);
+    }
+    return [];
+  } catch (error) {
+    console.error('Error fetching Israeli teams:', error.message);
+    return [];
+  }
+}
+
+// Fetch Israeli matches using league endpoint and all teams
 async function fetchIsraeliMatches() {
   const israeliLeagueId = '4644'; // Israeli Premier League
-
-  // List of major Israeli Premier League team IDs
-  const israeliTeamIds = [
-    '134315', // Maccabi Tel Aviv
-    '134400', // Maccabi Haifa
-    '135992', // Beitar Jerusalem
-    '135234', // Hapoel Be'er Sheva
-    '135991', // Hapoel Tel Aviv
-    '133629', // Maccabi Petah Tikva
-    '135236', // Hapoel Haifa
-    '134688', // Maccabi Netanya
-    '134687', // Bnei Sakhnin
-    '135235'  // FC Ashdod
-  ];
-
   const allEvents = [];
   const seenEventIds = new Set();
 
@@ -124,73 +126,59 @@ async function fetchIsraeliMatches() {
   const threeMonthsFromNow = new Date();
   threeMonthsFromNow.setMonth(threeMonthsFromNow.getMonth() + 3);
 
-  // First, try to get upcoming matches directly from the league endpoint
+  console.log('Fetching Israeli Premier League matches...');
+
+  // Step 1: Get upcoming matches from league endpoint (most reliable for upcoming matches)
   try {
     const leagueNextResponse = await axios.get(
       `${process.env.FOOTBALL_API_URL}/${process.env.FOOTBALL_API_KEY}/eventsnextleague.php?id=${israeliLeagueId}`
     );
 
+    console.log('League next events response:', leagueNextResponse.data.events ? leagueNextResponse.data.events.length : 0);
+
     if (leagueNextResponse.data.events) {
       for (const event of leagueNextResponse.data.events) {
         if (!seenEventIds.has(event.idEvent)) {
-          const matchDate = new Date(event.dateEvent);
-          if (matchDate <= threeMonthsFromNow) {
-            seenEventIds.add(event.idEvent);
-            allEvents.push(event);
-          }
+          seenEventIds.add(event.idEvent);
+          allEvents.push(event);
+          console.log(`Added match from league endpoint: ${event.strHomeTeam} vs ${event.strAwayTeam} on ${event.dateEvent}`);
         }
       }
     }
   } catch (leagueError) {
-    console.log('League next events endpoint not available, using team-based approach');
+    console.error('League next events error:', leagueError.message);
   }
 
-  // Also fetch from team endpoints for more complete coverage
+  // Step 2: Get ALL Israeli teams dynamically
+  console.log('Fetching all Israeli Premier League teams...');
+  const israeliTeamIds = await fetchIsraeliTeams();
+  console.log(`Found ${israeliTeamIds.length} Israeli Premier League teams`);
+
+  // Step 3: Fetch upcoming matches for each team for comprehensive coverage
   for (const teamId of israeliTeamIds) {
     try {
-      // Get last events for each team
-      const lastResponse = await axios.get(
-        `${process.env.FOOTBALL_API_URL}/${process.env.FOOTBALL_API_KEY}/eventslast.php?id=${teamId}`
+      // Get next events for this team
+      const nextResponse = await axios.get(
+        `${process.env.FOOTBALL_API_URL}/${process.env.FOOTBALL_API_KEY}/eventsnext.php?id=${teamId}`
       );
 
-      if (lastResponse.data.results) {
-        for (const event of lastResponse.data.results) {
-          // Only add if from Israeli league, not already seen, and within date range
+      if (nextResponse.data.events) {
+        for (const event of nextResponse.data.events) {
+          // Only add if from Israeli league and not already seen
           if (event.strLeague === 'Israeli Premier League' && !seenEventIds.has(event.idEvent)) {
-            const matchDate = new Date(event.dateEvent);
-            if (matchDate <= threeMonthsFromNow) {
-              seenEventIds.add(event.idEvent);
-              allEvents.push(event);
-            }
+            seenEventIds.add(event.idEvent);
+            allEvents.push(event);
+            console.log(`Added match from team ${teamId}: ${event.strHomeTeam} vs ${event.strAwayTeam} on ${event.dateEvent}`);
           }
         }
-      }
-
-      // Try to get next events
-      try {
-        const nextResponse = await axios.get(
-          `${process.env.FOOTBALL_API_URL}/${process.env.FOOTBALL_API_KEY}/eventsnext.php?id=${teamId}`
-        );
-
-        if (nextResponse.data.events) {
-          for (const event of nextResponse.data.events) {
-            if (event.strLeague === 'Israeli Premier League' && !seenEventIds.has(event.idEvent)) {
-              const matchDate = new Date(event.dateEvent);
-              if (matchDate <= threeMonthsFromNow) {
-                seenEventIds.add(event.idEvent);
-                allEvents.push(event);
-              }
-            }
-          }
-        }
-      } catch (nextError) {
-        // Next events might not be available, continue
       }
     } catch (error) {
+      // Continue with next team if this one fails
       console.error(`Error fetching matches for team ${teamId}:`, error.message);
     }
   }
 
+  console.log(`Total unique matches found: ${allEvents.length}`);
   return allEvents;
 }
 
