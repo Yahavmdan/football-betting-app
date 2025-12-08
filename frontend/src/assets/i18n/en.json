@@ -1,0 +1,86 @@
+{
+  "app": {
+    "title": "Football Betting"
+  },
+  "nav": {
+    "myGroups": "My Groups",
+    "logout": "Logout"
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "email": "Email",
+    "password": "Password",
+    "username": "Username",
+    "dontHaveAccount": "Don't have an account?",
+    "alreadyHaveAccount": "Already have an account?",
+    "registerHere": "Register here",
+    "loginHere": "Login here",
+    "loading": "Loading..."
+  },
+  "groups": {
+    "myGroups": "My Groups",
+    "createGroup": "Create Group",
+    "joinGroup": "Join Group",
+    "groupName": "Group Name",
+    "description": "Description",
+    "inviteCode": "Invite Code",
+    "members": "members",
+    "member": "member",
+    "code": "Code",
+    "cancel": "Cancel",
+    "create": "Create",
+    "join": "Join",
+    "creating": "Creating...",
+    "joining": "Joining...",
+    "noGroups": "You haven't joined any groups yet.",
+    "getStarted": "Create a new group or join an existing one to get started!",
+    "noDescription": "No description",
+    "enterInviteCode": "Enter the invite code you received to join a group",
+    "enterGroupName": "Enter group name",
+    "enterDescription": "Enter group description (optional)",
+    "enterCode": "Enter invite code",
+    "successJoined": "Successfully joined the group!",
+    "createNewGroup": "Create New Group",
+    "leaderboard": "Leaderboard",
+    "noMembers": "No members yet",
+    "points": "pts",
+    "backToGroups": "Back to Groups",
+    "matches": "Matches",
+    "viewAllMatches": "View All Matches",
+    "noMatches": "No matches available for this group"
+  },
+  "matches": {
+    "scheduled": "SCHEDULED",
+    "live": "LIVE",
+    "finished": "FINISHED",
+    "postponed": "POSTPONED",
+    "cancelled": "CANCELLED",
+    "vs": "vs",
+    "placeBet": "Place Bet"
+  },
+  "bets": {
+    "placeYourBet": "Place Your Bet",
+    "yourBet": "Your Bet",
+    "matchResult": "Match Result",
+    "predictScore": "Predict Score",
+    "draw": "Draw",
+    "pointsSystem": "Points System:",
+    "correctResult": "Correct result (1/X/2):",
+    "correctHomeScore": "Correct home team score:",
+    "correctAwayScore": "Correct away team score:",
+    "exactScore": "Exact score match:",
+    "point": "point",
+    "points": "points",
+    "placingBet": "Placing Bet...",
+    "back": "Back",
+    "matchStarted": "This match has already started. You can no longer place bets.",
+    "alreadyPlaced": "You have already placed a bet on this match. You cannot change your bet once submitted."
+  },
+  "common": {
+    "required": "required",
+    "optional": "optional",
+    "error": "Error",
+    "success": "Success"
+  }
+}

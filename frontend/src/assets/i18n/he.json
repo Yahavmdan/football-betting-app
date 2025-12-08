@@ -1,0 +1,86 @@
+{
+  "app": {
+    "title": "הימורי כדורגל"
+  },
+  "nav": {
+    "myGroups": "הקבוצות שלי",
+    "logout": "התנתק"
+  },
+  "auth": {
+    "login": "התחברות",
+    "register": "הרשמה",
+    "email": "אימייל",
+    "password": "סיסמה",
+    "username": "שם משתמש",
+    "dontHaveAccount": "אין לך חשבון?",
+    "alreadyHaveAccount": "כבר יש לך חשבון?",
+    "registerHere": "הירשם כאן",
+    "loginHere": "התחבר כאן",
+    "loading": "טוען..."
+  },
+  "groups": {
+    "myGroups": "הקבוצות שלי",
+    "createGroup": "צור קבוצה",
+    "joinGroup": "הצטרף לקבוצה",
+    "groupName": "שם הקבוצה",
+    "description": "תיאור",
+    "inviteCode": "קוד הזמנה",
+    "members": "חברים",
+    "member": "חבר",
+    "code": "קוד",
+    "cancel": "ביטול",
+    "create": "צור",
+    "join": "הצטרף",
+    "creating": "יוצר...",
+    "joining": "מצטרף...",
+    "noGroups": "עדיין לא הצטרפת לאף קבוצה.",
+    "getStarted": "צור קבוצה חדשה או הצטרף לקיימת כדי להתחיל!",
+    "noDescription": "אין תיאור",
+    "enterInviteCode": "הזן את קוד הזמנה שקיבלת כדי להצטרף לקבוצה",
+    "enterGroupName": "הזן שם קבוצה",
+    "enterDescription": "הזן תיאור קבוצה (אופציונלי)",
+    "enterCode": "הזן קוד הזמנה",
+    "successJoined": "הצטרפת בהצלחה לקבוצה!",
+    "createNewGroup": "צור קבוצה חדשה",
+    "leaderboard": "טבלת מובילים",
+    "noMembers": "עדיין אין חברים",
+    "points": "נק'",
+    "backToGroups": "חזרה לקבוצות",
+    "matches": "משחקים",
+    "viewAllMatches": "צפה בכל המשחקים",
+    "noMatches": "אין משחקים זמינים עבור קבוצה זו"
+  },
+  "matches": {
+    "scheduled": "מתוכנן",
+    "live": "בשידור חי",
+    "finished": "הסתיים",
+    "postponed": "נדחה",
+    "cancelled": "בוטל",
+    "vs": "נגד",
+    "placeBet": "בצע הימור"
+  },
+  "bets": {
+    "placeYourBet": "בצע את ההימור שלך",
+    "yourBet": "ההימור שלך",
+    "matchResult": "תוצאת המשחק",
+    "predictScore": "נחש תוצאה",
+    "draw": "תיקו",
+    "pointsSystem": "מערכת הניקוד:",
+    "correctResult": "תוצאה נכונה (1/X/2):",
+    "correctHomeScore": "תוצאת קבוצת הבית נכונה:",
+    "correctAwayScore": "תוצאת קבוצת החוץ נכונה:",
+    "exactScore": "תוצאה מדויקת:",
+    "point": "נקודה",
+    "points": "נקודות",
+    "placingBet": "מבצע הימור...",
+    "back": "חזור",
+    "matchStarted": "המשחק כבר התחיל. לא ניתן עוד לבצע הימורים.",
+    "alreadyPlaced": "כבר ביצעת הימור על משחק זה. לא ניתן לשנות את ההימור שלך לאחר ביצועו."
+  },
+  "common": {
+    "required": "חובה",
+    "optional": "אופציונלי",
+    "error": "שגיאה",
+    "success": "הצלחה"
+  }
+}
