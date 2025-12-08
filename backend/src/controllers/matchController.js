@@ -120,7 +120,7 @@ async function fetchIsraeliMatches() {
   const allEvents = [];
   const seenEventIds = new Set();
 
-  // Calculate date range: past matches to 3 months in the future
+  // Calculate date range: upcoming matches for the next 3 months
   const threeMonthsFromNow = new Date();
   threeMonthsFromNow.setMonth(threeMonthsFromNow.getMonth() + 3);
 
@@ -196,7 +196,7 @@ async function fetchIsraeliMatches() {
 
 // Fetch Israeli Premier League matches from TheSportsDB API
 // Uses league endpoint for upcoming matches and team endpoints for comprehensive coverage
-// Shows matches from past to 3 months in the future
+// Only fetches UPCOMING matches (not started yet) for the next 3 months
 exports.fetchAndSaveMatches = async (req, res) => {
   try {
     // Only Israeli league is supported
@@ -205,7 +205,7 @@ exports.fetchAndSaveMatches = async (req, res) => {
     if (!events || events.length === 0) {
       return res.status(200).json({
         success: true,
-        message: 'No Israeli Premier League matches found within the date range (past to 3 months future).',
+        message: 'No upcoming Israeli Premier League matches found (next 3 months).',
         data: []
       });
     }
@@ -213,45 +213,44 @@ exports.fetchAndSaveMatches = async (req, res) => {
     const savedMatches = [];
     const threeMonthsFromNow = new Date();
     threeMonthsFromNow.setMonth(threeMonthsFromNow.getMonth() + 3);
+    const now = new Date();
 
     for (const eventData of events) {
       // Only process soccer/football events
       if (eventData.strSport !== 'Soccer') continue;
 
-      // Double-check date range (past to 3 months in future)
-      const matchDate = new Date(eventData.dateEvent);
-      if (matchDate > threeMonthsFromNow) continue;
+      // Skip matches that have already started or finished
+      // Check for scores (if scores exist, match has started/finished)
+      const hasScores = (eventData.intHomeScore !== null && eventData.intHomeScore !== '') ||
+                        (eventData.intAwayScore !== null && eventData.intAwayScore !== '');
+
+      // Check status - skip if match is in progress or finished
+      const statusesToSkip = ['1H', '2H', 'HT', 'FT', 'AET', 'PEN', 'LIVE'];
+      if (statusesToSkip.includes(eventData.strStatus)) continue;
+
+      // Skip if match has scores
+      if (hasScores) continue;
+
+      // Parse match date/time
+      const matchDateTime = new Date(eventData.dateEvent + (eventData.strTime ? ' ' + eventData.strTime : ''));
+
+      // Only include future matches (not started yet)
+      if (matchDateTime <= now) continue;
+
+      // Check if within 3 months range
+      if (matchDateTime > threeMonthsFromNow) continue;
 
       const existingMatch = await Match.findOne({ externalApiId: eventData.idEvent });
 
       if (!existingMatch) {
-        // Check if match has results
-        const hasResult = eventData.intHomeScore !== null && eventData.intAwayScore !== null;
-        const homeScore = hasResult ? parseInt(eventData.intHomeScore) : null;
-        const awayScore = hasResult ? parseInt(eventData.intAwayScore) : null;
-
-        let outcome = null;
-        if (hasResult) {
-          if (homeScore > awayScore) outcome = '1';
-          else if (homeScore < awayScore) outcome = '2';
-          else outcome = 'X';
-        }
-
         const match = await Match.create({
           externalApiId: eventData.idEvent,
           homeTeam: eventData.strHomeTeam,
           awayTeam: eventData.strAwayTeam,
-          matchDate: new Date(eventData.dateEvent + (eventData.strTime ? ' ' + eventData.strTime : '')),
-          status: hasResult ? 'FINISHED' : 'SCHEDULED',
+          matchDate: matchDateTime,
+          status: 'SCHEDULED',
           competition: eventData.strLeague,
-          season: eventData.strSeason,
-          ...(hasResult && {
-            result: {
-              homeScore,
-              awayScore,
-              outcome
-            }
-          })
+          season: eventData.strSeason
         });
         savedMatches.push(match);
       }
@@ -259,7 +258,7 @@ exports.fetchAndSaveMatches = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: `${savedMatches.length} Israeli Premier League matches saved (from past to 3 months future)`,
+      message: `${savedMatches.length} upcoming Israeli Premier League matches saved (next 3 months)`,
       data: savedMatches
     });
   } catch (error) {
