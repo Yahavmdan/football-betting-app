@@ -126,7 +126,8 @@ exports.getGroupById = async (req, res) => {
       member => member.user._id.toString() === req.user._id.toString()
     );
 
-    if (!isMember) {
+    // Allow access if user is member OR is admin
+    if (!isMember && !req.user.isAdmin) {
       return res.status(403).json({
         success: false,
         message: 'You are not a member of this group'
@@ -161,7 +162,8 @@ exports.getLeaderboard = async (req, res) => {
       member => member.user._id.toString() === req.user._id.toString()
     );
 
-    if (!isMember) {
+    // Allow access if user is member OR is admin
+    if (!isMember && !req.user.isAdmin) {
       return res.status(403).json({
         success: false,
         message: 'You are not a member of this group'
@@ -197,8 +199,9 @@ exports.editGroup = async (req, res) => {
       });
     }
 
-    // Check if user is the group creator
-    if (group.creator.toString() !== req.user._id.toString()) {
+    // Check if user is the group creator OR is admin
+    const isCreator = group.creator.toString() === req.user._id.toString();
+    if (!isCreator && !req.user.isAdmin) {
       return res.status(403).json({
         success: false,
         message: 'Only the group creator can edit the group'
@@ -237,8 +240,9 @@ exports.deleteGroup = async (req, res) => {
       });
     }
 
-    // Check if user is the group creator
-    if (group.creator.toString() !== req.user._id.toString()) {
+    // Check if user is the group creator OR is admin
+    const isCreator = group.creator.toString() === req.user._id.toString();
+    if (!isCreator && !req.user.isAdmin) {
       return res.status(403).json({
         success: false,
         message: 'Only the group creator can delete the group'

@@ -61,7 +61,8 @@ exports.addMatchToGroup = async (req, res) => {
       });
     }
 
-    if (group.creator.toString() !== req.user._id.toString()) {
+    const isCreator = group.creator.toString() === req.user._id.toString();
+    if (!isCreator && !req.user.isAdmin) {
       return res.status(403).json({
         success: false,
         message: 'Only the group creator can add matches'
@@ -361,8 +362,9 @@ exports.createManualMatch = async (req, res) => {
       });
     }
 
-    // Check if user is the group creator (admin)
-    if (group.creator.toString() !== req.user._id.toString()) {
+    // Check if user is the group creator OR is admin
+    const isCreator = group.creator.toString() === req.user._id.toString();
+    if (!isCreator && !req.user.isAdmin) {
       return res.status(403).json({
         success: false,
         message: 'Only the group creator can add manual matches'
@@ -472,8 +474,9 @@ exports.updateMatchScore = async (req, res) => {
       });
     }
 
-    // Check if user is the group creator (admin)
-    if (group.creator.toString() !== req.user._id.toString()) {
+    // Check if user is the group creator OR is admin
+    const isCreator = group.creator.toString() === req.user._id.toString();
+    if (!isCreator && !req.user.isAdmin) {
       return res.status(403).json({
         success: false,
         message: 'Only the group creator can update match scores'
@@ -601,8 +604,9 @@ exports.deleteMatch = async (req, res) => {
       });
     }
 
-    // Check if user is the group creator (admin)
-    if (group.creator.toString() !== req.user._id.toString()) {
+    // Check if user is the group creator OR is admin
+    const isCreator = group.creator.toString() === req.user._id.toString();
+    if (!isCreator && !req.user.isAdmin) {
       return res.status(403).json({
         success: false,
         message: 'Only the group creator can delete matches'
@@ -676,8 +680,9 @@ exports.editMatch = async (req, res) => {
       });
     }
 
-    // Check if user is the group creator (admin)
-    if (group.creator.toString() !== req.user._id.toString()) {
+    // Check if user is the group creator OR is admin
+    const isCreator = group.creator.toString() === req.user._id.toString();
+    if (!isCreator && !req.user.isAdmin) {
       return res.status(403).json({
         success: false,
         message: 'Only the group creator can edit matches'

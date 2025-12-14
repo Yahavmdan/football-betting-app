@@ -24,13 +24,13 @@ import { getTeamByName } from '../../data/teams.data';
         <div class="group-header-top">
           <h1>{{ group.name }}</h1>
           <div class="group-actions">
-            <button *ngIf="isGroupCreator()" (click)="openEditGroup()" class="btn-edit-group">
+            <button *ngIf="canManageGroup()" (click)="openEditGroup()" class="btn-edit-group">
               {{ 'common.edit' | translate }}
             </button>
-            <button *ngIf="isGroupCreator()" (click)="confirmDeleteGroup()" class="btn-delete-group">
+            <button *ngIf="canManageGroup()" (click)="confirmDeleteGroup()" class="btn-delete-group">
               {{ 'common.delete' | translate }}
             </button>
-            <button *ngIf="!isGroupCreator()" (click)="confirmLeaveGroup()" class="btn-leave-group">
+            <button *ngIf="!isGroupCreator() && !authService.isAdmin()" (click)="confirmLeaveGroup()" class="btn-leave-group">
               {{ 'groups.leaveGroup' | translate }}
             </button>
           </div>
@@ -110,7 +110,7 @@ import { getTeamByName } from '../../data/teams.data';
           <div class="section-header">
             <h2>{{ 'groups.matches' | translate }}</h2>
             <button
-              *ngIf="isGroupCreator()"
+              *ngIf="canManageGroup()"
               [routerLink]="['/matches/manage']"
               [queryParams]="{groupId: groupId}"
               class="btn-manage"
@@ -164,11 +164,11 @@ import { getTeamByName } from '../../data/teams.data';
                   >
                     {{ hasBetOnMatch(match._id) ? ('bets.editBet' | translate) : ('matches.placeBet' | translate) }}
                   </button>
-                  <span *ngIf="isMatchInPast(match.matchDate) && match.status === 'SCHEDULED' && !isGroupCreator()" class="past-match-label">
+                  <span *ngIf="isMatchInPast(match.matchDate) && match.status === 'SCHEDULED' && !canManageGroup()" class="past-match-label">
                     {{ 'matches.matchStartedLabel' | translate }}
                   </span>
                   <button
-                    *ngIf="isGroupCreator() && canUpdateScore(match)"
+                    *ngIf="canManageGroup() && canUpdateScore(match)"
                     (click)="openScoreUpdate(match)"
                     class="btn-update-score">
                     {{ 'matches.updateScore' | translate }}
@@ -939,7 +939,7 @@ export class GroupDetailComponent implements OnInit {
     private groupService: GroupService,
     private matchService: MatchService,
     private betService: BetService,
-    private authService: AuthService
+    public authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -1010,6 +1010,10 @@ export class GroupDetailComponent implements OnInit {
   isGroupCreator(): boolean {
     const currentUser = this.authService.getCurrentUser();
     return this.group?.creator?._id === currentUser?.id || this.group?.creator === currentUser?.id;
+  }
+
+  canManageGroup(): boolean {
+    return this.isGroupCreator() || this.authService.isAdmin();
   }
 
   isMatchInPast(matchDate: Date | string): boolean {

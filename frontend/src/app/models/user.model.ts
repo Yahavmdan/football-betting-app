@@ -2,6 +2,7 @@ export interface User {
   id: string;
   username: string;
   email: string;
+  isAdmin?: boolean;
   groups?: string[];
   createdAt?: Date;
 }
@@ -12,6 +13,7 @@ export interface AuthResponse {
     id: string;
     username: string;
     email: string;
+    isAdmin: boolean;
     token: string;
   };
 }

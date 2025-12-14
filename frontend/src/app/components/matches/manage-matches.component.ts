@@ -22,7 +22,7 @@ import { getTeamByName } from '../../data/teams.data';
         <button (click)="goBack()" class="btn-secondary">{{ 'bets.back' | translate }}</button>
       </div>
 
-      <div class="section" *ngIf="isGroupCreator()">
+      <div class="section" *ngIf="canManageGroup()">
         <h2>{{ 'matches.addManually' | translate }}</h2>
         <form (ngSubmit)="createManualMatch()" class="manual-match-form">
           <div class="form-row">
@@ -133,7 +133,7 @@ import { getTeamByName } from '../../data/teams.data';
               <span *ngIf="match.status === 'FINISHED'" class="result">
                 {{ match.result.homeScore }} - {{ match.result.awayScore }}
               </span>
-              <div class="match-actions" *ngIf="isGroupCreator()">
+              <div class="match-actions" *ngIf="canManageGroup()">
                 <button
                   *ngIf="canUpdateScore(match)"
                   (click)="openScoreUpdate(match)"
@@ -764,6 +764,10 @@ export class ManageMatchesComponent implements OnInit {
     if (!this.group) return false;
     const currentUser = this.authService.getCurrentUser();
     return this.group.creator?._id === currentUser?.id || this.group.creator === currentUser?.id;
+  }
+
+  canManageGroup(): boolean {
+    return this.isGroupCreator() || this.authService.isAdmin();
   }
 
   goBack(): void {

@@ -50,15 +50,21 @@ export class AuthService {
     this.currentUserSubject.next(null);
   }
 
-  private setAuthData(data: { id: string; username: string; email: string; token: string }): void {
+  private setAuthData(data: { id: string; username: string; email: string; isAdmin: boolean; token: string }): void {
     localStorage.setItem('token', data.token);
     const user: User = {
       id: data.id,
       username: data.username,
-      email: data.email
+      email: data.email,
+      isAdmin: data.isAdmin
     };
     localStorage.setItem('user', JSON.stringify(user));
     this.currentUserSubject.next(user);
+  }
+
+  isAdmin(): boolean {
+    const user = this.getCurrentUser();
+    return user?.isAdmin === true;
   }
 
   getToken(): string | null {
