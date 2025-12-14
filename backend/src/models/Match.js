@@ -3,8 +3,8 @@ const mongoose = require('mongoose');
 const matchSchema = new mongoose.Schema({
   externalApiId: {
     type: String,
-    required: true,
-    unique: true
+    unique: true,
+    sparse: true
   },
   homeTeam: {
     type: String,

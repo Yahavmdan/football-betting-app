@@ -16,7 +16,9 @@
     "alreadyHaveAccount": "כבר יש לך חשבון?",
     "registerHere": "הירשם כאן",
     "loginHere": "התחבר כאן",
-    "loading": "טוען..."
+    "loading": "טוען...",
+    "loginFailed": "ההתחברות נכשלה. נסה שוב.",
+    "registerFailed": "ההרשמה נכשלה. נסה שוב."
   },
   "groups": {
     "myGroups": "הקבוצות שלי",
@@ -48,7 +50,9 @@
     "backToGroups": "חזרה לקבוצות",
     "matches": "משחקים",
     "viewAllMatches": "צפה בכל המשחקים",
-    "noMatches": "אין משחקים זמינים עבור קבוצה זו"
+    "noMatches": "אין משחקים זמינים עבור קבוצה זו",
+    "createFailed": "יצירת הקבוצה נכשלה. נסה שוב.",
+    "joinFailed": "ההצטרפות נכשלה. בדוק את קוד ההזמנה."
   },
   "matches": {
     "scheduled": "מתוכנן",
@@ -57,7 +61,36 @@
     "postponed": "נדחה",
     "cancelled": "בוטל",
     "vs": "נגד",
-    "placeBet": "בצע הימור"
+    "placeBet": "בצע הימור",
+    "manageMatches": "ניהול משחקים",
+    "addManually": "הוסף משחק ידנית",
+    "homeTeam": "קבוצת בית",
+    "awayTeam": "קבוצת חוץ",
+    "enterHomeTeam": "הזן שם קבוצת בית",
+    "enterAwayTeam": "הזן שם קבוצת חוץ",
+    "matchDate": "תאריך המשחק",
+    "matchTime": "שעת המשחק",
+    "creatingMatch": "יוצר...",
+    "createMatch": "צור משחק",
+    "israeliLeague": "ליגת העל הישראלית",
+    "fetchDescription": "שלוף משחקים מהעבר עד שבועיים קדימה",
+    "fetching": "שולף...",
+    "fetchMatches": "שלוף משחקי ליגת העל",
+    "updating": "מעדכן...",
+    "updateResults": "עדכן תוצאות משחקים",
+    "creatorOnlyWarning": "רק יוצר הקבוצה יכול לשלוף משחקים ולעדכן תוצאות.",
+    "availableMatches": "משחקים זמינים (לא בקבוצה)",
+    "noAvailableMatches": "אין משחקים זמינים. שלוף משחקים מהליגה קודם.",
+    "addToGroup": "הוסף לקבוצה",
+    "creatorOnly": "ליוצר בלבד",
+    "matchesInGroup": "משחקים בקבוצה זו",
+    "noMatchesInGroup": "עדיין אין משחקים בקבוצה זו.",
+    "matchStartedLabel": "המשחק התחיל",
+    "pastMatchNotice": "זהו משחק שהסתיים. יש להזין את התוצאה הסופית.",
+    "homeScore": "תוצאת בית",
+    "awayScore": "תוצאת חוץ",
+    "updateScore": "עדכן תוצאה",
+    "saveScore": "שמור תוצאה"
   },
   "bets": {
     "placeYourBet": "בצע את ההימור שלך",
@@ -75,7 +108,12 @@
     "placingBet": "מבצע הימור...",
     "back": "חזור",
     "matchStarted": "המשחק כבר התחיל. לא ניתן עוד לבצע הימורים.",
-    "alreadyPlaced": "כבר ביצעת הימור על משחק זה. לא ניתן לשנות את ההימור שלך לאחר ביצועו."
+    "alreadyPlaced": "כבר ביצעת הימור על משחק זה. לא ניתן לשנות את ההימור שלך לאחר ביצועו.",
+    "canUpdateBet": "כבר ביצעת הימור על משחק זה. ניתן לעדכן אותו עד תחילת המשחק.",
+    "updateBet": "עדכן הימור",
+    "loadMatchFailed": "טעינת פרטי המשחק נכשלה",
+    "betPlacedSuccess": "ההימור בוצע בהצלחה!",
+    "placeBetFailed": "ביצוע ההימור נכשל. נסה שוב."
   },
   "common": {
     "required": "חובה",

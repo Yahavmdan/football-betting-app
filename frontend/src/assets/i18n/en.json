@@ -16,7 +16,9 @@
     "alreadyHaveAccount": "Already have an account?",
     "registerHere": "Register here",
     "loginHere": "Login here",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "loginFailed": "Login failed. Please try again.",
+    "registerFailed": "Registration failed. Please try again."
   },
   "groups": {
     "myGroups": "My Groups",
@@ -48,7 +50,9 @@
     "backToGroups": "Back to Groups",
     "matches": "Matches",
     "viewAllMatches": "View All Matches",
-    "noMatches": "No matches available for this group"
+    "noMatches": "No matches available for this group",
+    "createFailed": "Failed to create group. Please try again.",
+    "joinFailed": "Failed to join group. Please check the invite code."
   },
   "matches": {
     "scheduled": "SCHEDULED",
@@ -57,7 +61,36 @@
     "postponed": "POSTPONED",
     "cancelled": "CANCELLED",
     "vs": "vs",
-    "placeBet": "Place Bet"
+    "placeBet": "Place Bet",
+    "manageMatches": "Manage Matches",
+    "addManually": "Add Match Manually",
+    "homeTeam": "Home Team",
+    "awayTeam": "Away Team",
+    "enterHomeTeam": "Enter home team name",
+    "enterAwayTeam": "Enter away team name",
+    "matchDate": "Match Date",
+    "matchTime": "Match Time",
+    "creatingMatch": "Creating...",
+    "createMatch": "Create Match",
+    "israeliLeague": "Israeli Premier League (Ligat Ha'al)",
+    "fetchDescription": "Fetch matches from the past up to 2 weeks in the future",
+    "fetching": "Fetching...",
+    "fetchMatches": "Fetch Israeli League Matches",
+    "updating": "Updating...",
+    "updateResults": "Update Match Results",
+    "creatorOnlyWarning": "Only the group creator can fetch matches and update results.",
+    "availableMatches": "Available Matches (Not in Group)",
+    "noAvailableMatches": "No matches available. Fetch matches from a league first.",
+    "addToGroup": "Add to Group",
+    "creatorOnly": "Creator only",
+    "matchesInGroup": "Matches in This Group",
+    "noMatchesInGroup": "No matches in this group yet.",
+    "matchStartedLabel": "Match started",
+    "pastMatchNotice": "This is a past match. Please enter the final score.",
+    "homeScore": "Home Score",
+    "awayScore": "Away Score",
+    "updateScore": "Update Score",
+    "saveScore": "Save Score"
   },
   "bets": {
     "placeYourBet": "Place Your Bet",
@@ -75,7 +108,12 @@
     "placingBet": "Placing Bet...",
     "back": "Back",
     "matchStarted": "This match has already started. You can no longer place bets.",
-    "alreadyPlaced": "You have already placed a bet on this match. You cannot change your bet once submitted."
+    "alreadyPlaced": "You have already placed a bet on this match. You cannot change your bet once submitted.",
+    "canUpdateBet": "You have already placed a bet on this match. You can update it until the match starts.",
+    "updateBet": "Update Bet",
+    "loadMatchFailed": "Failed to load match details",
+    "betPlacedSuccess": "Bet placed successfully!",
+    "placeBetFailed": "Failed to place bet. Please try again."
   },
   "common": {
     "required": "required",

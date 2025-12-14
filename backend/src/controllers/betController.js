@@ -58,9 +58,18 @@ exports.placeBet = async (req, res) => {
     });
 
     if (existingBet) {
-      return res.status(400).json({
-        success: false,
-        message: 'You have already placed a bet on this match. Each user can only bet once per match.'
+      // Update existing bet instead of rejecting
+      existingBet.prediction = {
+        outcome,
+        homeScore,
+        awayScore
+      };
+      await existingBet.save();
+
+      return res.status(200).json({
+        success: true,
+        message: 'Bet updated successfully',
+        data: existingBet
       });
     }
 
@@ -77,6 +86,7 @@ exports.placeBet = async (req, res) => {
 
     res.status(201).json({
       success: true,
+      message: 'Bet placed successfully',
       data: bet
     });
   } catch (error) {

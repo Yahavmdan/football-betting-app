@@ -39,4 +39,25 @@ export class MatchService {
   updateMatchResults(leagueId?: string): Observable<{ success: boolean; message: string; data: Match[] }> {
     return this.http.post<{ success: boolean; message: string; data: Match[] }>(`${this.apiUrl}/update-results`, { leagueId });
   }
+
+  createManualMatch(data: {
+    homeTeam: string;
+    awayTeam: string;
+    matchDate: string;
+    matchHour: string;
+    groupId: string;
+    homeScore?: number;
+    awayScore?: number;
+  }): Observable<{ success: boolean; message: string; data: Match }> {
+    return this.http.post<{ success: boolean; message: string; data: Match }>(`${this.apiUrl}/create-manual`, data);
+  }
+
+  updateMatchScore(data: {
+    matchId: string;
+    groupId: string;
+    homeScore: number;
+    awayScore: number;
+  }): Observable<{ success: boolean; message: string; data: Match }> {
+    return this.http.post<{ success: boolean; message: string; data: Match }>(`${this.apiUrl}/update-score`, data);
+  }
 }

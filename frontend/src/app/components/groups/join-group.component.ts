@@ -163,7 +163,7 @@ export class JoinGroupComponent {
         }, 1000);
       },
       error: (error) => {
-        this.errorMessage = error.error?.message || 'Failed to join group. Please check the invite code.';
+        this.errorMessage = error.error?.message || this.translationService.translate('groups.joinFailed');
         this.loading = false;
       }
     });

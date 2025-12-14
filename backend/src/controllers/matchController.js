@@ -337,3 +337,227 @@ exports.getAvailableLeagues = async (req, res) => {
     });
   }
 };
+
+// Create a manual match (group admin only)
+exports.createManualMatch = async (req, res) => {
+  try {
+    const { homeTeam, awayTeam, matchDate, matchHour, groupId, homeScore, awayScore } = req.body;
+
+    // Validate required fields
+    if (!homeTeam || !awayTeam || !matchDate || !matchHour || !groupId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide homeTeam, awayTeam, matchDate, matchHour, and groupId'
+      });
+    }
+
+    // Find the group
+    const group = await Group.findById(groupId);
+
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        message: 'Group not found'
+      });
+    }
+
+    // Check if user is the group creator (admin)
+    if (group.creator.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Only the group creator can add manual matches'
+      });
+    }
+
+    // Combine date and hour into a single Date object
+    const matchDateTime = new Date(`${matchDate}T${matchHour}`);
+    const isPastMatch = matchDateTime <= new Date();
+
+    // If match is in the past, require scores
+    if (isPastMatch && (homeScore === undefined || awayScore === undefined || homeScore === null || awayScore === null)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Past matches require home and away scores'
+      });
+    }
+
+    // Determine outcome for past matches
+    let result = null;
+    let status = 'SCHEDULED';
+
+    if (isPastMatch) {
+      const hScore = parseInt(homeScore);
+      const aScore = parseInt(awayScore);
+      let outcome;
+
+      if (hScore > aScore) {
+        outcome = '1';
+      } else if (hScore < aScore) {
+        outcome = '2';
+      } else {
+        outcome = 'X';
+      }
+
+      result = {
+        homeScore: hScore,
+        awayScore: aScore,
+        outcome
+      };
+      status = 'FINISHED';
+    }
+
+    // Create the match with a unique manual ID
+    const match = await Match.create({
+      externalApiId: `manual_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      homeTeam,
+      awayTeam,
+      matchDate: matchDateTime,
+      status,
+      result,
+      competition: 'Manual Match',
+      groups: [groupId]
+    });
+
+    res.status(201).json({
+      success: true,
+      message: isPastMatch ? 'Past match added with result' : 'Manual match created successfully',
+      data: match
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Update match score (group admin only, 2 hours after match start)
+exports.updateMatchScore = async (req, res) => {
+  try {
+    const { matchId, groupId, homeScore, awayScore } = req.body;
+
+    // Validate required fields
+    if (!matchId || !groupId || homeScore === undefined || awayScore === undefined) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide matchId, groupId, homeScore, and awayScore'
+      });
+    }
+
+    // Find the match
+    const match = await Match.findById(matchId);
+
+    if (!match) {
+      return res.status(404).json({
+        success: false,
+        message: 'Match not found'
+      });
+    }
+
+    // Check if match belongs to group
+    if (!match.groups.includes(groupId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Match does not belong to this group'
+      });
+    }
+
+    // Find the group
+    const group = await Group.findById(groupId);
+
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        message: 'Group not found'
+      });
+    }
+
+    // Check if user is the group creator (admin)
+    if (group.creator.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Only the group creator can update match scores'
+      });
+    }
+
+    // Check if match already has a result
+    if (match.status === 'FINISHED' && match.result && match.result.homeScore !== null) {
+      return res.status(400).json({
+        success: false,
+        message: 'Match already has a final score'
+      });
+    }
+
+    // Check if 2 hours have passed since match start
+    const matchDate = new Date(match.matchDate);
+    const twoHoursAfter = new Date(matchDate.getTime() + 2 * 60 * 60 * 1000);
+    const now = new Date();
+
+    if (now < twoHoursAfter) {
+      const remainingMinutes = Math.ceil((twoHoursAfter - now) / (60 * 1000));
+      return res.status(400).json({
+        success: false,
+        message: `Cannot update score yet. Please wait ${remainingMinutes} more minutes after match start.`
+      });
+    }
+
+    // Calculate outcome
+    const hScore = parseInt(homeScore);
+    const aScore = parseInt(awayScore);
+    let outcome;
+
+    if (hScore > aScore) {
+      outcome = '1';
+    } else if (hScore < aScore) {
+      outcome = '2';
+    } else {
+      outcome = 'X';
+    }
+
+    // Update match
+    match.status = 'FINISHED';
+    match.result = {
+      homeScore: hScore,
+      awayScore: aScore,
+      outcome
+    };
+    await match.save();
+
+    // Calculate points for all bets on this match in this group
+    const Bet = require('../models/Bet');
+    const calculatePoints = require('../utils/calculatePoints');
+
+    const bets = await Bet.find({ match: matchId, group: groupId, calculated: false });
+    let totalCalculated = 0;
+
+    for (const bet of bets) {
+      const points = calculatePoints(bet.prediction, match.result);
+      bet.points = points;
+      bet.calculated = true;
+      await bet.save();
+
+      // Update user points in group
+      const memberIndex = group.members.findIndex(
+        m => m.user.toString() === bet.user.toString()
+      );
+
+      if (memberIndex !== -1) {
+        group.members[memberIndex].points += points;
+        await group.save();
+      }
+
+      totalCalculated++;
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Match score updated. Calculated points for ${totalCalculated} bets.`,
+      data: match
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};

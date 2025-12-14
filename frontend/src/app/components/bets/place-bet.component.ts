@@ -7,6 +7,7 @@ import { MatchService } from '../../services/match.service';
 import { Match } from '../../models/match.model';
 import { PlaceBetData } from '../../models/bet.model';
 import { TranslatePipe } from '../../services/translate.pipe';
+import { TranslationService } from '../../services/translation.service';
 
 @Component({
   selector: 'app-place-bet',
@@ -34,8 +35,8 @@ import { TranslatePipe } from '../../services/translate.pipe';
           ⚠️ {{ 'bets.matchStarted' | translate }}
         </div>
 
-        <div *ngIf="hasExistingBet" class="info-message">
-          ℹ️ {{ 'bets.alreadyPlaced' | translate }}
+        <div *ngIf="hasExistingBet && !isMatchInPast" class="info-message">
+          ℹ️ {{ 'bets.canUpdateBet' | translate }}
         </div>
 
         <form (ngSubmit)="onSubmit()" #betForm="ngForm">
@@ -47,7 +48,7 @@ import { TranslatePipe } from '../../services/translate.pipe';
                 class="outcome-btn"
                 [class.selected]="betData.outcome === '1'"
                 (click)="selectOutcome('1')"
-                [disabled]="isMatchInPast || hasExistingBet"
+                [disabled]="isMatchInPast"
               >
                 <span class="label">1</span>
                 <span class="team-name">{{ match.homeTeam }}</span>
@@ -57,7 +58,7 @@ import { TranslatePipe } from '../../services/translate.pipe';
                 class="outcome-btn"
                 [class.selected]="betData.outcome === 'X'"
                 (click)="selectOutcome('X')"
-                [disabled]="isMatchInPast || hasExistingBet"
+                [disabled]="isMatchInPast"
               >
                 <span class="label">X</span>
                 <span class="team-name">{{ 'bets.draw' | translate }}</span>
@@ -67,7 +68,7 @@ import { TranslatePipe } from '../../services/translate.pipe';
                 class="outcome-btn"
                 [class.selected]="betData.outcome === '2'"
                 (click)="selectOutcome('2')"
-                [disabled]="isMatchInPast || hasExistingBet"
+                [disabled]="isMatchInPast"
               >
                 <span class="label">2</span>
                 <span class="team-name">{{ match.awayTeam }}</span>
@@ -88,7 +89,7 @@ import { TranslatePipe } from '../../services/translate.pipe';
                   max="20"
                   required
                   class="score-input"
-                  [disabled]="isMatchInPast || hasExistingBet"
+                  [disabled]="isMatchInPast"
                 />
               </div>
               <span class="separator">-</span>
@@ -102,7 +103,7 @@ import { TranslatePipe } from '../../services/translate.pipe';
                   max="20"
                   required
                   class="score-input"
-                  [disabled]="isMatchInPast || hasExistingBet"
+                  [disabled]="isMatchInPast"
                 />
               </div>
             </div>
@@ -130,11 +131,11 @@ import { TranslatePipe } from '../../services/translate.pipe';
             <button type="button" (click)="goBack()" class="btn-secondary">{{ 'groups.cancel' | translate }}</button>
             <button
               type="submit"
-              *ngIf="!isMatchInPast && !hasExistingBet"
+              *ngIf="!isMatchInPast"
               [disabled]="!betForm.valid || !betData.outcome || loading"
               class="btn-primary"
             >
-              {{ loading ? ('bets.placingBet' | translate) : ('matches.placeBet' | translate) }}
+              {{ loading ? ('bets.placingBet' | translate) : (hasExistingBet ? ('bets.updateBet' | translate) : ('matches.placeBet' | translate)) }}
             </button>
           </div>
         </form>
@@ -388,7 +389,8 @@ export class PlaceBetComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private betService: BetService,
-    private matchService: MatchService
+    private matchService: MatchService,
+    private translationService: TranslationService
   ) {}
 
   ngOnInit(): void {
@@ -412,7 +414,7 @@ export class PlaceBetComponent implements OnInit {
       },
       error: (error) => {
         console.error('Failed to load match:', error);
-        this.errorMessage = 'Failed to load match details';
+        this.errorMessage = this.translationService.translate('bets.loadMatchFailed');
       }
     });
   }
@@ -446,13 +448,13 @@ export class PlaceBetComponent implements OnInit {
 
     this.betService.placeBet(this.betData).subscribe({
       next: (response) => {
-        this.successMessage = response.message || 'Bet placed successfully!';
+        this.successMessage = response.message || this.translationService.translate('bets.betPlacedSuccess');
         setTimeout(() => {
           this.router.navigate(['/groups', this.betData.groupId]);
         }, 1500);
       },
       error: (error) => {
-        this.errorMessage = error.error?.message || 'Failed to place bet. Please try again.';
+        this.errorMessage = error.error?.message || this.translationService.translate('bets.placeBetFailed');
         this.loading = false;
       }
     });

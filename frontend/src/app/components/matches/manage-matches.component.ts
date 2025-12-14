@@ -16,67 +16,109 @@ import { TranslatePipe } from '../../services/translate.pipe';
   template: `
     <div class="container">
       <div class="header">
-        <h1>Manage Matches - {{ group?.name }}</h1>
+        <h1>{{ 'matches.manageMatches' | translate }} - {{ group?.name }}</h1>
         <button (click)="goBack()" class="btn-secondary">{{ 'bets.back' | translate }}</button>
       </div>
 
-      <div class="section">
-        <h2>Israeli Premier League (Ligat Ha'al)</h2>
-        <div class="fetch-section">
-          <p class="league-info">Fetch matches from the past up to 2 weeks in the future</p>
-          <div class="button-row">
-            <button (click)="fetchMatches()" [disabled]="loadingFetch || !isGroupCreator()" class="btn-primary">
-              {{ loadingFetch ? 'Fetching...' : 'Fetch Israeli League Matches' }}
-            </button>
-            <button (click)="updateResults()" [disabled]="loadingUpdate || !isGroupCreator()" class="btn-secondary">
-              {{ loadingUpdate ? 'Updating...' : 'Update Match Results' }}
-            </button>
+      <div class="section" *ngIf="isGroupCreator()">
+        <h2>{{ 'matches.addManually' | translate }}</h2>
+        <form (ngSubmit)="createManualMatch()" class="manual-match-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="homeTeam">{{ 'matches.homeTeam' | translate }}</label>
+              <input
+                type="text"
+                id="homeTeam"
+                [(ngModel)]="manualMatch.homeTeam"
+                name="homeTeam"
+                class="form-control"
+                [placeholder]="'matches.enterHomeTeam' | translate"
+                required>
+            </div>
+            <div class="form-group">
+              <label for="awayTeam">{{ 'matches.awayTeam' | translate }}</label>
+              <input
+                type="text"
+                id="awayTeam"
+                [(ngModel)]="manualMatch.awayTeam"
+                name="awayTeam"
+                class="form-control"
+                [placeholder]="'matches.enterAwayTeam' | translate"
+                required>
+            </div>
           </div>
-          <div *ngIf="!isGroupCreator()" class="warning-message" style="margin-top: 1rem;">
-            Only the group creator can fetch matches and update results.
+          <div class="form-row">
+            <div class="form-group">
+              <label for="matchDate">{{ 'matches.matchDate' | translate }}</label>
+              <input
+                type="date"
+                id="matchDate"
+                [(ngModel)]="manualMatch.matchDate"
+                name="matchDate"
+                class="form-control"
+                required>
+            </div>
+            <div class="form-group">
+              <label for="matchHour">{{ 'matches.matchTime' | translate }}</label>
+              <input
+                type="time"
+                id="matchHour"
+                [(ngModel)]="manualMatch.matchHour"
+                name="matchHour"
+                class="form-control"
+                required>
+            </div>
           </div>
-        </div>
-        <div *ngIf="fetchMessage" class="info-message">{{ fetchMessage }}</div>
+          <div *ngIf="isPastMatch()" class="past-match-notice">
+            {{ 'matches.pastMatchNotice' | translate }}
+          </div>
+          <div *ngIf="isPastMatch()" class="form-row">
+            <div class="form-group">
+              <label for="homeScore">{{ 'matches.homeScore' | translate }}</label>
+              <input
+                type="number"
+                id="homeScore"
+                [(ngModel)]="manualMatch.homeScore"
+                name="homeScore"
+                class="form-control score-input"
+                min="0"
+                required>
+            </div>
+            <div class="form-group">
+              <label for="awayScore">{{ 'matches.awayScore' | translate }}</label>
+              <input
+                type="number"
+                id="awayScore"
+                [(ngModel)]="manualMatch.awayScore"
+                name="awayScore"
+                class="form-control score-input"
+                min="0"
+                required>
+            </div>
+          </div>
+          <button
+            type="submit"
+            class="btn-primary"
+            [disabled]="loadingManual || !isFormValid()">
+            {{ loadingManual ? ('matches.creatingMatch' | translate) : ('matches.createMatch' | translate) }}
+          </button>
+          <div *ngIf="manualMatchMessage" class="info-message" style="margin-top: 1rem;">{{ manualMatchMessage }}</div>
+          <div *ngIf="manualMatchError" class="error-message" style="margin-top: 1rem;">{{ manualMatchError }}</div>
+        </form>
       </div>
 
       <div class="section">
-        <h2>Available Matches (Not in Group)</h2>
-        <div *ngIf="loadingMatches" class="loading">{{ 'auth.loading' | translate }}</div>
-        <div *ngIf="!loadingMatches && availableMatches.length === 0" class="empty-state">
-          No matches available. Fetch matches from a league first.
-        </div>
-        <div class="matches-grid">
-          <div *ngFor="let match of availableMatches" class="match-card">
-            <div class="match-header">
-              <span class="competition">{{ match.competition }}</span>
-              <span class="status">{{ match.status }}</span>
-            </div>
-            <div class="match-teams">
-              <span class="team">{{ match.homeTeam }}</span>
-              <span class="vs">{{ 'matches.vs' | translate }}</span>
-              <span class="team">{{ match.awayTeam }}</span>
-            </div>
-            <div class="match-footer">
-              <span class="date">{{ match.matchDate | date:'short' }}</span>
-              <button *ngIf="isGroupCreator()" (click)="addToGroup(match._id)" class="btn-add">Add to Group</button>
-              <span *ngIf="!isGroupCreator()" class="restricted-label">Creator only</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="section">
-        <h2>Matches in This Group</h2>
+        <h2>{{ 'matches.matchesInGroup' | translate }}</h2>
         <div *ngIf="loadingGroupMatches" class="loading">{{ 'auth.loading' | translate }}</div>
         <div *ngIf="!loadingGroupMatches && groupMatches.length === 0" class="empty-state">
-          No matches in this group yet.
+          {{ 'matches.noMatchesInGroup' | translate }}
         </div>
         <div class="matches-grid">
           <div *ngFor="let match of groupMatches" class="match-card active">
             <div class="match-header">
               <span class="competition">{{ match.competition }}</span>
               <span class="status" [class.finished]="match.status === 'FINISHED'">
-                {{ match.status }}
+                {{ 'matches.' + match.status.toLowerCase() | translate }}
               </span>
             </div>
             <div class="match-teams">
@@ -89,6 +131,47 @@ import { TranslatePipe } from '../../services/translate.pipe';
               <span *ngIf="match.status === 'FINISHED'" class="result">
                 {{ match.result.homeScore }} - {{ match.result.awayScore }}
               </span>
+              <button
+                *ngIf="isGroupCreator() && canUpdateScore(match)"
+                (click)="openScoreUpdate(match)"
+                class="btn-update-score">
+                {{ 'matches.updateScore' | translate }}
+              </button>
+            </div>
+            <!-- Score update form -->
+            <div *ngIf="editingMatchId === match._id" class="score-update-form">
+              <div class="form-row">
+                <div class="form-group">
+                  <label>{{ match.homeTeam }}</label>
+                  <input
+                    type="number"
+                    [(ngModel)]="updateScoreData.homeScore"
+                    [name]="'homeScore_' + match._id"
+                    class="form-control score-input"
+                    min="0">
+                </div>
+                <div class="form-group">
+                  <label>{{ match.awayTeam }}</label>
+                  <input
+                    type="number"
+                    [(ngModel)]="updateScoreData.awayScore"
+                    [name]="'awayScore_' + match._id"
+                    class="form-control score-input"
+                    min="0">
+                </div>
+              </div>
+              <div class="button-row">
+                <button
+                  (click)="submitScoreUpdate(match._id)"
+                  [disabled]="loadingScoreUpdate || updateScoreData.homeScore === null || updateScoreData.awayScore === null"
+                  class="btn-primary btn-small">
+                  {{ loadingScoreUpdate ? ('auth.loading' | translate) : ('matches.saveScore' | translate) }}
+                </button>
+                <button (click)="cancelScoreUpdate()" class="btn-secondary btn-small">
+                  {{ 'groups.cancel' | translate }}
+                </button>
+              </div>
+              <div *ngIf="scoreUpdateError" class="error-message" style="margin-top: 0.5rem;">{{ scoreUpdateError }}</div>
             </div>
           </div>
         </div>
@@ -122,19 +205,6 @@ import { TranslatePipe } from '../../services/translate.pipe';
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       margin-bottom: 2rem;
     }
-    .fetch-section {
-      margin-bottom: 1rem;
-    }
-    .league-info {
-      color: #666;
-      margin-bottom: 1rem;
-      font-style: italic;
-    }
-    .button-row {
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
     .form-group {
       flex: 1;
       max-width: 400px;
@@ -152,7 +222,7 @@ import { TranslatePipe } from '../../services/translate.pipe';
       border-radius: 4px;
       font-size: 1rem;
     }
-    .btn-primary, .btn-secondary, .btn-add {
+    .btn-primary, .btn-secondary {
       padding: 0.75rem 1.5rem;
       border: none;
       border-radius: 4px;
@@ -176,15 +246,6 @@ import { TranslatePipe } from '../../services/translate.pipe';
     }
     .btn-secondary:hover:not(:disabled) {
       background-color: #0b7dda;
-    }
-    .btn-add {
-      background-color: #FF9800;
-      color: white;
-      font-size: 0.9rem;
-      padding: 0.5rem 1rem;
-    }
-    .btn-add:hover {
-      background-color: #F57C00;
     }
     .info-message {
       padding: 1rem;
@@ -267,11 +328,6 @@ import { TranslatePipe } from '../../services/translate.pipe';
       color: #4CAF50;
       font-size: 1.1rem;
     }
-    .restricted-label {
-      color: #999;
-      font-size: 0.9rem;
-      font-style: italic;
-    }
     .warning-message {
       color: #ff9800;
       padding: 0.75rem;
@@ -279,18 +335,97 @@ import { TranslatePipe } from '../../services/translate.pipe';
       border-radius: 4px;
       border-left: 4px solid #ff9800;
     }
+    .manual-match-form {
+      max-width: 600px;
+    }
+    .form-row {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .form-row .form-group {
+      flex: 1;
+    }
+    .error-message {
+      padding: 1rem;
+      background-color: #ffebee;
+      border-radius: 4px;
+      color: #c62828;
+      border-left: 4px solid #c62828;
+    }
+    .past-match-notice {
+      padding: 0.75rem;
+      background-color: #fff3e0;
+      border-radius: 4px;
+      color: #e65100;
+      border-left: 4px solid #ff9800;
+      margin-bottom: 1rem;
+    }
+    .score-input {
+      max-width: 100px;
+    }
+    .btn-update-score {
+      background-color: #ff9800;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .btn-update-score:hover {
+      background-color: #f57c00;
+    }
+    .score-update-form {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #e0e0e0;
+    }
+    .button-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    .btn-small {
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+    }
   `]
 })
 export class ManageMatchesComponent implements OnInit {
   groupId: string = '';
   group: Group | null = null;
-  availableMatches: Match[] = [];
   groupMatches: Match[] = [];
-  loadingMatches = false;
   loadingGroupMatches = false;
-  loadingFetch = false;
-  loadingUpdate = false;
-  fetchMessage = '';
+
+  // Manual match creation
+  loadingManual = false;
+  manualMatchMessage = '';
+  manualMatchError = '';
+  manualMatch: {
+    homeTeam: string;
+    awayTeam: string;
+    matchDate: string;
+    matchHour: string;
+    homeScore: number | null;
+    awayScore: number | null;
+  } = {
+    homeTeam: '',
+    awayTeam: '',
+    matchDate: '',
+    matchHour: '',
+    homeScore: null,
+    awayScore: null
+  };
+
+  // Score update
+  editingMatchId: string | null = null;
+  updateScoreData: { homeScore: number | null; awayScore: number | null } = {
+    homeScore: null,
+    awayScore: null
+  };
+  loadingScoreUpdate = false;
+  scoreUpdateError = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -323,20 +458,7 @@ export class ManageMatchesComponent implements OnInit {
   }
 
   loadMatches(): void {
-    this.loadingMatches = true;
     this.loadingGroupMatches = true;
-
-    this.matchService.getMatches().subscribe({
-      next: (response) => {
-        const allMatches = response.data;
-        this.availableMatches = allMatches.filter(m => !m.groups.includes(this.groupId));
-        this.loadingMatches = false;
-      },
-      error: (error) => {
-        console.error('Failed to load matches:', error);
-        this.loadingMatches = false;
-      }
-    });
 
     this.matchService.getMatches(this.groupId).subscribe({
       next: (response) => {
@@ -350,50 +472,68 @@ export class ManageMatchesComponent implements OnInit {
     });
   }
 
-  fetchMatches(): void {
-    this.loadingFetch = true;
-    this.fetchMessage = '';
-
-    // Israeli league is the only league available (ID: 4644)
-    this.matchService.fetchAndSaveMatches('4644').subscribe({
-      next: (response) => {
-        this.fetchMessage = response.message;
-        this.loadingFetch = false;
-        this.loadMatches();
-      },
-      error: (error) => {
-        this.fetchMessage = error.error?.message || 'Failed to fetch matches';
-        this.loadingFetch = false;
-      }
-    });
+  isPastMatch(): boolean {
+    if (!this.manualMatch.matchDate || !this.manualMatch.matchHour) {
+      return false;
+    }
+    const matchDateTime = new Date(`${this.manualMatch.matchDate}T${this.manualMatch.matchHour}`);
+    return matchDateTime <= new Date();
   }
 
-  updateResults(): void {
-    this.loadingUpdate = true;
-    this.fetchMessage = '';
+  isFormValid(): boolean {
+    const baseValid = !!(
+      this.manualMatch.homeTeam &&
+      this.manualMatch.awayTeam &&
+      this.manualMatch.matchDate &&
+      this.manualMatch.matchHour
+    );
 
-    // Israeli league is the only league available (ID: 4644)
-    this.matchService.updateMatchResults('4644').subscribe({
-      next: (response) => {
-        this.fetchMessage = response.message;
-        this.loadingUpdate = false;
-        this.loadMatches();
-      },
-      error: (error) => {
-        this.fetchMessage = error.error?.message || 'Failed to update results';
-        this.loadingUpdate = false;
-      }
-    });
+    if (!baseValid) return false;
+
+    if (this.isPastMatch()) {
+      return this.manualMatch.homeScore !== null && this.manualMatch.awayScore !== null;
+    }
+
+    return true;
   }
 
-  addToGroup(matchId: string): void {
-    this.matchService.addMatchToGroup(matchId, this.groupId).subscribe({
-      next: () => {
+  createManualMatch(): void {
+    this.loadingManual = true;
+    this.manualMatchMessage = '';
+    this.manualMatchError = '';
+
+    const data: any = {
+      homeTeam: this.manualMatch.homeTeam,
+      awayTeam: this.manualMatch.awayTeam,
+      matchDate: this.manualMatch.matchDate,
+      matchHour: this.manualMatch.matchHour,
+      groupId: this.groupId
+    };
+
+    if (this.isPastMatch()) {
+      data.homeScore = this.manualMatch.homeScore;
+      data.awayScore = this.manualMatch.awayScore;
+    }
+
+    this.matchService.createManualMatch(data).subscribe({
+      next: (response) => {
+        this.manualMatchMessage = response.message;
+        this.loadingManual = false;
+        // Reset form
+        this.manualMatch = {
+          homeTeam: '',
+          awayTeam: '',
+          matchDate: '',
+          matchHour: '',
+          homeScore: null,
+          awayScore: null
+        };
+        // Reload matches to show the new one
         this.loadMatches();
       },
       error: (error) => {
-        console.error('Failed to add match to group:', error);
-        alert('Failed to add match to group');
+        this.manualMatchError = error.error?.message || 'Failed to create match';
+        this.loadingManual = false;
       }
     });
   }
@@ -406,5 +546,54 @@ export class ManageMatchesComponent implements OnInit {
 
   goBack(): void {
     this.router.navigate(['/groups', this.groupId]);
+  }
+
+  canUpdateScore(match: Match): boolean {
+    // Can update if match is not finished and 2 hours have passed since match start
+    if (match.status === 'FINISHED') return false;
+    const matchDate = new Date(match.matchDate);
+    const twoHoursAfter = new Date(matchDate.getTime() + 2 * 60 * 60 * 1000);
+    return new Date() >= twoHoursAfter;
+  }
+
+  openScoreUpdate(match: Match): void {
+    this.editingMatchId = match._id;
+    this.updateScoreData = {
+      homeScore: match.result?.homeScore ?? null,
+      awayScore: match.result?.awayScore ?? null
+    };
+    this.scoreUpdateError = '';
+  }
+
+  submitScoreUpdate(matchId: string): void {
+    if (this.updateScoreData.homeScore === null || this.updateScoreData.awayScore === null) {
+      return;
+    }
+
+    this.loadingScoreUpdate = true;
+    this.scoreUpdateError = '';
+
+    this.matchService.updateMatchScore({
+      matchId,
+      groupId: this.groupId,
+      homeScore: this.updateScoreData.homeScore,
+      awayScore: this.updateScoreData.awayScore
+    }).subscribe({
+      next: () => {
+        this.loadingScoreUpdate = false;
+        this.editingMatchId = null;
+        this.loadMatches();
+      },
+      error: (error) => {
+        this.scoreUpdateError = error.error?.message || 'Failed to update score';
+        this.loadingScoreUpdate = false;
+      }
+    });
+  }
+
+  cancelScoreUpdate(): void {
+    this.editingMatchId = null;
+    this.updateScoreData = { homeScore: null, awayScore: null };
+    this.scoreUpdateError = '';
   }
 }

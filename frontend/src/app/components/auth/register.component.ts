@@ -5,6 +5,7 @@ import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { RegisterCredentials } from '../../models/user.model';
 import { TranslatePipe } from '../../services/translate.pipe';
+import { TranslationService } from '../../services/translation.service';
 
 @Component({
   selector: 'app-register',
@@ -154,7 +155,8 @@ export class RegisterComponent {
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private translationService: TranslationService
   ) {}
 
   onSubmit(): void {
@@ -166,7 +168,7 @@ export class RegisterComponent {
         this.router.navigate(['/groups']);
       },
       error: (error) => {
-        this.errorMessage = error.error?.message || 'Registration failed. Please try again.';
+        this.errorMessage = error.error?.message || this.translationService.translate('auth.registerFailed');
         this.loading = false;
       }
     });

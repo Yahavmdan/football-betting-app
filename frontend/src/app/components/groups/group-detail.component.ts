@@ -44,19 +44,14 @@ import { TranslatePipe } from '../../services/translate.pipe';
         <div class="matches-section">
           <div class="section-header">
             <h2>{{ 'groups.matches' | translate }}</h2>
-            <div class="button-group">
-              <button
-                *ngIf="isGroupCreator()"
-                [routerLink]="['/matches/manage']"
-                [queryParams]="{groupId: groupId}"
-                class="btn-manage"
-              >
-                Manage Matches
-              </button>
-              <button [routerLink]="['/matches']" [queryParams]="{groupId: groupId}" class="btn-primary">
-                {{ 'groups.viewAllMatches' | translate }}
-              </button>
-            </div>
+            <button
+              *ngIf="isGroupCreator()"
+              [routerLink]="['/matches/manage']"
+              [queryParams]="{groupId: groupId}"
+              class="btn-manage"
+            >
+              {{ 'matches.manageMatches' | translate }}
+            </button>
           </div>
           <div *ngIf="loadingMatches" class="loading">{{ 'auth.loading' | translate }}</div>
           <div *ngIf="!loadingMatches && matches.length > 0" class="matches-list">
@@ -83,7 +78,7 @@ import { TranslatePipe } from '../../services/translate.pipe';
                   {{ 'matches.placeBet' | translate }}
                 </button>
                 <span *ngIf="isMatchInPast(match.matchDate) && match.status === 'SCHEDULED'" class="past-match-label">
-                  Match started
+                  {{ 'matches.matchStartedLabel' | translate }}
                 </span>
                 <span *ngIf="match.status === 'FINISHED'" class="result">
                   {{ match.result.homeScore }} - {{ match.result.awayScore }}

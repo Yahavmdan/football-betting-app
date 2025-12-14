@@ -5,6 +5,7 @@ import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { LoginCredentials } from '../../models/user.model';
 import { TranslatePipe } from '../../services/translate.pipe';
+import { TranslationService } from '../../services/translation.service';
 
 @Component({
   selector: 'app-login',
@@ -140,7 +141,8 @@ export class LoginComponent {
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private translationService: TranslationService
   ) {}
 
   onSubmit(): void {
@@ -152,7 +154,7 @@ export class LoginComponent {
         this.router.navigate(['/groups']);
       },
       error: (error) => {
-        this.errorMessage = error.error?.message || 'Login failed. Please try again.';
+        this.errorMessage = error.error?.message || this.translationService.translate('auth.loginFailed');
         this.loading = false;
       }
     });

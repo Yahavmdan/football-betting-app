@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { GroupService } from '../../services/group.service';
 import { CreateGroupData } from '../../models/group.model';
 import { TranslatePipe } from '../../services/translate.pipe';
+import { TranslationService } from '../../services/translation.service';
 
 @Component({
   selector: 'app-create-group',
@@ -141,7 +142,8 @@ export class CreateGroupComponent {
 
   constructor(
     private groupService: GroupService,
-    private router: Router
+    private router: Router,
+    private translationService: TranslationService
   ) {}
 
   onSubmit(): void {
@@ -153,7 +155,7 @@ export class CreateGroupComponent {
         this.router.navigate(['/groups', response.data._id]);
       },
       error: (error) => {
-        this.errorMessage = error.error?.message || 'Failed to create group. Please try again.';
+        this.errorMessage = error.error?.message || this.translationService.translate('groups.createFailed');
         this.loading = false;
       }
     });
