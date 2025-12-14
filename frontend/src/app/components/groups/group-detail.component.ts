@@ -354,7 +354,26 @@ export class GroupDetailComponent implements OnInit {
   loadMatches(): void {
     this.matchService.getMatches(this.groupId).subscribe({
       next: (response) => {
-        this.matches = response.data.slice(0, 5);
+        // Sort matches: upcoming (SCHEDULED) first by date, then finished by date descending
+        const sorted = response.data.sort((a, b) => {
+          // SCHEDULED matches come first
+          if (a.status === 'SCHEDULED' && b.status !== 'SCHEDULED') return -1;
+          if (a.status !== 'SCHEDULED' && b.status === 'SCHEDULED') return 1;
+
+          // Within same status, sort by date
+          const dateA = new Date(a.matchDate).getTime();
+          const dateB = new Date(b.matchDate).getTime();
+
+          if (a.status === 'SCHEDULED') {
+            // Upcoming: earliest first
+            return dateA - dateB;
+          } else {
+            // Finished: most recent first
+            return dateB - dateA;
+          }
+        });
+
+        this.matches = sorted.slice(0, 10);
         this.loadingMatches = false;
       },
       error: (error) => {
