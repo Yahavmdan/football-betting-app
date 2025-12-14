@@ -72,6 +72,7 @@
     "awayTeam": "קבוצת חוץ",
     "enterHomeTeam": "הזן שם קבוצת בית",
     "enterAwayTeam": "הזן שם קבוצת חוץ",
+    "selectTeam": "בחר קבוצה",
     "matchDate": "תאריך המשחק",
     "matchTime": "שעת המשחק",
     "creatingMatch": "יוצר...",
@@ -117,7 +118,11 @@
     "betPlacedSuccess": "ההימור בוצע בהצלחה!",
     "placeBetFailed": "ביצוע ההימור נכשל. נסה שוב.",
     "betPlaced": "הימור בוצע",
-    "editBet": "ערוך הימור"
+    "editBet": "ערוך הימור",
+    "viewGroupBets": "צפה בהימורי הקבוצה",
+    "memberBets": "הימורי הקבוצה",
+    "noBet": "---",
+    "close": "סגור"
   },
   "common": {
     "required": "חובה",

@@ -196,6 +196,88 @@ exports.getBetsByMatch = async (req, res) => {
   }
 };
 
+// Get all group members' bets for a specific match
+exports.getGroupMembersBets = async (req, res) => {
+  try {
+    const { matchId, groupId } = req.params;
+
+    const group = await Group.findById(groupId).populate('members.user', 'username');
+
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        message: 'Group not found'
+      });
+    }
+
+    // Check if user is a member of this group
+    const isMember = group.members.some(
+      member => member.user._id.toString() === req.user._id.toString()
+    );
+
+    if (!isMember) {
+      return res.status(403).json({
+        success: false,
+        message: 'You are not a member of this group'
+      });
+    }
+
+    const match = await Match.findById(matchId);
+
+    if (!match) {
+      return res.status(404).json({
+        success: false,
+        message: 'Match not found'
+      });
+    }
+
+    // Get all bets for this match in this group
+    const bets = await Bet.find({
+      match: matchId,
+      group: groupId
+    });
+
+    // Create a map of user bets
+    const betsByUser = {};
+    bets.forEach(bet => {
+      betsByUser[bet.user.toString()] = {
+        outcome: bet.prediction.outcome,
+        createdAt: bet.createdAt,
+        points: bet.points
+      };
+    });
+
+    // Build response with all members
+    const membersBets = group.members.map(member => {
+      const userId = member.user._id.toString();
+      const userBet = betsByUser[userId];
+
+      return {
+        user: {
+          _id: member.user._id,
+          username: member.user.username
+        },
+        hasBet: !!userBet,
+        bet: userBet ? {
+          outcome: userBet.outcome,
+          createdAt: userBet.createdAt,
+          points: userBet.points
+        } : null
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      data: membersBets
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
 exports.calculateBetPoints = async (req, res) => {
   try {
     const finishedMatches = await Match.find({ status: 'FINISHED' });

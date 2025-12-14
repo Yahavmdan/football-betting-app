@@ -8,11 +8,13 @@ import { AuthService } from '../../services/auth.service';
 import { Match } from '../../models/match.model';
 import { Group } from '../../models/group.model';
 import { TranslatePipe } from '../../services/translate.pipe';
+import { TeamSelectComponent } from '../shared/team-select.component';
+import { getTeamByName } from '../../data/teams.data';
 
 @Component({
   selector: 'app-manage-matches',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslatePipe],
+  imports: [CommonModule, FormsModule, TranslatePipe, TeamSelectComponent],
   template: `
     <div class="container">
       <div class="header">
@@ -26,25 +28,19 @@ import { TranslatePipe } from '../../services/translate.pipe';
           <div class="form-row">
             <div class="form-group">
               <label for="homeTeam">{{ 'matches.homeTeam' | translate }}</label>
-              <input
-                type="text"
-                id="homeTeam"
+              <app-team-select
                 [(ngModel)]="manualMatch.homeTeam"
                 name="homeTeam"
-                class="form-control"
-                [placeholder]="'matches.enterHomeTeam' | translate"
-                required>
+                [placeholder]="'matches.selectTeam' | translate">
+              </app-team-select>
             </div>
             <div class="form-group">
               <label for="awayTeam">{{ 'matches.awayTeam' | translate }}</label>
-              <input
-                type="text"
-                id="awayTeam"
+              <app-team-select
                 [(ngModel)]="manualMatch.awayTeam"
                 name="awayTeam"
-                class="form-control"
-                [placeholder]="'matches.enterAwayTeam' | translate"
-                required>
+                [placeholder]="'matches.selectTeam' | translate">
+              </app-team-select>
             </div>
           </div>
           <div class="form-row">
@@ -122,9 +118,15 @@ import { TranslatePipe } from '../../services/translate.pipe';
               </span>
             </div>
             <div class="match-teams">
-              <span class="team">{{ match.homeTeam }}</span>
+              <div class="team team-home">
+                <span>{{ match.homeTeam }}</span>
+                <img *ngIf="getTeamLogo(match.homeTeam)" [src]="getTeamLogo(match.homeTeam)" [alt]="match.homeTeam" class="team-logo" (error)="onImageError($event)">
+              </div>
               <span class="vs">{{ 'matches.vs' | translate }}</span>
-              <span class="team">{{ match.awayTeam }}</span>
+              <div class="team team-away">
+                <img *ngIf="getTeamLogo(match.awayTeam)" [src]="getTeamLogo(match.awayTeam)" [alt]="match.awayTeam" class="team-logo" (error)="onImageError($event)">
+                <span>{{ match.awayTeam }}</span>
+              </div>
             </div>
             <div class="match-footer">
               <span class="date">{{ match.matchDate | date:'short' }}</span>
@@ -190,17 +192,17 @@ import { TranslatePipe } from '../../services/translate.pipe';
               <div class="form-row">
                 <div class="form-group">
                   <label>{{ 'matches.homeTeam' | translate }}</label>
-                  <input
-                    type="text"
+                  <app-team-select
                     [(ngModel)]="editMatchData.homeTeam"
-                    class="form-control">
+                    [placeholder]="'matches.selectTeam' | translate">
+                  </app-team-select>
                 </div>
                 <div class="form-group">
                   <label>{{ 'matches.awayTeam' | translate }}</label>
-                  <input
-                    type="text"
+                  <app-team-select
                     [(ngModel)]="editMatchData.awayTeam"
-                    class="form-control">
+                    [placeholder]="'matches.selectTeam' | translate">
+                  </app-team-select>
                 </div>
               </div>
               <div class="form-row">
@@ -421,6 +423,21 @@ import { TranslatePipe } from '../../services/translate.pipe';
       flex: 1;
       color: #1a1a2e;
       font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .team-home {
+      justify-content: flex-end;
+    }
+    .team-away {
+      justify-content: flex-start;
+    }
+    .team-logo {
+      width: 24px;
+      height: 24px;
+      object-fit: contain;
+      border-radius: 4px;
     }
     .vs {
       color: #94a3b8;
@@ -879,5 +896,16 @@ export class ManageMatchesComponent implements OnInit {
 
   cancelDeleteMatch(): void {
     this.deletingMatchId = null;
+  }
+
+  // Team logo helpers
+  getTeamLogo(teamName: string): string | null {
+    const team = getTeamByName(teamName);
+    return team ? team.logo : null;
+  }
+
+  onImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.style.display = 'none';
   }
 }

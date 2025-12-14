@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Bet, PlaceBetData } from '../models/bet.model';
+import { Bet, PlaceBetData, MemberBet } from '../models/bet.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -36,6 +36,12 @@ export class BetService {
     return this.http.get<{ success: boolean; data: { hasBet: boolean; bet: Bet | null } }>(
       `${this.apiUrl}/check`,
       { params: { matchId, groupId } }
+    );
+  }
+
+  getGroupMembersBets(matchId: string, groupId: string): Observable<{ success: boolean; data: MemberBet[] }> {
+    return this.http.get<{ success: boolean; data: MemberBet[] }>(
+      `${this.apiUrl}/match/${matchId}/group/${groupId}/members`
     );
   }
 }

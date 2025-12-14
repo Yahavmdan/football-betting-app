@@ -72,6 +72,7 @@
     "awayTeam": "Away Team",
     "enterHomeTeam": "Enter home team name",
     "enterAwayTeam": "Enter away team name",
+    "selectTeam": "Select a team",
     "matchDate": "Match Date",
     "matchTime": "Match Time",
     "creatingMatch": "Creating...",
@@ -117,7 +118,11 @@
     "betPlacedSuccess": "Bet placed successfully!",
     "placeBetFailed": "Failed to place bet. Please try again.",
     "betPlaced": "Bet placed",
-    "editBet": "Edit Bet"
+    "editBet": "Edit Bet",
+    "viewGroupBets": "View Group Bets",
+    "memberBets": "Group Bets",
+    "noBet": "---",
+    "close": "Close"
   },
   "common": {
     "required": "required",

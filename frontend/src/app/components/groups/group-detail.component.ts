@@ -8,7 +8,9 @@ import { BetService } from '../../services/bet.service';
 import { AuthService } from '../../services/auth.service';
 import { Group, GroupMember } from '../../models/group.model';
 import { Match } from '../../models/match.model';
+import { MemberBet } from '../../models/bet.model';
 import { TranslatePipe } from '../../services/translate.pipe';
+import { getTeamByName } from '../../data/teams.data';
 
 @Component({
   selector: 'app-group-detail',
@@ -129,32 +131,80 @@ import { TranslatePipe } from '../../services/translate.pipe';
                 </div>
               </div>
               <div class="match-teams">
-                <span class="team">{{ match.homeTeam }}</span>
+                <div class="team team-home">
+                  <span>{{ match.homeTeam }}</span>
+                  <img *ngIf="getTeamLogo(match.homeTeam)" [src]="getTeamLogo(match.homeTeam)" [alt]="match.homeTeam" class="team-logo" (error)="onImageError($event)">
+                </div>
                 <span class="vs">{{ 'matches.vs' | translate }}</span>
-                <span class="team">{{ match.awayTeam }}</span>
+                <div class="team team-away">
+                  <img *ngIf="getTeamLogo(match.awayTeam)" [src]="getTeamLogo(match.awayTeam)" [alt]="match.awayTeam" class="team-logo" (error)="onImageError($event)">
+                  <span>{{ match.awayTeam }}</span>
+                </div>
               </div>
               <div class="match-footer">
                 <span class="date">{{ match.matchDate | date:'short' }}</span>
-                <button
-                  [routerLink]="['/bets', 'place']"
-                  [queryParams]="{matchId: match._id, groupId: groupId}"
-                  class="btn-bet"
-                  *ngIf="match.status === 'SCHEDULED' && !isMatchInPast(match.matchDate)"
-                >
-                  {{ hasBetOnMatch(match._id) ? ('bets.editBet' | translate) : ('matches.placeBet' | translate) }}
-                </button>
-                <span *ngIf="isMatchInPast(match.matchDate) && match.status === 'SCHEDULED' && !isGroupCreator()" class="past-match-label">
-                  {{ 'matches.matchStartedLabel' | translate }}
-                </span>
-                <button
-                  *ngIf="isGroupCreator() && canUpdateScore(match)"
-                  (click)="openScoreUpdate(match)"
-                  class="btn-update-score">
-                  {{ 'matches.updateScore' | translate }}
-                </button>
-                <span *ngIf="match.status === 'FINISHED'" class="result">
-                  {{ match.result.homeScore }} - {{ match.result.awayScore }}
-                </span>
+                <div class="match-actions">
+                  <button
+                    (click)="toggleMemberBets(match._id)"
+                    class="btn-people"
+                    [class.active]="viewingBetsForMatch === match._id"
+                    [title]="'bets.viewGroupBets' | translate">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="9" cy="7" r="4"></circle>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                  </button>
+                  <button
+                    [routerLink]="['/bets', 'place']"
+                    [queryParams]="{matchId: match._id, groupId: groupId}"
+                    class="btn-bet"
+                    *ngIf="match.status === 'SCHEDULED' && !isMatchInPast(match.matchDate)"
+                  >
+                    {{ hasBetOnMatch(match._id) ? ('bets.editBet' | translate) : ('matches.placeBet' | translate) }}
+                  </button>
+                  <span *ngIf="isMatchInPast(match.matchDate) && match.status === 'SCHEDULED' && !isGroupCreator()" class="past-match-label">
+                    {{ 'matches.matchStartedLabel' | translate }}
+                  </span>
+                  <button
+                    *ngIf="isGroupCreator() && canUpdateScore(match)"
+                    (click)="openScoreUpdate(match)"
+                    class="btn-update-score">
+                    {{ 'matches.updateScore' | translate }}
+                  </button>
+                  <span *ngIf="match.status === 'FINISHED'" class="result">
+                    {{ match.result.homeScore }} - {{ match.result.awayScore }}
+                  </span>
+                </div>
+              </div>
+              <!-- Member Bets Panel -->
+              <div *ngIf="viewingBetsForMatch === match._id" class="member-bets-panel">
+                <div class="member-bets-header">
+                  <h4>{{ 'bets.memberBets' | translate }}</h4>
+                  <button (click)="closeMemberBets()" class="btn-close-bets">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                  </button>
+                </div>
+                <div *ngIf="loadingMemberBets" class="loading-bets">{{ 'auth.loading' | translate }}</div>
+                <div *ngIf="!loadingMemberBets && memberBets.length > 0" class="member-bets-list">
+                  <div *ngFor="let memberBet of memberBets" class="member-bet-item">
+                    <span class="member-name">{{ memberBet.user.username }}</span>
+                    <div class="bet-info">
+                      <span *ngIf="memberBet.hasBet" class="bet-outcome" [class.home]="memberBet.bet?.outcome === '1'" [class.draw]="memberBet.bet?.outcome === 'X'" [class.away]="memberBet.bet?.outcome === '2'">
+                        {{ memberBet.bet?.outcome === '1' ? match.homeTeam : (memberBet.bet?.outcome === '2' ? match.awayTeam : ('bets.draw' | translate)) }}
+                      </span>
+                      <span *ngIf="!memberBet.hasBet" class="no-bet">{{ 'bets.noBet' | translate }}</span>
+                      <span *ngIf="memberBet.hasBet" class="bet-time">{{ memberBet.bet?.createdAt | date:'short' }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div *ngIf="!loadingMemberBets && memberBets.length === 0" class="empty-bets">
+                  {{ 'groups.noMembers' | translate }}
+                </div>
               </div>
               <!-- Score update form -->
               <div *ngIf="editingMatchId === match._id" class="score-update-form">
@@ -392,6 +442,21 @@ import { TranslatePipe } from '../../services/translate.pipe';
       flex: 1;
       color: #1a1a2e;
       font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .team-home {
+      justify-content: flex-end;
+    }
+    .team-away {
+      justify-content: flex-start;
+    }
+    .team-logo {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+      border-radius: 4px;
     }
     .vs {
       color: #94a3b8;
@@ -406,9 +471,130 @@ import { TranslatePipe } from '../../services/translate.pipe';
       flex-wrap: wrap;
       gap: 0.75rem;
     }
+    .match-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
     .date {
       font-size: 0.9rem;
       color: #64748b;
+    }
+    .btn-people {
+      background: #f1f5f9;
+      border: none;
+      border-radius: 10px;
+      padding: 0.5rem;
+      cursor: pointer;
+      color: #64748b;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-people:hover {
+      background: #e2e8f0;
+      color: #475569;
+    }
+    .btn-people.active {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      color: white;
+    }
+    .member-bets-panel {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #f8fafc;
+      border-radius: 12px;
+      border: 2px solid #e2e8f0;
+      animation: slideDown 0.2s ease-out;
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .member-bets-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+    .member-bets-header h4 {
+      margin: 0;
+      color: #1a1a2e;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+    .btn-close-bets {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #64748b;
+      padding: 0.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+    .btn-close-bets:hover {
+      background: #e2e8f0;
+      color: #1a1a2e;
+    }
+    .loading-bets, .empty-bets {
+      text-align: center;
+      padding: 1rem;
+      color: #64748b;
+      font-size: 0.9rem;
+    }
+    .member-bets-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .member-bet-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.6rem 0.75rem;
+      background: white;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+    .member-name {
+      font-weight: 500;
+      color: #1a1a2e;
+      font-size: 0.9rem;
+    }
+    .bet-info {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .bet-outcome {
+      font-weight: 600;
+      font-size: 0.85rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+    }
+    .bet-outcome.home {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+    .bet-outcome.draw {
+      background: #f3f4f6;
+      color: #4b5563;
+    }
+    .bet-outcome.away {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+    .no-bet {
+      color: #94a3b8;
+      font-weight: 500;
+    }
+    .bet-time {
+      font-size: 0.75rem;
+      color: #94a3b8;
     }
     .btn-primary {
       padding: 0.6rem 1.25rem;
@@ -742,6 +928,11 @@ export class GroupDetailComponent implements OnInit {
   leavingGroup = false;
   loadingLeaveGroup = false;
 
+  // Member bets viewer
+  viewingBetsForMatch: string | null = null;
+  memberBets: MemberBet[] = [];
+  loadingMemberBets = false;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -979,5 +1170,44 @@ export class GroupDetailComponent implements OnInit {
 
   cancelLeaveGroup(): void {
     this.leavingGroup = false;
+  }
+
+  // Member bets methods
+  toggleMemberBets(matchId: string): void {
+    if (this.viewingBetsForMatch === matchId) {
+      this.closeMemberBets();
+      return;
+    }
+
+    this.viewingBetsForMatch = matchId;
+    this.loadingMemberBets = true;
+    this.memberBets = [];
+
+    this.betService.getGroupMembersBets(matchId, this.groupId).subscribe({
+      next: (response) => {
+        this.memberBets = response.data;
+        this.loadingMemberBets = false;
+      },
+      error: (error) => {
+        console.error('Failed to load member bets:', error);
+        this.loadingMemberBets = false;
+      }
+    });
+  }
+
+  closeMemberBets(): void {
+    this.viewingBetsForMatch = null;
+    this.memberBets = [];
+  }
+
+  // Team logo helpers
+  getTeamLogo(teamName: string): string | null {
+    const team = getTeamByName(teamName);
+    return team ? team.logo : null;
+  }
+
+  onImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.style.display = 'none';
   }
 }

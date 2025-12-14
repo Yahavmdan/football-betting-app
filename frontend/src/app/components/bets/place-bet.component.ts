@@ -8,6 +8,7 @@ import { Match } from '../../models/match.model';
 import { PlaceBetData } from '../../models/bet.model';
 import { TranslatePipe } from '../../services/translate.pipe';
 import { TranslationService } from '../../services/translation.service';
+import { getTeamByName } from '../../data/teams.data';
 
 @Component({
   selector: 'app-place-bet',
@@ -23,9 +24,15 @@ import { TranslationService } from '../../services/translation.service';
         <div class="match-info">
           <div class="competition">{{ match.competition }}</div>
           <div class="teams">
-            <span class="team">{{ match.homeTeam }}</span>
+            <div class="team team-home">
+              <span>{{ match.homeTeam }}</span>
+              <img *ngIf="getTeamLogo(match.homeTeam)" [src]="getTeamLogo(match.homeTeam)" [alt]="match.homeTeam" class="team-logo" (error)="onImageError($event)">
+            </div>
             <span class="vs">{{ 'matches.vs' | translate }}</span>
-            <span class="team">{{ match.awayTeam }}</span>
+            <div class="team team-away">
+              <img *ngIf="getTeamLogo(match.awayTeam)" [src]="getTeamLogo(match.awayTeam)" [alt]="match.awayTeam" class="team-logo" (error)="onImageError($event)">
+              <span>{{ match.awayTeam }}</span>
+            </div>
           </div>
           <div class="date">{{ match.matchDate | date:'medium' }}</div>
         </div>
@@ -50,6 +57,7 @@ import { TranslationService } from '../../services/translation.service';
                 (click)="selectOutcome('1')"
                 [disabled]="isMatchInPast"
               >
+                <img *ngIf="getTeamLogo(match.homeTeam)" [src]="getTeamLogo(match.homeTeam)" [alt]="match.homeTeam" class="outcome-logo" (error)="onImageError($event)">
                 <span class="label">1</span>
                 <span class="team-name">{{ match.homeTeam }}</span>
               </button>
@@ -70,6 +78,7 @@ import { TranslationService } from '../../services/translation.service';
                 (click)="selectOutcome('2')"
                 [disabled]="isMatchInPast"
               >
+                <img *ngIf="getTeamLogo(match.awayTeam)" [src]="getTeamLogo(match.awayTeam)" [alt]="match.awayTeam" class="outcome-logo" (error)="onImageError($event)">
                 <span class="label">2</span>
                 <span class="team-name">{{ match.awayTeam }}</span>
               </button>
@@ -173,6 +182,27 @@ import { TranslationService } from '../../services/translation.service';
     }
     .team {
       color: #1a1a2e;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .team-home {
+      justify-content: flex-end;
+    }
+    .team-away {
+      justify-content: flex-start;
+    }
+    .team-logo {
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+      border-radius: 4px;
+    }
+    .outcome-logo {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+      border-radius: 6px;
     }
     .vs {
       color: #94a3b8;
@@ -436,5 +466,16 @@ export class PlaceBetComponent implements OnInit {
 
   goBack(): void {
     this.router.navigate(['/groups', this.betData.groupId]);
+  }
+
+  // Team logo helpers
+  getTeamLogo(teamName: string): string | null {
+    const team = getTeamByName(teamName);
+    return team ? team.logo : null;
+  }
+
+  onImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.style.display = 'none';
   }
 }

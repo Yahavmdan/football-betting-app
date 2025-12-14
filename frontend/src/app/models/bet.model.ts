@@ -18,3 +18,16 @@ export interface PlaceBetData {
   groupId: string;
   outcome: '1' | 'X' | '2';
 }
+
+export interface MemberBet {
+  user: {
+    _id: string;
+    username: string;
+  };
+  hasBet: boolean;
+  bet: {
+    outcome: '1' | 'X' | '2';
+    createdAt: Date;
+    points: number | null;
+  } | null;
+}
