@@ -52,7 +52,11 @@
     "viewAllMatches": "View All Matches",
     "noMatches": "No matches available for this group",
     "createFailed": "Failed to create group. Please try again.",
-    "joinFailed": "Failed to join group. Please check the invite code."
+    "joinFailed": "Failed to join group. Please check the invite code.",
+    "editGroup": "Edit Group",
+    "confirmDelete": "Are you sure you want to delete this group? This action cannot be undone.",
+    "confirmLeave": "Are you sure you want to leave this group?",
+    "leaveGroup": "Leave Group"
   },
   "matches": {
     "scheduled": "SCHEDULED",
@@ -90,7 +94,8 @@
     "homeScore": "Home Score",
     "awayScore": "Away Score",
     "updateScore": "Update Score",
-    "saveScore": "Save Score"
+    "saveScore": "Save Score",
+    "confirmDelete": "Are you sure you want to delete this match? This action cannot be undone."
   },
   "bets": {
     "placeYourBet": "Place Your Bet",
@@ -99,10 +104,7 @@
     "predictScore": "Predict Score",
     "draw": "Draw",
     "pointsSystem": "Points System:",
-    "correctResult": "Correct result (1/X/2):",
-    "correctHomeScore": "Correct home team score:",
-    "correctAwayScore": "Correct away team score:",
-    "exactScore": "Exact score match:",
+    "correctResultReward": "Correct prediction = 1 point",
     "point": "point",
     "points": "points",
     "placingBet": "Placing Bet...",
@@ -113,12 +115,17 @@
     "updateBet": "Update Bet",
     "loadMatchFailed": "Failed to load match details",
     "betPlacedSuccess": "Bet placed successfully!",
-    "placeBetFailed": "Failed to place bet. Please try again."
+    "placeBetFailed": "Failed to place bet. Please try again.",
+    "betPlaced": "Bet placed",
+    "editBet": "Edit Bet"
   },
   "common": {
     "required": "required",
     "optional": "optional",
     "error": "Error",
-    "success": "Success"
+    "success": "Success",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save"
   }
 }

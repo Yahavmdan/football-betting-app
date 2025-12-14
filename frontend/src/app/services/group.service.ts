@@ -31,4 +31,16 @@ export class GroupService {
   getLeaderboard(groupId: string): Observable<{ success: boolean; data: GroupMember[] }> {
     return this.http.get<{ success: boolean; data: GroupMember[] }>(`${this.apiUrl}/${groupId}/leaderboard`);
   }
+
+  editGroup(groupId: string, data: { name?: string; description?: string }): Observable<{ success: boolean; message: string; data: Group }> {
+    return this.http.put<{ success: boolean; message: string; data: Group }>(`${this.apiUrl}/${groupId}`, data);
+  }
+
+  deleteGroup(groupId: string): Observable<{ success: boolean; message: string }> {
+    return this.http.delete<{ success: boolean; message: string }>(`${this.apiUrl}/${groupId}`);
+  }
+
+  leaveGroup(groupId: string): Observable<{ success: boolean; message: string }> {
+    return this.http.post<{ success: boolean; message: string }>(`${this.apiUrl}/${groupId}/leave`, {});
+  }
 }

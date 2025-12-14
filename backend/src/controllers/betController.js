@@ -5,7 +5,7 @@ const calculatePoints = require('../utils/calculatePoints');
 
 exports.placeBet = async (req, res) => {
   try {
-    const { matchId, groupId, outcome, homeScore, awayScore } = req.body;
+    const { matchId, groupId, outcome } = req.body;
 
     const match = await Match.findById(matchId);
 
@@ -60,9 +60,7 @@ exports.placeBet = async (req, res) => {
     if (existingBet) {
       // Update existing bet instead of rejecting
       existingBet.prediction = {
-        outcome,
-        homeScore,
-        awayScore
+        outcome
       };
       await existingBet.save();
 
@@ -78,9 +76,7 @@ exports.placeBet = async (req, res) => {
       match: matchId,
       group: groupId,
       prediction: {
-        outcome,
-        homeScore,
-        awayScore
+        outcome
       }
     });
 

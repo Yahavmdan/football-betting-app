@@ -15,7 +15,16 @@ import { TranslatePipe } from '../../services/translate.pipe';
         <div class="nav-brand">
           <a routerLink="/groups">{{ 'app.title' | translate }}</a>
         </div>
-        <div class="nav-menu">
+
+        <!-- Hamburger button for mobile -->
+        <button class="hamburger" (click)="toggleMobileMenu()" [class.open]="mobileMenuOpen">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        <!-- Desktop menu -->
+        <div class="nav-menu desktop-menu">
           <a routerLink="/groups" routerLinkActive="active">{{ 'nav.myGroups' | translate }}</a>
           <div class="language-switcher">
             <button
@@ -38,45 +47,109 @@ import { TranslatePipe } from '../../services/translate.pipe';
             <button (click)="logout()" class="logout-btn">{{ 'nav.logout' | translate }}</button>
           </div>
         </div>
+
+        <!-- Mobile dropdown menu -->
+        <div class="mobile-menu" [class.open]="mobileMenuOpen">
+          <a routerLink="/groups" routerLinkActive="active" (click)="closeMobileMenu()">{{ 'nav.myGroups' | translate }}</a>
+          <div class="mobile-user-info">
+            <span class="username">{{ user.username }}</span>
+          </div>
+          <div class="language-switcher">
+            <button
+              (click)="switchLanguage('en')"
+              [class.active]="currentLang === 'en'"
+              class="lang-btn"
+            >
+              EN
+            </button>
+            <button
+              (click)="switchLanguage('he')"
+              [class.active]="currentLang === 'he'"
+              class="lang-btn"
+            >
+              עב
+            </button>
+          </div>
+          <button (click)="logout()" class="logout-btn mobile-logout">{{ 'nav.logout' | translate }}</button>
+        </div>
       </div>
+
+      <!-- Overlay for mobile menu -->
+      <div class="mobile-overlay" *ngIf="mobileMenuOpen" (click)="closeMobileMenu()"></div>
     </nav>
   `,
   styles: [`
     .navbar {
-      background-color: #4CAF50;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
       color: white;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(10px);
     }
     .nav-container {
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
       padding: 0 2rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      height: 60px;
+      height: 70px;
     }
     .nav-brand a {
       color: white;
       text-decoration: none;
-      font-size: 1.25rem;
-      font-weight: 600;
+      font-size: 1.5rem;
+      font-weight: 700;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      transition: all 0.3s ease;
+    }
+    .nav-brand a:hover {
+      transform: scale(1.02);
     }
     .nav-menu {
       display: flex;
       align-items: center;
-      gap: 2rem;
+      gap: 1.5rem;
     }
     .nav-menu a {
-      color: white;
+      color: rgba(255, 255, 255, 0.85);
       text-decoration: none;
-      padding: 0.5rem 1rem;
-      border-radius: 4px;
-      transition: background-color 0.2s;
+      padding: 0.6rem 1.2rem;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+      font-weight: 500;
+      font-size: 0.95rem;
+      position: relative;
     }
-    .nav-menu a:hover,
+    .nav-menu a::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 2px;
+      background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+      transition: width 0.3s ease;
+      border-radius: 2px;
+    }
+    .nav-menu a:hover {
+      color: white;
+      background-color: rgba(255, 255, 255, 0.08);
+    }
+    .nav-menu a:hover::after,
+    .nav-menu a.active::after {
+      width: 60%;
+    }
     .nav-menu a.active {
-      background-color: rgba(255,255,255,0.2);
+      color: white;
+      background-color: rgba(255, 255, 255, 0.1);
     }
     .user-menu {
       display: flex;
@@ -84,48 +157,174 @@ import { TranslatePipe } from '../../services/translate.pipe';
       gap: 1rem;
     }
     .username {
-      font-weight: 500;
-    }
-    .logout-btn {
-      background-color: rgba(255,255,255,0.2);
-      color: white;
-      border: none;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.9);
       padding: 0.5rem 1rem;
-      border-radius: 4px;
-      cursor: pointer;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
       font-size: 0.9rem;
     }
+    .logout-btn {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: white;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+    }
     .logout-btn:hover {
-      background-color: rgba(255,255,255,0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
     }
     .language-switcher {
       display: flex;
-      gap: 0.25rem;
-      background-color: rgba(255,255,255,0.1);
-      border-radius: 4px;
-      padding: 0.25rem;
+      gap: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 4px;
     }
     .lang-btn {
       background-color: transparent;
-      color: white;
+      color: rgba(255, 255, 255, 0.7);
       border: none;
-      padding: 0.25rem 0.75rem;
-      border-radius: 3px;
+      padding: 0.4rem 0.9rem;
+      border-radius: 8px;
       cursor: pointer;
       font-size: 0.85rem;
-      font-weight: 500;
-      transition: background-color 0.2s;
+      font-weight: 600;
+      transition: all 0.3s ease;
     }
     .lang-btn:hover {
-      background-color: rgba(255,255,255,0.2);
+      background-color: rgba(255, 255, 255, 0.15);
+      color: white;
     }
     .lang-btn.active {
-      background-color: rgba(255,255,255,0.3);
+      background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+      color: white;
+      box-shadow: 0 2px 8px rgba(74, 222, 128, 0.3);
+    }
+
+    /* Hamburger button */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      justify-content: space-around;
+      width: 28px;
+      height: 22px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      z-index: 1001;
+    }
+    .hamburger span {
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+      border-radius: 3px;
+      transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+    .hamburger.open span:nth-child(1) {
+      transform: rotate(45deg) translate(6px, 6px);
+    }
+    .hamburger.open span:nth-child(2) {
+      opacity: 0;
+      transform: translateX(-10px);
+    }
+    .hamburger.open span:nth-child(3) {
+      transform: rotate(-45deg) translate(6px, -6px);
+    }
+
+    /* Mobile menu */
+    .mobile-menu {
+      display: none;
+      position: absolute;
+      top: 70px;
+      left: 0;
+      right: 0;
+      background: linear-gradient(180deg, #16213e 0%, #1a1a2e 100%);
+      flex-direction: column;
+      padding: 1.5rem;
+      gap: 0.75rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+      transform: translateY(-120%);
+      opacity: 0;
+      transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.3s ease;
+      border-bottom-left-radius: 20px;
+      border-bottom-right-radius: 20px;
+    }
+    .mobile-menu.open {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .mobile-menu a {
+      color: rgba(255, 255, 255, 0.85);
+      text-decoration: none;
+      padding: 1rem 1.25rem;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+    .mobile-menu a:hover,
+    .mobile-menu a.active {
+      background: rgba(74, 222, 128, 0.15);
+      color: #4ade80;
+    }
+    .mobile-user-info {
+      padding: 1rem 1.25rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      margin: 0.5rem 0;
+    }
+    .mobile-logout {
+      width: 100%;
+      text-align: center;
+      padding: 1rem 1.25rem;
+      margin-top: 0.5rem;
+    }
+    .mobile-overlay {
+      display: none;
+      position: fixed;
+      top: 70px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 999;
+    }
+
+    /* Mobile responsive */
+    @media (max-width: 768px) {
+      .nav-container {
+        padding: 0 1.25rem;
+      }
+      .desktop-menu {
+        display: none;
+      }
+      .hamburger {
+        display: flex;
+      }
+      .mobile-menu {
+        display: flex;
+      }
+      .mobile-overlay {
+        display: block;
+      }
+      .nav-brand a {
+        font-size: 1.25rem;
+      }
     }
   `]
 })
 export class NavbarComponent {
   currentLang: string = 'en';
+  mobileMenuOpen: boolean = false;
 
   constructor(
     public authService: AuthService,
@@ -138,11 +337,20 @@ export class NavbarComponent {
   }
 
   logout(): void {
+    this.closeMobileMenu();
     this.authService.logout();
     this.router.navigate(['/login']);
   }
 
   switchLanguage(lang: string): void {
     this.translationService.setLanguage(lang);
+  }
+
+  toggleMobileMenu(): void {
+    this.mobileMenuOpen = !this.mobileMenuOpen;
+  }
+
+  closeMobileMenu(): void {
+    this.mobileMenuOpen = false;
   }
 }

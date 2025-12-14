@@ -488,16 +488,14 @@ exports.updateMatchScore = async (req, res) => {
       });
     }
 
-    // Check if 2 hours have passed since match start
+    // Check if match has started
     const matchDate = new Date(match.matchDate);
-    const twoHoursAfter = new Date(matchDate.getTime() + 2 * 60 * 60 * 1000);
     const now = new Date();
 
-    if (now < twoHoursAfter) {
-      const remainingMinutes = Math.ceil((twoHoursAfter - now) / (60 * 1000));
+    if (now < matchDate) {
       return res.status(400).json({
         success: false,
-        message: `Cannot update score yet. Please wait ${remainingMinutes} more minutes after match start.`
+        message: 'Cannot update score before match starts.'
       });
     }
 
@@ -552,6 +550,152 @@ exports.updateMatchScore = async (req, res) => {
     res.status(200).json({
       success: true,
       message: `Match score updated. Calculated points for ${totalCalculated} bets.`,
+      data: match
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Delete a match (group admin only)
+exports.deleteMatch = async (req, res) => {
+  try {
+    const { matchId } = req.params;
+    const { groupId } = req.body;
+
+    if (!matchId || !groupId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide matchId and groupId'
+      });
+    }
+
+    // Find the match
+    const match = await Match.findById(matchId);
+
+    if (!match) {
+      return res.status(404).json({
+        success: false,
+        message: 'Match not found'
+      });
+    }
+
+    // Check if match belongs to group
+    if (!match.groups.includes(groupId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Match does not belong to this group'
+      });
+    }
+
+    // Find the group
+    const group = await Group.findById(groupId);
+
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        message: 'Group not found'
+      });
+    }
+
+    // Check if user is the group creator (admin)
+    if (group.creator.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Only the group creator can delete matches'
+      });
+    }
+
+    // Delete all bets associated with this match in this group
+    const Bet = require('../models/Bet');
+    await Bet.deleteMany({ match: matchId, group: groupId });
+
+    // Remove group from match's groups array
+    match.groups = match.groups.filter(g => g.toString() !== groupId);
+
+    if (match.groups.length === 0) {
+      // If no more groups, delete the match entirely
+      await Match.findByIdAndDelete(matchId);
+    } else {
+      await match.save();
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Match deleted successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Edit a match (group admin only)
+exports.editMatch = async (req, res) => {
+  try {
+    const { matchId } = req.params;
+    const { groupId, homeTeam, awayTeam, matchDate, matchHour } = req.body;
+
+    if (!matchId || !groupId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide matchId and groupId'
+      });
+    }
+
+    // Find the match
+    const match = await Match.findById(matchId);
+
+    if (!match) {
+      return res.status(404).json({
+        success: false,
+        message: 'Match not found'
+      });
+    }
+
+    // Check if match belongs to group
+    if (!match.groups.includes(groupId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Match does not belong to this group'
+      });
+    }
+
+    // Find the group
+    const group = await Group.findById(groupId);
+
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        message: 'Group not found'
+      });
+    }
+
+    // Check if user is the group creator (admin)
+    if (group.creator.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Only the group creator can edit matches'
+      });
+    }
+
+    // Update fields if provided
+    if (homeTeam) match.homeTeam = homeTeam;
+    if (awayTeam) match.awayTeam = awayTeam;
+    if (matchDate && matchHour) {
+      match.matchDate = new Date(`${matchDate}T${matchHour}`);
+    }
+
+    await match.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Match updated successfully',
       data: match
     });
   } catch (error) {

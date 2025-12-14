@@ -52,7 +52,11 @@
     "viewAllMatches": "צפה בכל המשחקים",
     "noMatches": "אין משחקים זמינים עבור קבוצה זו",
     "createFailed": "יצירת הקבוצה נכשלה. נסה שוב.",
-    "joinFailed": "ההצטרפות נכשלה. בדוק את קוד ההזמנה."
+    "joinFailed": "ההצטרפות נכשלה. בדוק את קוד ההזמנה.",
+    "editGroup": "ערוך קבוצה",
+    "confirmDelete": "האם אתה בטוח שברצונך למחוק את הקבוצה? פעולה זו לא ניתנת לביטול.",
+    "confirmLeave": "האם אתה בטוח שברצונך לעזוב את הקבוצה?",
+    "leaveGroup": "עזוב קבוצה"
   },
   "matches": {
     "scheduled": "מתוכנן",
@@ -90,7 +94,8 @@
     "homeScore": "תוצאת בית",
     "awayScore": "תוצאת חוץ",
     "updateScore": "עדכן תוצאה",
-    "saveScore": "שמור תוצאה"
+    "saveScore": "שמור תוצאה",
+    "confirmDelete": "האם אתה בטוח שברצונך למחוק את המשחק? פעולה זו לא ניתנת לביטול."
   },
   "bets": {
     "placeYourBet": "בצע את ההימור שלך",
@@ -99,10 +104,7 @@
     "predictScore": "נחש תוצאה",
     "draw": "תיקו",
     "pointsSystem": "מערכת הניקוד:",
-    "correctResult": "תוצאה נכונה (1/X/2):",
-    "correctHomeScore": "תוצאת קבוצת הבית נכונה:",
-    "correctAwayScore": "תוצאת קבוצת החוץ נכונה:",
-    "exactScore": "תוצאה מדויקת:",
+    "correctResultReward": "ניחוש נכון = נקודה 1",
     "point": "נקודה",
     "points": "נקודות",
     "placingBet": "מבצע הימור...",
@@ -113,12 +115,17 @@
     "updateBet": "עדכן הימור",
     "loadMatchFailed": "טעינת פרטי המשחק נכשלה",
     "betPlacedSuccess": "ההימור בוצע בהצלחה!",
-    "placeBetFailed": "ביצוע ההימור נכשל. נסה שוב."
+    "placeBetFailed": "ביצוע ההימור נכשל. נסה שוב.",
+    "betPlaced": "הימור בוצע",
+    "editBet": "ערוך הימור"
   },
   "common": {
     "required": "חובה",
     "optional": "אופציונלי",
     "error": "שגיאה",
-    "success": "הצלחה"
+    "success": "הצלחה",
+    "edit": "ערוך",
+    "delete": "מחק",
+    "save": "שמור"
   }
 }

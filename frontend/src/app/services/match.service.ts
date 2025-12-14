@@ -60,4 +60,21 @@ export class MatchService {
   }): Observable<{ success: boolean; message: string; data: Match }> {
     return this.http.post<{ success: boolean; message: string; data: Match }>(`${this.apiUrl}/update-score`, data);
   }
+
+  deleteMatch(matchId: string, groupId: string): Observable<{ success: boolean; message: string }> {
+    return this.http.delete<{ success: boolean; message: string }>(`${this.apiUrl}/${matchId}`, {
+      body: { groupId }
+    });
+  }
+
+  editMatch(data: {
+    matchId: string;
+    groupId: string;
+    homeTeam?: string;
+    awayTeam?: string;
+    matchDate?: string;
+    matchHour?: string;
+  }): Observable<{ success: boolean; message: string; data: Match }> {
+    return this.http.put<{ success: boolean; message: string; data: Match }>(`${this.apiUrl}/${data.matchId}`, data);
+  }
 }

@@ -181,3 +181,156 @@ exports.getLeaderboard = async (req, res) => {
     });
   }
 };
+
+// Edit group (admin only)
+exports.editGroup = async (req, res) => {
+  try {
+    const { name, description } = req.body;
+    const groupId = req.params.id;
+
+    const group = await Group.findById(groupId);
+
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        message: 'Group not found'
+      });
+    }
+
+    // Check if user is the group creator
+    if (group.creator.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Only the group creator can edit the group'
+      });
+    }
+
+    if (name) group.name = name;
+    if (description !== undefined) group.description = description;
+
+    await group.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Group updated successfully',
+      data: group
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Delete group (admin only)
+exports.deleteGroup = async (req, res) => {
+  try {
+    const groupId = req.params.id;
+
+    const group = await Group.findById(groupId);
+
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        message: 'Group not found'
+      });
+    }
+
+    // Check if user is the group creator
+    if (group.creator.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Only the group creator can delete the group'
+      });
+    }
+
+    // Remove group from all members' groups array
+    const memberIds = group.members.map(m => m.user);
+    await User.updateMany(
+      { _id: { $in: memberIds } },
+      { $pull: { groups: groupId } }
+    );
+
+    // Delete all bets associated with this group
+    const Bet = require('../models/Bet');
+    await Bet.deleteMany({ group: groupId });
+
+    // Remove group from all matches
+    const Match = require('../models/Match');
+    await Match.updateMany(
+      { groups: groupId },
+      { $pull: { groups: groupId } }
+    );
+
+    // Delete the group
+    await Group.findByIdAndDelete(groupId);
+
+    res.status(200).json({
+      success: true,
+      message: 'Group deleted successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Leave group (any member except creator)
+exports.leaveGroup = async (req, res) => {
+  try {
+    const groupId = req.params.id;
+
+    const group = await Group.findById(groupId);
+
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        message: 'Group not found'
+      });
+    }
+
+    // Check if user is a member
+    const isMember = group.members.some(
+      m => m.user.toString() === req.user._id.toString()
+    );
+
+    if (!isMember) {
+      return res.status(400).json({
+        success: false,
+        message: 'You are not a member of this group'
+      });
+    }
+
+    // Creator cannot leave (must delete the group instead)
+    if (group.creator.toString() === req.user._id.toString()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Group creator cannot leave. Delete the group instead.'
+      });
+    }
+
+    // Remove user from group members
+    group.members = group.members.filter(
+      m => m.user.toString() !== req.user._id.toString()
+    );
+    await group.save();
+
+    // Remove group from user's groups
+    await User.findByIdAndUpdate(req.user._id, {
+      $pull: { groups: groupId }
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Successfully left the group'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};

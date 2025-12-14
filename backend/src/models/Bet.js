@@ -21,16 +21,6 @@ const betSchema = new mongoose.Schema({
       type: String,
       enum: ['1', 'X', '2'],
       required: true
-    },
-    homeScore: {
-      type: Number,
-      required: true,
-      min: 0
-    },
-    awayScore: {
-      type: Number,
-      required: true,
-      min: 0
     }
   },
   points: {

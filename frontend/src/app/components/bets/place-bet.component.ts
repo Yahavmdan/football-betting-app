@@ -76,47 +76,9 @@ import { TranslationService } from '../../services/translation.service';
             </div>
           </div>
 
-          <div class="form-section">
-            <h3>{{ 'bets.predictScore' | translate }}</h3>
-            <div class="score-inputs">
-              <div class="score-input-group">
-                <label>{{ match.homeTeam }}</label>
-                <input
-                  type="number"
-                  name="homeScore"
-                  [(ngModel)]="betData.homeScore"
-                  min="0"
-                  max="20"
-                  required
-                  class="score-input"
-                  [disabled]="isMatchInPast"
-                />
-              </div>
-              <span class="separator">-</span>
-              <div class="score-input-group">
-                <label>{{ match.awayTeam }}</label>
-                <input
-                  type="number"
-                  name="awayScore"
-                  [(ngModel)]="betData.awayScore"
-                  min="0"
-                  max="20"
-                  required
-                  class="score-input"
-                  [disabled]="isMatchInPast"
-                />
-              </div>
-            </div>
-          </div>
-
           <div class="points-info">
             <h4>{{ 'bets.pointsSystem' | translate }}</h4>
-            <ul>
-              <li>{{ 'bets.correctResult' | translate }} <strong>1 {{ 'bets.point' | translate }}</strong></li>
-              <li>{{ 'bets.correctHomeScore' | translate }} <strong>+2 {{ 'bets.points' | translate }}</strong></li>
-              <li>{{ 'bets.correctAwayScore' | translate }} <strong>+2 {{ 'bets.points' | translate }}</strong></li>
-              <li>{{ 'bets.exactScore' | translate }} <strong>+3 {{ 'bets.points' | translate }}</strong></li>
-            </ul>
+            <p>{{ 'bets.correctResultReward' | translate }}</p>
           </div>
 
           <div *ngIf="errorMessage" class="error-message">
@@ -132,7 +94,7 @@ import { TranslationService } from '../../services/translation.service';
             <button
               type="submit"
               *ngIf="!isMatchInPast"
-              [disabled]="!betForm.valid || !betData.outcome || loading"
+              [disabled]="!betData.outcome || loading"
               class="btn-primary"
             >
               {{ loading ? ('bets.placingBet' | translate) : (hasExistingBet ? ('bets.updateBet' | translate) : ('matches.placeBet' | translate)) }}
@@ -144,71 +106,91 @@ import { TranslationService } from '../../services/translation.service';
   `,
   styles: [`
     .container {
-      max-width: 700px;
+      max-width: 720px;
       margin: 2rem auto;
       padding: 2rem;
+      animation: fadeIn 0.5s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
     .back-btn {
-      background: none;
+      background: rgba(74, 222, 128, 0.1);
       border: none;
-      color: #4CAF50;
+      color: #22c55e;
       cursor: pointer;
-      font-size: 1rem;
-      margin-bottom: 1rem;
-      padding: 0.5rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      padding: 0.75rem 1.25rem;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
     }
     .back-btn:hover {
-      text-decoration: underline;
+      background: rgba(74, 222, 128, 0.2);
+      transform: translateX(-4px);
     }
     .bet-card {
       background: white;
-      padding: 2rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      padding: 2.5rem;
+      border-radius: 24px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(0, 0, 0, 0.04);
     }
     h2 {
-      margin: 0 0 1.5rem 0;
-      color: #333;
+      margin: 0 0 2rem 0;
+      color: #1a1a2e;
       text-align: center;
+      font-size: 1.75rem;
+      font-weight: 700;
+      font-family: 'Poppins', sans-serif;
     }
     .match-info {
-      background: #f5f5f5;
-      padding: 1.5rem;
-      border-radius: 8px;
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      padding: 2rem;
+      border-radius: 16px;
       margin-bottom: 2rem;
       text-align: center;
+      border: 2px solid #e2e8f0;
     }
     .competition {
-      color: #666;
+      color: #64748b;
       font-size: 0.9rem;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.75rem;
+      font-weight: 500;
     }
     .teams {
       display: flex;
       justify-content: center;
       align-items: center;
-      margin: 1rem 0;
-      font-size: 1.2rem;
-      font-weight: 600;
+      margin: 1.25rem 0;
+      font-size: 1.3rem;
+      font-weight: 700;
     }
     .team {
-      color: #333;
+      color: #1a1a2e;
     }
     .vs {
-      color: #999;
-      margin: 0 1rem;
+      color: #94a3b8;
+      margin: 0 1.25rem;
+      font-weight: 400;
     }
     .date {
-      color: #666;
+      color: #64748b;
       font-size: 0.9rem;
     }
     .form-section {
       margin-bottom: 2rem;
     }
     h3 {
-      margin: 0 0 1rem 0;
-      color: #333;
+      margin: 0 0 1.25rem 0;
+      color: #1a1a2e;
       font-size: 1.1rem;
+      font-weight: 600;
     }
     .outcome-buttons {
       display: grid;
@@ -216,92 +198,64 @@ import { TranslationService } from '../../services/translation.service';
       gap: 1rem;
     }
     .outcome-btn {
-      padding: 1rem;
-      border: 2px solid #ddd;
-      border-radius: 8px;
+      padding: 1.5rem 1rem;
+      border: 3px solid #e2e8f0;
+      border-radius: 16px;
       background: white;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.3s ease;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.75rem;
     }
-    .outcome-btn:hover {
-      border-color: #4CAF50;
+    .outcome-btn:hover:not(:disabled) {
+      border-color: #4ade80;
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(74, 222, 128, 0.2);
     }
     .outcome-btn.selected {
-      border-color: #4CAF50;
-      background-color: #e8f5e9;
+      border-color: #22c55e;
+      background: linear-gradient(135deg, rgba(74, 222, 128, 0.1) 0%, rgba(34, 197, 94, 0.05) 100%);
+      box-shadow: 0 4px 15px rgba(74, 222, 128, 0.25);
     }
     .outcome-btn:disabled {
       cursor: not-allowed;
-      opacity: 0.6;
+      opacity: 0.5;
+      transform: none;
     }
     .outcome-btn .label {
-      font-size: 1.5rem;
-      font-weight: 600;
-      color: #333;
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      font-family: 'Poppins', sans-serif;
+    }
+    .outcome-btn.selected .label {
+      color: #16a34a;
     }
     .outcome-btn .team-name {
       font-size: 0.85rem;
-      color: #666;
+      color: #64748b;
       text-align: center;
-    }
-    .score-inputs {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 1.5rem;
-    }
-    .score-input-group {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    .score-input-group label {
-      font-size: 0.9rem;
-      color: #666;
       font-weight: 500;
     }
-    .score-input {
-      width: 80px;
-      height: 60px;
-      font-size: 1.5rem;
-      text-align: center;
-      border: 2px solid #ddd;
-      border-radius: 8px;
-      font-weight: 600;
-    }
-    .score-input:focus {
-      outline: none;
-      border-color: #4CAF50;
-    }
-    .separator {
-      font-size: 2rem;
-      color: #999;
-      font-weight: 600;
-    }
     .points-info {
-      background: #e3f2fd;
-      padding: 1rem;
-      border-radius: 8px;
-      margin-bottom: 1.5rem;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(29, 78, 216, 0.05) 100%);
+      padding: 1.25rem;
+      border-radius: 12px;
+      margin-bottom: 1.75rem;
+      border-left: 4px solid #3b82f6;
     }
     .points-info h4 {
       margin: 0 0 0.5rem 0;
-      color: #333;
+      color: #1e40af;
       font-size: 0.95rem;
+      font-weight: 600;
     }
-    .points-info ul {
+    .points-info p {
       margin: 0;
-      padding-left: 1.5rem;
-      color: #666;
+      color: #3b82f6;
       font-size: 0.9rem;
-    }
-    .points-info li {
-      margin-bottom: 0.25rem;
     }
     .button-group {
       display: flex;
@@ -309,63 +263,87 @@ import { TranslationService } from '../../services/translation.service';
       justify-content: flex-end;
     }
     .btn-primary, .btn-secondary {
-      padding: 0.75rem 1.5rem;
+      padding: 0.9rem 1.75rem;
       border: none;
-      border-radius: 4px;
+      border-radius: 12px;
       font-size: 1rem;
+      font-weight: 600;
       cursor: pointer;
+      transition: all 0.3s ease;
     }
     .btn-primary {
-      background-color: #4CAF50;
+      background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
       color: white;
+      box-shadow: 0 4px 15px rgba(74, 222, 128, 0.3);
     }
     .btn-primary:hover:not(:disabled) {
-      background-color: #45a049;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(74, 222, 128, 0.4);
     }
     .btn-primary:disabled {
-      background-color: #cccccc;
+      background: linear-gradient(135deg, #cbd5e0 0%, #94a3b8 100%);
+      box-shadow: none;
       cursor: not-allowed;
+      transform: none;
     }
     .btn-secondary {
-      background-color: #f5f5f5;
-      color: #333;
+      background: #f1f5f9;
+      color: #475569;
     }
     .btn-secondary:hover {
-      background-color: #e0e0e0;
+      background: #e2e8f0;
     }
     .error-message {
-      color: #f44336;
-      margin-bottom: 1rem;
-      padding: 0.75rem;
-      background-color: #ffebee;
-      border-radius: 4px;
+      color: #dc2626;
+      margin-bottom: 1.25rem;
+      padding: 1rem;
+      background: #fee2e2;
+      border-radius: 12px;
+      border-left: 4px solid #ef4444;
+      font-weight: 500;
     }
     .success-message {
-      color: #4CAF50;
-      margin-bottom: 1rem;
-      padding: 0.75rem;
-      background-color: #e8f5e9;
-      border-radius: 4px;
+      color: #16a34a;
+      margin-bottom: 1.25rem;
+      padding: 1rem;
+      background: #dcfce7;
+      border-radius: 12px;
+      border-left: 4px solid #22c55e;
+      font-weight: 500;
     }
     .warning-message {
-      color: #ff9800;
-      margin-bottom: 1rem;
-      padding: 0.75rem;
-      background-color: #fff3e0;
-      border-radius: 4px;
-      border-left: 4px solid #ff9800;
+      color: #d97706;
+      margin-bottom: 1.25rem;
+      padding: 1rem;
+      background: #fef3c7;
+      border-radius: 12px;
+      border-left: 4px solid #f59e0b;
+      font-weight: 500;
     }
     .info-message {
-      color: #2196F3;
-      margin-bottom: 1rem;
-      padding: 0.75rem;
-      background-color: #e3f2fd;
-      border-radius: 4px;
-      border-left: 4px solid #2196F3;
+      color: #1d4ed8;
+      margin-bottom: 1.25rem;
+      padding: 1rem;
+      background: #dbeafe;
+      border-radius: 12px;
+      border-left: 4px solid #3b82f6;
+      font-weight: 500;
     }
-    .score-input:disabled {
-      background-color: #f5f5f5;
-      cursor: not-allowed;
+    @media (max-width: 640px) {
+      .container {
+        padding: 1rem;
+      }
+      .bet-card {
+        padding: 1.5rem;
+      }
+      .outcome-buttons {
+        grid-template-columns: 1fr;
+      }
+      .outcome-btn {
+        flex-direction: row;
+        justify-content: center;
+        gap: 1rem;
+      }
     }
   `]
 })
@@ -374,9 +352,7 @@ export class PlaceBetComponent implements OnInit {
   betData: PlaceBetData = {
     matchId: '',
     groupId: '',
-    outcome: '' as any,
-    homeScore: 0,
-    awayScore: 0
+    outcome: '' as any
   };
   errorMessage = '';
   successMessage = '';
@@ -427,8 +403,6 @@ export class PlaceBetComponent implements OnInit {
         if (this.hasExistingBet && this.existingBet) {
           // Pre-fill form with existing bet
           this.betData.outcome = this.existingBet.prediction.outcome;
-          this.betData.homeScore = this.existingBet.prediction.homeScore;
-          this.betData.awayScore = this.existingBet.prediction.awayScore;
         }
       },
       error: (error) => {

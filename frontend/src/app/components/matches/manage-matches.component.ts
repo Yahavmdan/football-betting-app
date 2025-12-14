@@ -131,15 +131,27 @@ import { TranslatePipe } from '../../services/translate.pipe';
               <span *ngIf="match.status === 'FINISHED'" class="result">
                 {{ match.result.homeScore }} - {{ match.result.awayScore }}
               </span>
-              <button
-                *ngIf="isGroupCreator() && canUpdateScore(match)"
-                (click)="openScoreUpdate(match)"
-                class="btn-update-score">
-                {{ 'matches.updateScore' | translate }}
-              </button>
+              <div class="match-actions" *ngIf="isGroupCreator()">
+                <button
+                  *ngIf="canUpdateScore(match)"
+                  (click)="openScoreUpdate(match)"
+                  class="btn-update-score">
+                  {{ 'matches.updateScore' | translate }}
+                </button>
+                <button
+                  (click)="openEditMatch(match)"
+                  class="btn-edit">
+                  {{ 'common.edit' | translate }}
+                </button>
+                <button
+                  (click)="confirmDeleteMatch(match)"
+                  class="btn-delete">
+                  {{ 'common.delete' | translate }}
+                </button>
+              </div>
             </div>
             <!-- Score update form -->
-            <div *ngIf="editingMatchId === match._id" class="score-update-form">
+            <div *ngIf="editingMatchId === match._id && !editingMatchDetails" class="score-update-form">
               <div class="form-row">
                 <div class="form-group">
                   <label>{{ match.homeTeam }}</label>
@@ -173,6 +185,68 @@ import { TranslatePipe } from '../../services/translate.pipe';
               </div>
               <div *ngIf="scoreUpdateError" class="error-message" style="margin-top: 0.5rem;">{{ scoreUpdateError }}</div>
             </div>
+            <!-- Edit match form -->
+            <div *ngIf="editingMatchId === match._id && editingMatchDetails" class="edit-match-form">
+              <div class="form-row">
+                <div class="form-group">
+                  <label>{{ 'matches.homeTeam' | translate }}</label>
+                  <input
+                    type="text"
+                    [(ngModel)]="editMatchData.homeTeam"
+                    class="form-control">
+                </div>
+                <div class="form-group">
+                  <label>{{ 'matches.awayTeam' | translate }}</label>
+                  <input
+                    type="text"
+                    [(ngModel)]="editMatchData.awayTeam"
+                    class="form-control">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>{{ 'matches.matchDate' | translate }}</label>
+                  <input
+                    type="date"
+                    [(ngModel)]="editMatchData.matchDate"
+                    class="form-control">
+                </div>
+                <div class="form-group">
+                  <label>{{ 'matches.matchTime' | translate }}</label>
+                  <input
+                    type="time"
+                    [(ngModel)]="editMatchData.matchHour"
+                    class="form-control">
+                </div>
+              </div>
+              <div class="button-row">
+                <button
+                  (click)="submitEditMatch(match._id)"
+                  [disabled]="loadingEditMatch"
+                  class="btn-primary btn-small">
+                  {{ loadingEditMatch ? ('auth.loading' | translate) : ('common.save' | translate) }}
+                </button>
+                <button (click)="cancelEditMatch()" class="btn-secondary btn-small">
+                  {{ 'groups.cancel' | translate }}
+                </button>
+              </div>
+              <div *ngIf="editMatchError" class="error-message" style="margin-top: 0.5rem;">{{ editMatchError }}</div>
+            </div>
+            <!-- Delete confirmation -->
+            <div *ngIf="deletingMatchId === match._id" class="delete-confirm">
+              <p>{{ 'matches.confirmDelete' | translate }}</p>
+              <div class="button-row">
+                <button
+                  (click)="deleteMatch(match._id)"
+                  [disabled]="loadingDeleteMatch"
+                  class="btn-delete btn-small">
+                  {{ loadingDeleteMatch ? ('auth.loading' | translate) : ('common.delete' | translate) }}
+                </button>
+                <button (click)="cancelDeleteMatch()" class="btn-secondary btn-small">
+                  {{ 'groups.cancel' | translate }}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -180,30 +254,44 @@ import { TranslatePipe } from '../../services/translate.pipe';
   `,
   styles: [`
     .container {
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
       padding: 2rem;
+      animation: fadeIn 0.5s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
     .header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 1rem;
     }
     h1 {
-      color: #333;
+      color: #1a1a2e;
       margin: 0;
+      font-size: 1.75rem;
+      font-weight: 700;
+      font-family: 'Poppins', sans-serif;
     }
     h2 {
-      color: #333;
-      margin-bottom: 1rem;
+      color: #1a1a2e;
+      margin-bottom: 1.25rem;
+      font-size: 1.25rem;
+      font-weight: 600;
+      font-family: 'Poppins', sans-serif;
     }
     .section {
       background: white;
-      padding: 1.5rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 2rem;
+      border-radius: 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
       margin-bottom: 2rem;
+      border: 1px solid rgba(0, 0, 0, 0.04);
     }
     .form-group {
       flex: 1;
@@ -212,91 +300,115 @@ import { TranslatePipe } from '../../services/translate.pipe';
     label {
       display: block;
       margin-bottom: 0.5rem;
-      color: #555;
-      font-weight: 500;
+      color: #475569;
+      font-weight: 600;
+      font-size: 0.9rem;
     }
     .form-control {
       width: 100%;
-      padding: 0.75rem;
-      border: 1px solid #ddd;
-      border-radius: 4px;
+      padding: 0.85rem 1rem;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
       font-size: 1rem;
+      transition: all 0.3s ease;
+      background: #f8fafc;
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: #4ade80;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.15);
     }
     .btn-primary, .btn-secondary {
-      padding: 0.75rem 1.5rem;
+      padding: 0.85rem 1.5rem;
       border: none;
-      border-radius: 4px;
+      border-radius: 12px;
       font-size: 1rem;
+      font-weight: 600;
       cursor: pointer;
+      transition: all 0.3s ease;
     }
     .btn-primary {
-      background-color: #4CAF50;
+      background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
       color: white;
+      box-shadow: 0 4px 15px rgba(74, 222, 128, 0.3);
     }
     .btn-primary:hover:not(:disabled) {
-      background-color: #45a049;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(74, 222, 128, 0.4);
     }
     .btn-primary:disabled {
-      background-color: #cccccc;
+      background: linear-gradient(135deg, #cbd5e0 0%, #94a3b8 100%);
+      box-shadow: none;
       cursor: not-allowed;
+      transform: none;
     }
     .btn-secondary {
-      background-color: #2196F3;
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
       color: white;
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
     }
     .btn-secondary:hover:not(:disabled) {
-      background-color: #0b7dda;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
     }
     .info-message {
-      padding: 1rem;
-      background-color: #e3f2fd;
-      border-radius: 4px;
-      color: #1976D2;
+      padding: 1.25rem;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(29, 78, 216, 0.05) 100%);
+      border-radius: 12px;
+      color: #1d4ed8;
+      border-left: 4px solid #3b82f6;
+      font-weight: 500;
     }
     .loading, .empty-state {
       text-align: center;
-      padding: 2rem;
-      color: #666;
+      padding: 2.5rem;
+      color: #64748b;
     }
     .matches-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 1rem;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.25rem;
     }
     .match-card {
-      border: 1px solid #e0e0e0;
-      border-radius: 8px;
-      padding: 1rem;
-      transition: transform 0.2s, box-shadow 0.2s;
+      border: 2px solid #f1f5f9;
+      border-radius: 16px;
+      padding: 1.25rem;
+      transition: all 0.3s ease;
+      background: white;
     }
     .match-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      border-color: #e2e8f0;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
     }
     .match-card.active {
-      border-color: #4CAF50;
-      background-color: #f1f8e9;
+      border-color: #86efac;
+      background: linear-gradient(135deg, rgba(74, 222, 128, 0.05) 0%, rgba(34, 197, 94, 0.02) 100%);
     }
     .match-header {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
     }
     .competition {
-      font-size: 0.9rem;
-      color: #666;
+      font-size: 0.85rem;
+      color: #64748b;
       font-weight: 500;
     }
     .status {
-      font-size: 0.85rem;
-      padding: 0.25rem 0.5rem;
-      border-radius: 4px;
-      background-color: #FFC107;
+      font-size: 0.8rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
       color: white;
-      font-weight: 500;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.025em;
     }
     .status.finished {
-      background-color: #4CAF50;
+      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
     }
     .match-teams {
       display: flex;
@@ -307,88 +419,166 @@ import { TranslatePipe } from '../../services/translate.pipe';
     }
     .team {
       flex: 1;
-      color: #333;
+      color: #1a1a2e;
+      font-size: 0.95rem;
     }
     .vs {
-      color: #999;
-      padding: 0 1rem;
+      color: #94a3b8;
+      padding: 0 0.75rem;
+      font-weight: 400;
     }
     .match-footer {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-top: 0.5rem;
+      margin-top: 0.75rem;
+      flex-wrap: wrap;
+      gap: 0.75rem;
     }
     .date {
       font-size: 0.9rem;
-      color: #666;
+      color: #64748b;
     }
     .result {
-      font-weight: 600;
-      color: #4CAF50;
-      font-size: 1.1rem;
+      font-weight: 700;
+      color: #22c55e;
+      font-size: 1.15rem;
+      background: #f0fdf4;
+      padding: 0.35rem 0.9rem;
+      border-radius: 10px;
     }
     .warning-message {
-      color: #ff9800;
-      padding: 0.75rem;
-      background-color: #fff3e0;
-      border-radius: 4px;
-      border-left: 4px solid #ff9800;
+      color: #d97706;
+      padding: 1rem;
+      background: #fef3c7;
+      border-radius: 12px;
+      border-left: 4px solid #f59e0b;
+      font-weight: 500;
     }
     .manual-match-form {
-      max-width: 600px;
+      max-width: 640px;
     }
     .form-row {
       display: flex;
       gap: 1rem;
-      margin-bottom: 1rem;
+      margin-bottom: 1.25rem;
     }
     .form-row .form-group {
       flex: 1;
     }
     .error-message {
       padding: 1rem;
-      background-color: #ffebee;
-      border-radius: 4px;
-      color: #c62828;
-      border-left: 4px solid #c62828;
+      background: #fee2e2;
+      border-radius: 12px;
+      color: #dc2626;
+      border-left: 4px solid #ef4444;
+      font-weight: 500;
     }
     .past-match-notice {
-      padding: 0.75rem;
-      background-color: #fff3e0;
-      border-radius: 4px;
-      color: #e65100;
-      border-left: 4px solid #ff9800;
-      margin-bottom: 1rem;
+      padding: 1rem;
+      background: #fef3c7;
+      border-radius: 12px;
+      color: #d97706;
+      border-left: 4px solid #f59e0b;
+      margin-bottom: 1.25rem;
+      font-weight: 500;
     }
     .score-input {
       max-width: 100px;
     }
     .btn-update-score {
-      background-color: #ff9800;
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
       color: white;
       border: none;
       padding: 0.5rem 1rem;
-      border-radius: 4px;
+      border-radius: 10px;
       cursor: pointer;
       font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
     }
     .btn-update-score:hover {
-      background-color: #f57c00;
+      transform: translateY(-2px);
     }
     .score-update-form {
-      margin-top: 1rem;
-      padding-top: 1rem;
-      border-top: 1px solid #e0e0e0;
+      margin-top: 1.25rem;
+      padding-top: 1.25rem;
+      border-top: 2px solid #f1f5f9;
     }
     .button-row {
       display: flex;
       gap: 0.5rem;
-      margin-top: 0.5rem;
+      margin-top: 0.75rem;
     }
     .btn-small {
       padding: 0.5rem 1rem;
       font-size: 0.85rem;
+      border-radius: 10px;
+    }
+    .match-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .btn-edit {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    .btn-edit:hover {
+      transform: translateY(-2px);
+    }
+    .btn-delete {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    .btn-delete:hover {
+      transform: translateY(-2px);
+    }
+    .edit-match-form {
+      margin-top: 1.25rem;
+      padding-top: 1.25rem;
+      border-top: 2px solid #f1f5f9;
+    }
+    .delete-confirm {
+      margin-top: 1.25rem;
+      padding: 1.25rem;
+      background: #fee2e2;
+      border-radius: 12px;
+      border-left: 4px solid #ef4444;
+    }
+    .delete-confirm p {
+      margin: 0 0 0.75rem 0;
+      color: #dc2626;
+      font-weight: 500;
+    }
+    @media (max-width: 768px) {
+      .container {
+        padding: 1.25rem;
+      }
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .form-row {
+        flex-direction: column;
+      }
+      .matches-grid {
+        grid-template-columns: 1fr;
+      }
     }
   `]
 })
@@ -420,12 +610,27 @@ export class ManageMatchesComponent implements OnInit {
 
   // Score update
   editingMatchId: string | null = null;
+  editingMatchDetails = false;
   updateScoreData: { homeScore: number | null; awayScore: number | null } = {
     homeScore: null,
     awayScore: null
   };
   loadingScoreUpdate = false;
   scoreUpdateError = '';
+
+  // Edit match
+  editMatchData: {
+    homeTeam: string;
+    awayTeam: string;
+    matchDate: string;
+    matchHour: string;
+  } = { homeTeam: '', awayTeam: '', matchDate: '', matchHour: '' };
+  loadingEditMatch = false;
+  editMatchError = '';
+
+  // Delete match
+  deletingMatchId: string | null = null;
+  loadingDeleteMatch = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -549,11 +754,10 @@ export class ManageMatchesComponent implements OnInit {
   }
 
   canUpdateScore(match: Match): boolean {
-    // Can update if match is not finished and 2 hours have passed since match start
+    // Can update if match is not finished and match has started
     if (match.status === 'FINISHED') return false;
     const matchDate = new Date(match.matchDate);
-    const twoHoursAfter = new Date(matchDate.getTime() + 2 * 60 * 60 * 1000);
-    return new Date() >= twoHoursAfter;
+    return new Date() >= matchDate;
   }
 
   openScoreUpdate(match: Match): void {
@@ -595,5 +799,85 @@ export class ManageMatchesComponent implements OnInit {
     this.editingMatchId = null;
     this.updateScoreData = { homeScore: null, awayScore: null };
     this.scoreUpdateError = '';
+  }
+
+  // Edit match methods
+  openEditMatch(match: Match): void {
+    this.editingMatchId = match._id;
+    this.editingMatchDetails = true;
+    this.deletingMatchId = null;
+
+    // Parse date and time from matchDate
+    const matchDate = new Date(match.matchDate);
+    const dateStr = matchDate.toISOString().split('T')[0];
+    const hours = matchDate.getHours().toString().padStart(2, '0');
+    const minutes = matchDate.getMinutes().toString().padStart(2, '0');
+
+    this.editMatchData = {
+      homeTeam: match.homeTeam,
+      awayTeam: match.awayTeam,
+      matchDate: dateStr,
+      matchHour: `${hours}:${minutes}`
+    };
+    this.editMatchError = '';
+  }
+
+  submitEditMatch(matchId: string): void {
+    this.loadingEditMatch = true;
+    this.editMatchError = '';
+
+    this.matchService.editMatch({
+      matchId,
+      groupId: this.groupId,
+      homeTeam: this.editMatchData.homeTeam,
+      awayTeam: this.editMatchData.awayTeam,
+      matchDate: this.editMatchData.matchDate,
+      matchHour: this.editMatchData.matchHour
+    }).subscribe({
+      next: () => {
+        this.loadingEditMatch = false;
+        this.editingMatchId = null;
+        this.editingMatchDetails = false;
+        this.loadMatches();
+      },
+      error: (error) => {
+        this.editMatchError = error.error?.message || 'Failed to edit match';
+        this.loadingEditMatch = false;
+      }
+    });
+  }
+
+  cancelEditMatch(): void {
+    this.editingMatchId = null;
+    this.editingMatchDetails = false;
+    this.editMatchData = { homeTeam: '', awayTeam: '', matchDate: '', matchHour: '' };
+    this.editMatchError = '';
+  }
+
+  // Delete match methods
+  confirmDeleteMatch(match: Match): void {
+    this.deletingMatchId = match._id;
+    this.editingMatchId = null;
+    this.editingMatchDetails = false;
+  }
+
+  deleteMatch(matchId: string): void {
+    this.loadingDeleteMatch = true;
+
+    this.matchService.deleteMatch(matchId, this.groupId).subscribe({
+      next: () => {
+        this.loadingDeleteMatch = false;
+        this.deletingMatchId = null;
+        this.loadMatches();
+      },
+      error: (error) => {
+        console.error('Failed to delete match:', error);
+        this.loadingDeleteMatch = false;
+      }
+    });
+  }
+
+  cancelDeleteMatch(): void {
+    this.deletingMatchId = null;
   }
 }
