@@ -142,7 +142,7 @@ import { getTeamByName } from '../../data/teams.data';
                 </div>
               </div>
               <div class="match-footer">
-                <span class="date">{{ match.matchDate | date:'short' }}</span>
+                <span class="date">{{ match.matchDate | date:'dd/MM/yy, HH:mm' }}</span>
                 <div class="match-actions">
                   <button
                     (click)="toggleMemberBets(match._id)"
@@ -198,7 +198,7 @@ import { getTeamByName } from '../../data/teams.data';
                         {{ memberBet.bet?.outcome === '1' ? match.homeTeam : (memberBet.bet?.outcome === '2' ? match.awayTeam : ('bets.draw' | translate)) }}
                       </span>
                       <span *ngIf="!memberBet.hasBet" class="no-bet">{{ 'bets.noBet' | translate }}</span>
-                      <span *ngIf="memberBet.hasBet" class="bet-time">{{ memberBet.bet?.createdAt | date:'short' }}</span>
+                      <span *ngIf="memberBet.hasBet" class="bet-time">{{ memberBet.bet?.createdAt | date:'dd/MM/yy, HH:mm' }}</span>
                     </div>
                   </div>
                 </div>

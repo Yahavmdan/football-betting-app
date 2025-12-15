@@ -342,13 +342,13 @@ exports.getAvailableLeagues = async (req, res) => {
 // Create a manual match (group admin only)
 exports.createManualMatch = async (req, res) => {
   try {
-    const { homeTeam, awayTeam, matchDate, matchHour, groupId, homeScore, awayScore } = req.body;
+    const { homeTeam, awayTeam, matchDateTime: matchDateTimeISO, matchDate, matchHour, groupId, homeScore, awayScore } = req.body;
 
-    // Validate required fields
-    if (!homeTeam || !awayTeam || !matchDate || !matchHour || !groupId) {
+    // Validate required fields - accept either matchDateTime (ISO) or matchDate+matchHour
+    if (!homeTeam || !awayTeam || !groupId || (!matchDateTimeISO && (!matchDate || !matchHour))) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide homeTeam, awayTeam, matchDate, matchHour, and groupId'
+        message: 'Please provide homeTeam, awayTeam, matchDateTime (or matchDate+matchHour), and groupId'
       });
     }
 
@@ -371,8 +371,8 @@ exports.createManualMatch = async (req, res) => {
       });
     }
 
-    // Combine date and hour into a single Date object
-    const matchDateTime = new Date(`${matchDate}T${matchHour}`);
+    // Use ISO datetime if provided, otherwise combine date and hour
+    const matchDateTime = matchDateTimeISO ? new Date(matchDateTimeISO) : new Date(`${matchDate}T${matchHour}`);
     const isPastMatch = matchDateTime <= new Date();
 
     // If match is in the past, require scores
@@ -643,7 +643,7 @@ exports.deleteMatch = async (req, res) => {
 exports.editMatch = async (req, res) => {
   try {
     const { matchId } = req.params;
-    const { groupId, homeTeam, awayTeam, matchDate, matchHour } = req.body;
+    const { groupId, homeTeam, awayTeam, matchDateTime: matchDateTimeISO, matchDate, matchHour } = req.body;
 
     if (!matchId || !groupId) {
       return res.status(400).json({
@@ -692,7 +692,10 @@ exports.editMatch = async (req, res) => {
     // Update fields if provided
     if (homeTeam) match.homeTeam = homeTeam;
     if (awayTeam) match.awayTeam = awayTeam;
-    if (matchDate && matchHour) {
+    // Use ISO datetime if provided, otherwise use date+hour
+    if (matchDateTimeISO) {
+      match.matchDate = new Date(matchDateTimeISO);
+    } else if (matchDate && matchHour) {
       match.matchDate = new Date(`${matchDate}T${matchHour}`);
     }
 

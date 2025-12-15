@@ -129,7 +129,7 @@ import { getTeamByName } from '../../data/teams.data';
               </div>
             </div>
             <div class="match-footer">
-              <span class="date">{{ match.matchDate | date:'short' }}</span>
+              <span class="date">{{ match.matchDate | date:'dd/MM/yy, HH:mm' }}</span>
               <span *ngIf="match.status === 'FINISHED'" class="result">
                 {{ match.result.homeScore }} - {{ match.result.awayScore }}
               </span>
@@ -724,11 +724,14 @@ export class ManageMatchesComponent implements OnInit {
     this.manualMatchMessage = '';
     this.manualMatchError = '';
 
+    // Create a proper Date object from local date/time inputs
+    // This ensures the correct UTC time is sent to the server
+    const localDateTime = new Date(`${this.manualMatch.matchDate}T${this.manualMatch.matchHour}`);
+
     const data: any = {
       homeTeam: this.manualMatch.homeTeam,
       awayTeam: this.manualMatch.awayTeam,
-      matchDate: this.manualMatch.matchDate,
-      matchHour: this.manualMatch.matchHour,
+      matchDateTime: localDateTime.toISOString(), // Send as ISO string (UTC)
       groupId: this.groupId
     };
 
@@ -847,13 +850,15 @@ export class ManageMatchesComponent implements OnInit {
     this.loadingEditMatch = true;
     this.editMatchError = '';
 
+    // Create a proper Date object from local date/time inputs
+    const localDateTime = new Date(`${this.editMatchData.matchDate}T${this.editMatchData.matchHour}`);
+
     this.matchService.editMatch({
       matchId,
       groupId: this.groupId,
       homeTeam: this.editMatchData.homeTeam,
       awayTeam: this.editMatchData.awayTeam,
-      matchDate: this.editMatchData.matchDate,
-      matchHour: this.editMatchData.matchHour
+      matchDateTime: localDateTime.toISOString() // Send as ISO string (UTC)
     }).subscribe({
       next: () => {
         this.loadingEditMatch = false;

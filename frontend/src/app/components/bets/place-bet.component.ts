@@ -34,7 +34,7 @@ import { getTeamByName } from '../../data/teams.data';
               <span>{{ match.awayTeam }}</span>
             </div>
           </div>
-          <div class="date">{{ match.matchDate | date:'medium' }}</div>
+          <div class="date">{{ match.matchDate | date:'dd/MM/yy, HH:mm' }}</div>
         </div>
 
         <!-- Warning messages -->

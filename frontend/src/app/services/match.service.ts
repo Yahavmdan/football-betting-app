@@ -43,8 +43,9 @@ export class MatchService {
   createManualMatch(data: {
     homeTeam: string;
     awayTeam: string;
-    matchDate: string;
-    matchHour: string;
+    matchDateTime?: string; // ISO string
+    matchDate?: string;
+    matchHour?: string;
     groupId: string;
     homeScore?: number;
     awayScore?: number;
@@ -72,6 +73,7 @@ export class MatchService {
     groupId: string;
     homeTeam?: string;
     awayTeam?: string;
+    matchDateTime?: string; // ISO string
     matchDate?: string;
     matchHour?: string;
   }): Observable<{ success: boolean; message: string; data: Match }> {
