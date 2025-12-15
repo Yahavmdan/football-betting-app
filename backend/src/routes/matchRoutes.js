@@ -9,6 +9,7 @@ const {
   getAvailableLeagues,
   createManualMatch,
   updateMatchScore,
+  markMatchAsFinished,
   deleteMatch,
   editMatch
 } = require('../controllers/matchController');
@@ -22,6 +23,7 @@ router.post('/fetch', protect, fetchAndSaveMatches);
 router.post('/update-results', protect, updateMatchResults);
 router.post('/create-manual', protect, createManualMatch);
 router.post('/update-score', protect, updateMatchScore);
+router.post('/mark-finished', protect, markMatchAsFinished);
 router.delete('/:matchId', protect, deleteMatch);
 router.put('/:matchId', protect, editMatch);
 

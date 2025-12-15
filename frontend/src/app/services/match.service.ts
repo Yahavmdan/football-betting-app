@@ -62,6 +62,13 @@ export class MatchService {
     return this.http.post<{ success: boolean; message: string; data: Match }>(`${this.apiUrl}/update-score`, data);
   }
 
+  markMatchAsFinished(data: {
+    matchId: string;
+    groupId: string;
+  }): Observable<{ success: boolean; message: string; data: Match }> {
+    return this.http.post<{ success: boolean; message: string; data: Match }>(`${this.apiUrl}/mark-finished`, data);
+  }
+
   deleteMatch(matchId: string, groupId: string): Observable<{ success: boolean; message: string }> {
     return this.http.delete<{ success: boolean; message: string }>(`${this.apiUrl}/${matchId}`, {
       body: { groupId }

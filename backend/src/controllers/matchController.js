@@ -483,11 +483,11 @@ exports.updateMatchScore = async (req, res) => {
       });
     }
 
-    // Check if match already has a result
-    if (match.status === 'FINISHED' && match.result && match.result.homeScore !== null) {
+    // Check if match already has a final result
+    if (match.status === 'FINISHED') {
       return res.status(400).json({
         success: false,
-        message: 'Match already has a final score'
+        message: 'Match is already marked as finished'
       });
     }
 
@@ -515,13 +515,95 @@ exports.updateMatchScore = async (req, res) => {
       outcome = 'X';
     }
 
-    // Update match
-    match.status = 'FINISHED';
+    // Update match score but keep it as SCHEDULED (ongoing)
     match.result = {
       homeScore: hScore,
       awayScore: aScore,
       outcome
     };
+    await match.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Match score updated successfully',
+      data: match
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Mark match as finished and calculate points
+exports.markMatchAsFinished = async (req, res) => {
+  try {
+    const { matchId, groupId } = req.body;
+
+    // Validate required fields
+    if (!matchId || !groupId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide matchId and groupId'
+      });
+    }
+
+    // Find the match
+    const match = await Match.findById(matchId);
+
+    if (!match) {
+      return res.status(404).json({
+        success: false,
+        message: 'Match not found'
+      });
+    }
+
+    // Check if match belongs to group
+    if (!match.groups.includes(groupId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Match does not belong to this group'
+      });
+    }
+
+    // Find the group
+    const group = await Group.findById(groupId);
+
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        message: 'Group not found'
+      });
+    }
+
+    // Check if user is the group creator OR is admin
+    const isCreator = group.creator.toString() === req.user._id.toString();
+    if (!isCreator && !req.user.isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: 'Only the group creator can mark matches as finished'
+      });
+    }
+
+    // Check if match is already finished
+    if (match.status === 'FINISHED') {
+      return res.status(400).json({
+        success: false,
+        message: 'Match is already marked as finished'
+      });
+    }
+
+    // Check if match has a score
+    if (!match.result || match.result.homeScore === null || match.result.awayScore === null) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please update the match score before marking as finished'
+      });
+    }
+
+    // Mark match as finished
+    match.status = 'FINISHED';
     await match.save();
 
     // Calculate points for all bets on this match in this group
@@ -552,7 +634,7 @@ exports.updateMatchScore = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: `Match score updated. Calculated points for ${totalCalculated} bets.`,
+      message: `Match marked as finished. Calculated points for ${totalCalculated} bets.`,
       data: match
     });
   } catch (error) {

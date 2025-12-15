@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatchService } from '../../services/match.service';
 import { GroupService } from '../../services/group.service';
 import { AuthService } from '../../services/auth.service';
+import { TranslationService } from '../../services/translation.service';
 import { Match } from '../../models/match.model';
 import { Group } from '../../models/group.model';
 import { TranslatePipe } from '../../services/translate.pipe';
@@ -133,12 +134,21 @@ import { getTeamByName } from '../../data/teams.data';
               <span *ngIf="match.status === 'FINISHED'" class="result">
                 {{ match.result.homeScore }} - {{ match.result.awayScore }}
               </span>
+              <span *ngIf="match.status === 'SCHEDULED' && match.result && match.result.homeScore !== null" class="result ongoing">
+                {{ 'matches.ongoingScore' | translate }}: {{ match.result.homeScore }} - {{ match.result.awayScore }}
+              </span>
               <div class="match-actions" *ngIf="canManageGroup()">
                 <button
                   *ngIf="canUpdateScore(match)"
                   (click)="openScoreUpdate(match)"
                   class="btn-update-score">
                   {{ 'matches.updateScore' | translate }}
+                </button>
+                <button
+                  *ngIf="match.status === 'SCHEDULED' && match.result && match.result.homeScore !== null"
+                  (click)="markAsFinished(match._id)"
+                  class="btn-mark-finished">
+                  {{ 'matches.markAsFinished' | translate }}
                 </button>
                 <button
                   (click)="openEditMatch(match)"
@@ -464,6 +474,11 @@ import { getTeamByName } from '../../data/teams.data';
       padding: 0.35rem 0.9rem;
       border-radius: 10px;
     }
+    .result.ongoing {
+      color: #f59e0b;
+      background: #fef3c7;
+      font-size: 0.9rem;
+    }
     .warning-message {
       color: #d97706;
       padding: 1rem;
@@ -516,6 +531,22 @@ import { getTeamByName } from '../../data/teams.data';
     }
     .btn-update-score:hover {
       transform: translateY(-2px);
+    }
+    .btn-mark-finished {
+      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
+    }
+    .btn-mark-finished:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
     }
     .score-update-form {
       margin-top: 1.25rem;
@@ -654,7 +685,8 @@ export class ManageMatchesComponent implements OnInit {
     private router: Router,
     private matchService: MatchService,
     private groupService: GroupService,
-    private authService: AuthService
+    private authService: AuthService,
+    private translationService: TranslationService
   ) {}
 
   ngOnInit(): void {
@@ -823,6 +855,24 @@ export class ManageMatchesComponent implements OnInit {
     this.editingMatchId = null;
     this.updateScoreData = { homeScore: null, awayScore: null };
     this.scoreUpdateError = '';
+  }
+
+  markAsFinished(matchId: string): void {
+    if (!confirm(this.translationService.translate('matches.confirmMarkFinished'))) {
+      return;
+    }
+
+    this.matchService.markMatchAsFinished({
+      matchId,
+      groupId: this.groupId
+    }).subscribe({
+      next: () => {
+        this.loadMatches();
+      },
+      error: (error) => {
+        alert(error.error?.message || 'Failed to mark match as finished');
+      }
+    });
   }
 
   // Edit match methods

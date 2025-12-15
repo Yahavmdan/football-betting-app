@@ -96,7 +96,10 @@
     "awayScore": "Away Score",
     "updateScore": "Update Score",
     "saveScore": "Save Score",
-    "confirmDelete": "Are you sure you want to delete this match? This action cannot be undone."
+    "markAsFinished": "Mark as Finished",
+    "confirmMarkFinished": "Are you sure you want to mark this match as finished? Points will be calculated.",
+    "confirmDelete": "Are you sure you want to delete this match? This action cannot be undone.",
+    "ongoingScore": "Current Score"
   },
   "bets": {
     "placeYourBet": "Place Your Bet",

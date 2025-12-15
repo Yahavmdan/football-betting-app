@@ -387,6 +387,11 @@ h2 {
   padding: 0.4rem 1rem;
   border-radius: 10px;
 }
+.result.ongoing {
+  color: #f59e0b;
+  background: #fef3c7;
+  font-size: 0.9rem;
+}
 .button-group {
   display: flex;
   gap: 0.5rem;
@@ -444,6 +449,22 @@ h2 {
 }
 .btn-update-score:hover {
   transform: translateY(-2px);
+}
+.btn-mark-finished {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
+}
+.btn-mark-finished:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
 }
 .score-update-form {
   margin-top: 1.25rem;

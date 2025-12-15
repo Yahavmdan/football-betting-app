@@ -6,6 +6,7 @@ import { GroupService } from '../../services/group.service';
 import { MatchService } from '../../services/match.service';
 import { BetService } from '../../services/bet.service';
 import { AuthService } from '../../services/auth.service';
+import { TranslationService } from '../../services/translation.service';
 import { Group, GroupMember } from '../../models/group.model';
 import { Match } from '../../models/match.model';
 import { MemberBet, Bet } from '../../models/bet.model';
@@ -299,8 +300,17 @@ import { getTeamByName, getAllTeams, Team } from '../../data/teams.data';
                     class="btn-update-score">
                     {{ 'matches.updateScore' | translate }}
                   </button>
+                  <button
+                    *ngIf="canManageGroup() && match.status === 'SCHEDULED' && match.result && match.result.homeScore !== null"
+                    (click)="markAsFinished(match._id)"
+                    class="btn-mark-finished">
+                    {{ 'matches.markAsFinished' | translate }}
+                  </button>
                   <span *ngIf="match.status === 'FINISHED'" class="result">
                     {{ match.result.homeScore }} - {{ match.result.awayScore }}
+                  </span>
+                  <span *ngIf="match.status === 'SCHEDULED' && match.result && match.result.homeScore !== null" class="result ongoing">
+                    {{ 'matches.ongoingScore' | translate }}: {{ match.result.homeScore }} - {{ match.result.awayScore }}
                   </span>
                 </div>
               </div>
@@ -438,7 +448,8 @@ export class GroupDetailComponent implements OnInit {
     private groupService: GroupService,
     private matchService: MatchService,
     private betService: BetService,
-    public authService: AuthService
+    public authService: AuthService,
+    private translationService: TranslationService
   ) {}
 
   ngOnInit(): void {
@@ -596,6 +607,25 @@ export class GroupDetailComponent implements OnInit {
     this.editingMatchId = null;
     this.updateScoreData = { homeScore: null, awayScore: null };
     this.scoreUpdateError = '';
+  }
+
+  markAsFinished(matchId: string): void {
+    if (!confirm(this.translationService.translate('matches.confirmMarkFinished'))) {
+      return;
+    }
+
+    this.matchService.markMatchAsFinished({
+      matchId,
+      groupId: this.groupId
+    }).subscribe({
+      next: () => {
+        this.loadMatches();
+        this.loadLeaderboard();
+      },
+      error: (error) => {
+        alert(error.error?.message || 'Failed to mark match as finished');
+      }
+    });
   }
 
   // Group edit methods
