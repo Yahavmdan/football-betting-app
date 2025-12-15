@@ -132,5 +132,28 @@
     "edit": "Edit",
     "delete": "Delete",
     "save": "Save"
+  },
+  "filters": {
+    "filter": "Filter",
+    "filterMatches": "Filter Matches",
+    "matchStatus": "Match Status",
+    "finished": "Finished",
+    "notStarted": "Not Started",
+    "ongoing": "Ongoing",
+    "dateRange": "Date Range",
+    "membersBetted": "Members Who Betted",
+    "selectMembers": "Select members...",
+    "selected": "selected",
+    "teams": "Teams Playing",
+    "selectTeams": "Select teams...",
+    "searchTeams": "Search teams...",
+    "score": "Score (Finished Matches)",
+    "homeScore": "Home",
+    "awayScore": "Away",
+    "any": "Any",
+    "clearAll": "Clear All",
+    "apply": "Apply",
+    "noMatchesFound": "No matches found with the selected filters",
+    "saveFiltersTooltip": "Save filters for next visit"
   }
 }

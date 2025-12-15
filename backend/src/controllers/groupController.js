@@ -1,5 +1,6 @@
 const Group = require('../models/Group');
 const User = require('../models/User');
+const FilterPreference = require('../models/FilterPreference');
 const generateInviteCode = require('../utils/generateInviteCode');
 
 exports.createGroup = async (req, res) => {
@@ -330,6 +331,101 @@ exports.leaveGroup = async (req, res) => {
     res.status(200).json({
       success: true,
       message: 'Successfully left the group'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Get filter preferences for a group
+exports.getFilterPreferences = async (req, res) => {
+  try {
+    const groupId = req.params.id;
+
+    const preference = await FilterPreference.findOne({
+      user: req.user._id,
+      group: groupId
+    });
+
+    res.status(200).json({
+      success: true,
+      data: preference || null
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Save filter preferences for a group
+exports.saveFilterPreferences = async (req, res) => {
+  try {
+    const groupId = req.params.id;
+    const { filters, saveEnabled } = req.body;
+
+    // Verify user is a member of the group
+    const group = await Group.findById(groupId);
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        message: 'Group not found'
+      });
+    }
+
+    const isMember = group.members.some(
+      member => member.user.toString() === req.user._id.toString()
+    );
+
+    if (!isMember && !req.user.isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: 'You are not a member of this group'
+      });
+    }
+
+    // Upsert filter preferences
+    await FilterPreference.findOneAndUpdate(
+      { user: req.user._id, group: groupId },
+      {
+        user: req.user._id,
+        group: groupId,
+        filters,
+        saveEnabled,
+        updatedAt: Date.now()
+      },
+      { upsert: true, new: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: 'Filter preferences saved'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Clear filter preferences for a group
+exports.clearFilterPreferences = async (req, res) => {
+  try {
+    const groupId = req.params.id;
+
+    await FilterPreference.findOneAndDelete({
+      user: req.user._id,
+      group: groupId
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Filter preferences cleared'
     });
   } catch (error) {
     res.status(500).json({

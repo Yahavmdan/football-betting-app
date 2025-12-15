@@ -44,4 +44,10 @@ export class BetService {
       `${this.apiUrl}/match/${matchId}/group/${groupId}/members`
     );
   }
+
+  getAllBetsForGroup(groupId: string): Observable<{ success: boolean; data: Bet[] }> {
+    return this.http.get<{ success: boolean; data: Bet[] }>(
+      `${this.apiUrl}/group/${groupId}/all`
+    );
+  }
 }

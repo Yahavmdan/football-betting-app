@@ -8,9 +8,9 @@ import { BetService } from '../../services/bet.service';
 import { AuthService } from '../../services/auth.service';
 import { Group, GroupMember } from '../../models/group.model';
 import { Match } from '../../models/match.model';
-import { MemberBet } from '../../models/bet.model';
+import { MemberBet, Bet } from '../../models/bet.model';
 import { TranslatePipe } from '../../services/translate.pipe';
-import { getTeamByName } from '../../data/teams.data';
+import { getTeamByName, getAllTeams, Team } from '../../data/teams.data';
 
 @Component({
   selector: 'app-group-detail',
@@ -108,19 +108,145 @@ import { getTeamByName } from '../../data/teams.data';
 
         <div class="matches-section">
           <div class="section-header">
-            <h2>{{ 'groups.matches' | translate }}</h2>
-            <button
-              *ngIf="canManageGroup()"
-              [routerLink]="['/matches/manage']"
-              [queryParams]="{groupId: groupId}"
-              class="btn-manage"
-            >
-              {{ 'matches.manageMatches' | translate }}
-            </button>
+            <h2>{{ 'groups.matches' | translate }} <span class="match-count">({{ filteredMatches.length }})</span></h2>
+            <div class="header-actions">
+              <label class="save-filter-checkbox" [title]="'filters.saveFiltersTooltip' | translate">
+                <input type="checkbox" [(ngModel)]="saveFiltersEnabled" (change)="onSaveFiltersToggle()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                  <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                  <polyline points="7 3 7 8 15 8"></polyline>
+                </svg>
+              </label>
+              <button (click)="openFilterDialog()" class="btn-filter" [class.has-filters]="hasActiveFilters()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                </svg>
+                {{ 'filters.filter' | translate }}
+                <span *ngIf="hasActiveFilters()" class="filter-count">{{ getActiveFilterCount() }}</span>
+              </button>
+              <button
+                *ngIf="canManageGroup()"
+                [routerLink]="['/matches/manage']"
+                [queryParams]="{groupId: groupId}"
+                class="btn-manage"
+              >
+                {{ 'matches.manageMatches' | translate }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Filter Dialog Overlay -->
+          <div *ngIf="showFilterDialog" class="filter-overlay" (click)="closeFilterDialog()">
+            <div class="filter-dialog" (click)="$event.stopPropagation()">
+              <div class="filter-header">
+                <h3>{{ 'filters.filterMatches' | translate }}</h3>
+                <button (click)="closeFilterDialog()" class="btn-close-filter">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+              </div>
+
+              <div class="filter-body">
+                <!-- Status Filter -->
+                <div class="filter-section">
+                  <label class="filter-label">{{ 'filters.matchStatus' | translate }}</label>
+                  <div class="checkbox-group">
+                    <label class="checkbox-item">
+                      <input type="checkbox" [(ngModel)]="filters.showFinished">
+                      <span>{{ 'filters.finished' | translate }}</span>
+                    </label>
+                    <label class="checkbox-item">
+                      <input type="checkbox" [(ngModel)]="filters.showNotStarted">
+                      <span>{{ 'filters.notStarted' | translate }}</span>
+                    </label>
+                    <label class="checkbox-item">
+                      <input type="checkbox" [(ngModel)]="filters.showOngoing">
+                      <span>{{ 'filters.ongoing' | translate }}</span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Date Range Filter -->
+                <div class="filter-section">
+                  <label class="filter-label">{{ 'filters.dateRange' | translate }}</label>
+                  <div class="date-range">
+                    <input type="date" [(ngModel)]="filters.dateFrom" class="form-control">
+                    <span class="date-separator">-</span>
+                    <input type="date" [(ngModel)]="filters.dateTo" class="form-control">
+                  </div>
+                </div>
+
+                <!-- Members Who Betted Filter -->
+                <div class="filter-section">
+                  <label class="filter-label">{{ 'filters.membersBetted' | translate }}</label>
+                  <div class="multi-select-dropdown">
+                    <div class="selected-items" (click)="toggleMemberDropdown()">
+                      <span *ngIf="filters.selectedMembers.length === 0">{{ 'filters.selectMembers' | translate }}</span>
+                      <span *ngIf="filters.selectedMembers.length > 0">{{ filters.selectedMembers.length }} {{ 'filters.selected' | translate }}</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                    </div>
+                    <div *ngIf="showMemberDropdown" class="dropdown-options">
+                      <label *ngFor="let member of leaderboard" class="dropdown-option">
+                        <input type="checkbox" [checked]="isMemberSelected(member.user._id)" (change)="toggleMemberSelection(member.user._id)">
+                        <span>{{ member.user.username }}</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Teams Filter -->
+                <div class="filter-section">
+                  <label class="filter-label">{{ 'filters.teams' | translate }}</label>
+                  <div class="multi-select-dropdown">
+                    <div class="selected-items" (click)="toggleTeamDropdown()">
+                      <span *ngIf="filters.selectedTeams.length === 0">{{ 'filters.selectTeams' | translate }}</span>
+                      <span *ngIf="filters.selectedTeams.length > 0">{{ filters.selectedTeams.length }} {{ 'filters.selected' | translate }}</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                    </div>
+                    <div *ngIf="showTeamDropdown" class="dropdown-options team-dropdown">
+                      <input type="text" [(ngModel)]="teamSearchQuery" class="team-search" [placeholder]="'filters.searchTeams' | translate">
+                      <label *ngFor="let team of getFilteredTeams()" class="dropdown-option">
+                        <input type="checkbox" [checked]="isTeamSelected(team.name)" (change)="toggleTeamSelection(team.name)">
+                        <img *ngIf="team.logo" [src]="team.logo" class="team-option-logo" (error)="onImageError($event)">
+                        <span>{{ team.name }}</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Score Filter (for finished matches) -->
+                <div class="filter-section">
+                  <label class="filter-label">{{ 'filters.score' | translate }}</label>
+                  <div class="score-filter">
+                    <div class="score-input-group">
+                      <label>{{ 'filters.homeScore' | translate }}</label>
+                      <input type="number" [(ngModel)]="filters.homeScore" min="0" class="form-control score-input" [placeholder]="'filters.any' | translate">
+                    </div>
+                    <span class="score-separator">-</span>
+                    <div class="score-input-group">
+                      <label>{{ 'filters.awayScore' | translate }}</label>
+                      <input type="number" [(ngModel)]="filters.awayScore" min="0" class="form-control score-input" [placeholder]="'filters.any' | translate">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="filter-footer">
+                <button (click)="clearFilters()" class="btn-secondary">{{ 'filters.clearAll' | translate }}</button>
+                <button (click)="applyFilters()" class="btn-primary">{{ 'filters.apply' | translate }}</button>
+              </div>
+            </div>
           </div>
           <div *ngIf="loadingMatches" class="loading">{{ 'auth.loading' | translate }}</div>
-          <div *ngIf="!loadingMatches && matches.length > 0" class="matches-list">
-            <div *ngFor="let match of matches" class="match-card" [class.has-bet]="hasBetOnMatch(match._id)">
+          <div *ngIf="!loadingMatches && filteredMatches.length > 0" class="matches-list">
+            <div *ngFor="let match of filteredMatches" class="match-card" [class.has-bet]="hasBetOnMatch(match._id)">
               <div class="match-header">
                 <span class="competition">{{ match.competition }}</span>
                 <div class="status-badges">
@@ -241,8 +367,8 @@ import { getTeamByName } from '../../data/teams.data';
               </div>
             </div>
           </div>
-          <div *ngIf="!loadingMatches && matches.length === 0" class="empty-state">
-            {{ 'groups.noMatches' | translate }}
+          <div *ngIf="!loadingMatches && filteredMatches.length === 0" class="empty-state">
+            {{ hasActiveFilters() ? ('filters.noMatchesFound' | translate) : ('groups.noMatches' | translate) }}
           </div>
         </div>
       </div>
@@ -896,6 +1022,324 @@ import { getTeamByName } from '../../data/teams.data';
         min-width: 120px;
       }
     }
+    /* Filter Dialog Styles */
+    .header-actions {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+    .save-filter-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 8px;
+      background: #f1f5f9;
+      border: 2px solid #e2e8f0;
+      color: #64748b;
+      transition: all 0.2s ease;
+    }
+    .save-filter-checkbox:hover {
+      background: #e2e8f0;
+      color: #475569;
+    }
+    .save-filter-checkbox:has(input:checked) {
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(22, 163, 74, 0.1) 100%);
+      border-color: #22c55e;
+      color: #16a34a;
+    }
+    .save-filter-checkbox input {
+      display: none;
+    }
+    .match-count {
+      font-size: 0.9rem;
+      color: #64748b;
+      font-weight: 400;
+    }
+    .btn-filter {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1rem;
+      background: #f1f5f9;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      color: #475569;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .btn-filter:hover {
+      background: #e2e8f0;
+      border-color: #cbd5e1;
+    }
+    .btn-filter.has-filters {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(29, 78, 216, 0.05) 100%);
+      border-color: #3b82f6;
+      color: #1d4ed8;
+    }
+    .filter-count {
+      background: #3b82f6;
+      color: white;
+      font-size: 0.75rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 10px;
+      font-weight: 700;
+    }
+    .filter-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      animation: fadeIn 0.2s ease-out;
+    }
+    .filter-dialog {
+      background: white;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 500px;
+      max-height: 85vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+      animation: slideUp 0.3s ease-out;
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .filter-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.25rem 1.5rem;
+      border-bottom: 2px solid #f1f5f9;
+    }
+    .filter-header h3 {
+      margin: 0;
+      color: #1a1a2e;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    .btn-close-filter {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #64748b;
+      padding: 0.25rem;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+    .btn-close-filter:hover {
+      background: #f1f5f9;
+      color: #1a1a2e;
+    }
+    .filter-body {
+      padding: 1.5rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .filter-section {
+      margin-bottom: 1.5rem;
+    }
+    .filter-section:last-child {
+      margin-bottom: 0;
+    }
+    .filter-label {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #1a1a2e;
+      margin-bottom: 0.75rem;
+    }
+    .checkbox-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      padding: 0.5rem 0.75rem;
+      background: #f8fafc;
+      border-radius: 8px;
+      border: 2px solid #e2e8f0;
+      transition: all 0.2s ease;
+    }
+    .checkbox-item:hover {
+      border-color: #cbd5e1;
+    }
+    .checkbox-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: #3b82f6;
+    }
+    .checkbox-item span {
+      font-size: 0.9rem;
+      color: #475569;
+    }
+    .date-range {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .date-range .form-control {
+      flex: 1;
+      padding: 0.6rem 0.75rem;
+      font-size: 0.9rem;
+    }
+    .date-separator {
+      color: #94a3b8;
+      font-weight: 500;
+    }
+    .multi-select-dropdown {
+      position: relative;
+    }
+    .selected-items {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1rem;
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .selected-items:hover {
+      border-color: #cbd5e1;
+    }
+    .selected-items span {
+      color: #64748b;
+      font-size: 0.9rem;
+    }
+    .dropdown-options {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      margin-top: 0.5rem;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 10;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    .team-dropdown {
+      max-height: 250px;
+    }
+    .team-search {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: none;
+      border-bottom: 2px solid #f1f5f9;
+      font-size: 0.9rem;
+      outline: none;
+    }
+    .dropdown-option {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .dropdown-option:hover {
+      background: #f8fafc;
+    }
+    .dropdown-option input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: #3b82f6;
+    }
+    .dropdown-option span {
+      font-size: 0.9rem;
+      color: #1a1a2e;
+    }
+    .team-option-logo {
+      width: 24px;
+      height: 24px;
+      object-fit: contain;
+      border-radius: 4px;
+    }
+    .score-filter {
+      display: flex;
+      align-items: flex-end;
+      gap: 0.75rem;
+    }
+    .score-input-group {
+      flex: 1;
+    }
+    .score-input-group label {
+      display: block;
+      font-size: 0.8rem;
+      color: #64748b;
+      margin-bottom: 0.4rem;
+    }
+    .score-filter .score-input {
+      width: 100%;
+      max-width: none;
+      padding: 0.6rem;
+      text-align: center;
+    }
+    .score-separator {
+      color: #94a3b8;
+      font-weight: 600;
+      font-size: 1.25rem;
+      padding-bottom: 0.5rem;
+    }
+    .filter-footer {
+      display: flex;
+      gap: 0.75rem;
+      padding: 1.25rem 1.5rem;
+      border-top: 2px solid #f1f5f9;
+      background: #f8fafc;
+    }
+    .filter-footer .btn-secondary {
+      flex: 1;
+    }
+    .filter-footer .btn-primary {
+      flex: 1;
+    }
+    @media (max-width: 640px) {
+      .header-actions {
+        flex-wrap: wrap;
+      }
+      .filter-dialog {
+        width: 95%;
+        max-height: 90vh;
+      }
+      .checkbox-group {
+        flex-direction: column;
+      }
+      .date-range {
+        flex-direction: column;
+      }
+      .date-separator {
+        display: none;
+      }
+      .score-filter {
+        flex-direction: column;
+      }
+      .score-separator {
+        display: none;
+      }
+    }
   `]
 })
 export class GroupDetailComponent implements OnInit {
@@ -903,6 +1347,8 @@ export class GroupDetailComponent implements OnInit {
   group: Group | null = null;
   leaderboard: GroupMember[] = [];
   matches: Match[] = [];
+  filteredMatches: Match[] = [];
+  allBets: Bet[] = [];
   loadingLeaderboard = true;
   loadingMatches = true;
   matchesWithBets: Set<string> = new Set();
@@ -933,6 +1379,25 @@ export class GroupDetailComponent implements OnInit {
   memberBets: MemberBet[] = [];
   loadingMemberBets = false;
 
+  // Filter state
+  showFilterDialog = false;
+  showMemberDropdown = false;
+  showTeamDropdown = false;
+  teamSearchQuery = '';
+  allTeams: Team[] = getAllTeams();
+  saveFiltersEnabled = false;
+  filters = {
+    showFinished: false,
+    showNotStarted: false,
+    showOngoing: false,
+    dateFrom: '',
+    dateTo: '',
+    selectedMembers: [] as string[],
+    selectedTeams: [] as string[],
+    homeScore: null as number | null,
+    awayScore: null as number | null
+  };
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -946,8 +1411,9 @@ export class GroupDetailComponent implements OnInit {
     this.groupId = this.route.snapshot.params['id'];
     this.loadGroupDetails();
     this.loadLeaderboard();
-    this.loadMatches();
+    this.loadSavedFilters(); // Load saved filters before loading matches
     this.loadMyBets();
+    this.loadAllBets();
   }
 
   loadGroupDetails(): void {
@@ -997,12 +1463,24 @@ export class GroupDetailComponent implements OnInit {
           }
         });
 
-        this.matches = sorted.slice(0, 10);
+        this.matches = sorted;
+        this.applyFilters();
         this.loadingMatches = false;
       },
       error: (error) => {
         console.error('Failed to load matches:', error);
         this.loadingMatches = false;
+      }
+    });
+  }
+
+  loadAllBets(): void {
+    this.betService.getAllBetsForGroup(this.groupId).subscribe({
+      next: (response) => {
+        this.allBets = response.data;
+      },
+      error: (error) => {
+        console.error('Failed to load all bets:', error);
       }
     });
   }
@@ -1213,5 +1691,218 @@ export class GroupDetailComponent implements OnInit {
   onImageError(event: Event): void {
     const img = event.target as HTMLImageElement;
     img.style.display = 'none';
+  }
+
+  // Filter methods
+  openFilterDialog(): void {
+    this.showFilterDialog = true;
+    this.showMemberDropdown = false;
+    this.showTeamDropdown = false;
+  }
+
+  closeFilterDialog(): void {
+    this.showFilterDialog = false;
+    this.showMemberDropdown = false;
+    this.showTeamDropdown = false;
+  }
+
+  toggleMemberDropdown(): void {
+    this.showMemberDropdown = !this.showMemberDropdown;
+    this.showTeamDropdown = false;
+  }
+
+  toggleTeamDropdown(): void {
+    this.showTeamDropdown = !this.showTeamDropdown;
+    this.showMemberDropdown = false;
+  }
+
+  isMemberSelected(memberId: string): boolean {
+    return this.filters.selectedMembers.includes(memberId);
+  }
+
+  toggleMemberSelection(memberId: string): void {
+    const index = this.filters.selectedMembers.indexOf(memberId);
+    if (index === -1) {
+      this.filters.selectedMembers.push(memberId);
+    } else {
+      this.filters.selectedMembers.splice(index, 1);
+    }
+  }
+
+  isTeamSelected(teamName: string): boolean {
+    return this.filters.selectedTeams.includes(teamName);
+  }
+
+  toggleTeamSelection(teamName: string): void {
+    const index = this.filters.selectedTeams.indexOf(teamName);
+    if (index === -1) {
+      this.filters.selectedTeams.push(teamName);
+    } else {
+      this.filters.selectedTeams.splice(index, 1);
+    }
+  }
+
+  getFilteredTeams(): Team[] {
+    if (!this.teamSearchQuery) {
+      return this.allTeams;
+    }
+    const query = this.teamSearchQuery.toLowerCase();
+    return this.allTeams.filter(team => team.name.toLowerCase().includes(query));
+  }
+
+  hasActiveFilters(): boolean {
+    return this.filters.showFinished ||
+           this.filters.showNotStarted ||
+           this.filters.showOngoing ||
+           !!this.filters.dateFrom ||
+           !!this.filters.dateTo ||
+           this.filters.selectedMembers.length > 0 ||
+           this.filters.selectedTeams.length > 0 ||
+           this.filters.homeScore !== null ||
+           this.filters.awayScore !== null;
+  }
+
+  getActiveFilterCount(): number {
+    let count = 0;
+    if (this.filters.showFinished) count++;
+    if (this.filters.showNotStarted) count++;
+    if (this.filters.showOngoing) count++;
+    if (this.filters.dateFrom || this.filters.dateTo) count++;
+    if (this.filters.selectedMembers.length > 0) count++;
+    if (this.filters.selectedTeams.length > 0) count++;
+    if (this.filters.homeScore !== null || this.filters.awayScore !== null) count++;
+    return count;
+  }
+
+  clearFilters(): void {
+    this.filters = {
+      showFinished: false,
+      showNotStarted: false,
+      showOngoing: false,
+      dateFrom: '',
+      dateTo: '',
+      selectedMembers: [],
+      selectedTeams: [],
+      homeScore: null,
+      awayScore: null
+    };
+    this.teamSearchQuery = '';
+    this.applyFilters();
+  }
+
+  applyFilters(): void {
+    let filtered = [...this.matches];
+    const now = new Date();
+
+    // Status filters (if any status filter is active, apply OR logic between them)
+    const hasStatusFilter = this.filters.showFinished || this.filters.showNotStarted || this.filters.showOngoing;
+    if (hasStatusFilter) {
+      filtered = filtered.filter(match => {
+        const matchDate = new Date(match.matchDate);
+        const isFinished = match.status === 'FINISHED';
+        const isNotStarted = match.status === 'SCHEDULED' && matchDate > now;
+        const isOngoing = match.status === 'SCHEDULED' && matchDate <= now;
+
+        return (this.filters.showFinished && isFinished) ||
+               (this.filters.showNotStarted && isNotStarted) ||
+               (this.filters.showOngoing && isOngoing);
+      });
+    }
+
+    // Date range filter
+    if (this.filters.dateFrom) {
+      const fromDate = new Date(this.filters.dateFrom);
+      fromDate.setHours(0, 0, 0, 0);
+      filtered = filtered.filter(match => new Date(match.matchDate) >= fromDate);
+    }
+    if (this.filters.dateTo) {
+      const toDate = new Date(this.filters.dateTo);
+      toDate.setHours(23, 59, 59, 999);
+      filtered = filtered.filter(match => new Date(match.matchDate) <= toDate);
+    }
+
+    // Members who betted filter
+    if (this.filters.selectedMembers.length > 0) {
+      filtered = filtered.filter(match => {
+        // Check if any of the selected members have bet on this match
+        return this.filters.selectedMembers.some(memberId => {
+          return this.allBets.some(bet => {
+            const betMatchId = typeof bet.match === 'string' ? bet.match : bet.match?._id;
+            const betUserId = typeof bet.user === 'string' ? bet.user : bet.user?._id;
+            return betMatchId === match._id && betUserId === memberId;
+          });
+        });
+      });
+    }
+
+    // Teams filter
+    if (this.filters.selectedTeams.length > 0) {
+      filtered = filtered.filter(match => {
+        return this.filters.selectedTeams.some(team =>
+          match.homeTeam === team || match.awayTeam === team
+        );
+      });
+    }
+
+    // Score filter (for finished matches)
+    if (this.filters.homeScore !== null || this.filters.awayScore !== null) {
+      filtered = filtered.filter(match => {
+        if (match.status !== 'FINISHED' || !match.result) return false;
+
+        const homeMatch = this.filters.homeScore === null || match.result.homeScore === this.filters.homeScore;
+        const awayMatch = this.filters.awayScore === null || match.result.awayScore === this.filters.awayScore;
+
+        return homeMatch && awayMatch;
+      });
+    }
+
+    this.filteredMatches = filtered;
+    this.closeFilterDialog();
+
+    // Save filters if enabled
+    if (this.saveFiltersEnabled) {
+      this.saveFiltersToServer();
+    }
+  }
+
+  loadSavedFilters(): void {
+    this.groupService.getFilterPreferences(this.groupId).subscribe({
+      next: (response) => {
+        if (response.data && response.data.filters) {
+          this.filters = { ...this.filters, ...response.data.filters };
+          this.saveFiltersEnabled = response.data.saveEnabled || false;
+        }
+        this.loadMatches(); // Load matches after filters are loaded
+      },
+      error: () => {
+        // If no saved filters or error, just load matches with default filters
+        this.loadMatches();
+      }
+    });
+  }
+
+  saveFiltersToServer(): void {
+    this.groupService.saveFilterPreferences(this.groupId, {
+      filters: this.filters,
+      saveEnabled: this.saveFiltersEnabled
+    }).subscribe({
+      error: (error) => {
+        console.error('Failed to save filter preferences:', error);
+      }
+    });
+  }
+
+  onSaveFiltersToggle(): void {
+    if (this.saveFiltersEnabled) {
+      // Save current filters
+      this.saveFiltersToServer();
+    } else {
+      // Clear saved filters on server
+      this.groupService.clearFilterPreferences(this.groupId).subscribe({
+        error: (error) => {
+          console.error('Failed to clear filter preferences:', error);
+        }
+      });
+    }
   }
 }

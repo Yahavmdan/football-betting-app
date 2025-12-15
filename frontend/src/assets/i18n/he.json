@@ -132,5 +132,27 @@
     "edit": "ערוך",
     "delete": "מחק",
     "save": "שמור"
+  },
+  "filters": {
+    "filter": "סינון",
+    "filterMatches": "סנן משחקים",
+    "matchStatus": "סטטוס משחק",
+    "finished": "הסתיים",
+    "notStarted": "לא התחיל",
+    "ongoing": "מתקיים עכשיו",
+    "dateRange": "טווח תאריכים",
+    "membersBetted": "חברים שהמרו",
+    "selectMembers": "בחר חברים...",
+    "selected": "נבחרו",
+    "teams": "קבוצות משחקות",
+    "selectTeams": "בחר קבוצות...",
+    "searchTeams": "חפש קבוצות...",
+    "score": "תוצאה (משחקים שהסתיימו)",
+    "homeScore": "בית",
+    "awayScore": "חוץ",
+    "any": "הכל",
+    "clearAll": "נקה הכל",
+    "apply": "החל",
+    "noMatchesFound": "לא נמצאו משחקים בהתאם לסינון"
   }
 }

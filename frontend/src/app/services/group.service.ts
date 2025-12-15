@@ -43,4 +43,17 @@ export class GroupService {
   leaveGroup(groupId: string): Observable<{ success: boolean; message: string }> {
     return this.http.post<{ success: boolean; message: string }>(`${this.apiUrl}/${groupId}/leave`, {});
   }
+
+  // Filter preferences
+  getFilterPreferences(groupId: string): Observable<{ success: boolean; data: any }> {
+    return this.http.get<{ success: boolean; data: any }>(`${this.apiUrl}/${groupId}/filter-preferences`);
+  }
+
+  saveFilterPreferences(groupId: string, data: { filters: any; saveEnabled: boolean }): Observable<{ success: boolean; message: string }> {
+    return this.http.post<{ success: boolean; message: string }>(`${this.apiUrl}/${groupId}/filter-preferences`, data);
+  }
+
+  clearFilterPreferences(groupId: string): Observable<{ success: boolean; message: string }> {
+    return this.http.delete<{ success: boolean; message: string }>(`${this.apiUrl}/${groupId}/filter-preferences`);
+  }
 }
