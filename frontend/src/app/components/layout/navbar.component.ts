@@ -13,7 +13,9 @@ import { TranslatePipe } from '../../services/translate.pipe';
     <nav class="navbar" *ngIf="authService.currentUser$ | async as user">
       <div class="nav-container">
         <div class="nav-brand">
-          <a routerLink="/groups">{{ 'app.title' | translate }}</a>
+          <a routerLink="/groups">
+            <img src="assets/utilities/app-logo.png" alt="Football Betting" class="app-logo">
+          </a>
         </div>
 
         <!-- Hamburger button for mobile -->
@@ -98,19 +100,18 @@ import { TranslatePipe } from '../../services/translate.pipe';
       height: 70px;
     }
     .nav-brand a {
-      color: white;
+      display: flex;
+      align-items: center;
       text-decoration: none;
-      font-size: 1.5rem;
-      font-weight: 700;
-      font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
       transition: all 0.3s ease;
     }
     .nav-brand a:hover {
       transform: scale(1.02);
+    }
+    .app-logo {
+      height: 50px;
+      width: auto;
+      object-fit: contain;
     }
     .nav-menu {
       display: flex;
@@ -316,8 +317,8 @@ import { TranslatePipe } from '../../services/translate.pipe';
       .mobile-overlay {
         display: block;
       }
-      .nav-brand a {
-        font-size: 1.25rem;
+      .app-logo {
+        height: 40px;
       }
     }
   `]
