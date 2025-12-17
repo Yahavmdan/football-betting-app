@@ -11,12 +11,13 @@ import { Group, GroupMember } from '../../models/group.model';
 import { Match } from '../../models/match.model';
 import { MemberBet, Bet } from '../../models/bet.model';
 import { TranslatePipe } from '../../services/translate.pipe';
+import { TeamTranslatePipe } from '../../pipes/team-translate.pipe';
 import { getTeamByName, getAllTeams, Team } from '../../data/teams.data';
 
 @Component({
   selector: 'app-group-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslatePipe],
+  imports: [CommonModule, FormsModule, RouterModule, TranslatePipe, TeamTranslatePipe],
   template: `
     <div class="container" *ngIf="group">
       <button class="back-btn" routerLink="/groups">← {{ 'groups.backToGroups' | translate }}</button>
@@ -259,13 +260,13 @@ import { getTeamByName, getAllTeams, Team } from '../../data/teams.data';
               </div>
               <div class="match-teams">
                 <div class="team team-home">
-                  <span>{{ match.homeTeam }}</span>
-                  <img *ngIf="getTeamLogo(match.homeTeam)" [src]="getTeamLogo(match.homeTeam)" [alt]="match.homeTeam" class="team-logo" (error)="onImageError($event)">
+                  <span>{{ match.homeTeam | teamTranslate }}</span>
+                  <img *ngIf="getTeamLogo(match.homeTeam)" [src]="getTeamLogo(match.homeTeam)" [alt]="match.homeTeam | teamTranslate" class="team-logo" (error)="onImageError($event)">
                 </div>
                 <span class="vs">{{ 'matches.vs' | translate }}</span>
                 <div class="team team-away">
-                  <img *ngIf="getTeamLogo(match.awayTeam)" [src]="getTeamLogo(match.awayTeam)" [alt]="match.awayTeam" class="team-logo" (error)="onImageError($event)">
-                  <span>{{ match.awayTeam }}</span>
+                  <img *ngIf="getTeamLogo(match.awayTeam)" [src]="getTeamLogo(match.awayTeam)" [alt]="match.awayTeam | teamTranslate" class="team-logo" (error)="onImageError($event)">
+                  <span>{{ match.awayTeam | teamTranslate }}</span>
                 </div>
               </div>
               <div class="match-footer">
@@ -331,7 +332,7 @@ import { getTeamByName, getAllTeams, Team } from '../../data/teams.data';
                     <span class="member-name">{{ memberBet.user.username }}</span>
                     <div class="bet-info">
                       <span *ngIf="memberBet.hasBet" class="bet-outcome" [class.home]="memberBet.bet?.outcome === '1'" [class.draw]="memberBet.bet?.outcome === 'X'" [class.away]="memberBet.bet?.outcome === '2'">
-                        {{ memberBet.bet?.outcome === '1' ? match.homeTeam : (memberBet.bet?.outcome === '2' ? match.awayTeam : ('bets.draw' | translate)) }}
+                        {{ memberBet.bet?.outcome === '1' ? (match.homeTeam | teamTranslate) : (memberBet.bet?.outcome === '2' ? (match.awayTeam | teamTranslate) : ('bets.draw' | translate)) }}
                       </span>
                       <span *ngIf="!memberBet.hasBet" class="no-bet">{{ 'bets.noBet' | translate }}</span>
                       <span *ngIf="memberBet.hasBet" class="bet-time">{{ memberBet.bet?.createdAt | date:'dd/MM/yy, HH:mm' }}</span>
@@ -346,7 +347,7 @@ import { getTeamByName, getAllTeams, Team } from '../../data/teams.data';
               <div *ngIf="editingMatchId === match._id" class="score-update-form">
                 <div class="score-form-row">
                   <div class="score-form-group">
-                    <label>{{ match.homeTeam }}</label>
+                    <label>{{ match.homeTeam | teamTranslate }}</label>
                     <input
                       type="number"
                       [(ngModel)]="updateScoreData.homeScore"
@@ -354,7 +355,7 @@ import { getTeamByName, getAllTeams, Team } from '../../data/teams.data';
                       min="0">
                   </div>
                   <div class="score-form-group">
-                    <label>{{ match.awayTeam }}</label>
+                    <label>{{ match.awayTeam | teamTranslate }}</label>
                     <input
                       type="number"
                       [(ngModel)]="updateScoreData.awayScore"

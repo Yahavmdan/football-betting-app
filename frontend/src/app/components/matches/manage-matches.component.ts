@@ -9,13 +9,14 @@ import { TranslationService } from '../../services/translation.service';
 import { Match } from '../../models/match.model';
 import { Group } from '../../models/group.model';
 import { TranslatePipe } from '../../services/translate.pipe';
+import { TeamTranslatePipe } from '../../pipes/team-translate.pipe';
 import { TeamSelectComponent } from '../shared/team-select.component';
 import { getTeamByName } from '../../data/teams.data';
 
 @Component({
   selector: 'app-manage-matches',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslatePipe, TeamSelectComponent],
+  imports: [CommonModule, FormsModule, TranslatePipe, TeamTranslatePipe, TeamSelectComponent],
   template: `
     <div class="container">
       <div class="header">
@@ -120,13 +121,13 @@ import { getTeamByName } from '../../data/teams.data';
             </div>
             <div class="match-teams">
               <div class="team team-home">
-                <span>{{ match.homeTeam }}</span>
-                <img *ngIf="getTeamLogo(match.homeTeam)" [src]="getTeamLogo(match.homeTeam)" [alt]="match.homeTeam" class="team-logo" (error)="onImageError($event)">
+                <span>{{ match.homeTeam | teamTranslate }}</span>
+                <img *ngIf="getTeamLogo(match.homeTeam)" [src]="getTeamLogo(match.homeTeam)" [alt]="match.homeTeam | teamTranslate" class="team-logo" (error)="onImageError($event)">
               </div>
               <span class="vs">{{ 'matches.vs' | translate }}</span>
               <div class="team team-away">
-                <img *ngIf="getTeamLogo(match.awayTeam)" [src]="getTeamLogo(match.awayTeam)" [alt]="match.awayTeam" class="team-logo" (error)="onImageError($event)">
-                <span>{{ match.awayTeam }}</span>
+                <img *ngIf="getTeamLogo(match.awayTeam)" [src]="getTeamLogo(match.awayTeam)" [alt]="match.awayTeam | teamTranslate" class="team-logo" (error)="onImageError($event)">
+                <span>{{ match.awayTeam | teamTranslate }}</span>
               </div>
             </div>
             <div class="match-footer">
@@ -166,7 +167,7 @@ import { getTeamByName } from '../../data/teams.data';
             <div *ngIf="editingMatchId === match._id && !editingMatchDetails" class="score-update-form">
               <div class="form-row">
                 <div class="form-group">
-                  <label>{{ match.homeTeam }}</label>
+                  <label>{{ match.homeTeam | teamTranslate }}</label>
                   <input
                     type="number"
                     [(ngModel)]="updateScoreData.homeScore"
@@ -175,7 +176,7 @@ import { getTeamByName } from '../../data/teams.data';
                     min="0">
                 </div>
                 <div class="form-group">
-                  <label>{{ match.awayTeam }}</label>
+                  <label>{{ match.awayTeam | teamTranslate }}</label>
                   <input
                     type="number"
                     [(ngModel)]="updateScoreData.awayScore"

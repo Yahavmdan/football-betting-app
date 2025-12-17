@@ -1,7 +1,8 @@
 import { Component, Input, Output, EventEmitter, forwardRef, ElementRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { ISRAELI_LEAGUES, Team, League } from '../../data/teams.data';
+import { ISRAELI_LEAGUES, Team, League, translateTeamName } from '../../data/teams.data';
+import { TranslationService } from '../../services/translation.service';
 
 @Component({
   selector: 'app-team-select',
@@ -18,10 +19,10 @@ import { ISRAELI_LEAGUES, Team, League } from '../../data/teams.data';
     <div class="team-select-container" [class.open]="isOpen">
       <div class="team-select-input" (click)="toggleDropdown()">
         <div class="selected-team" *ngIf="selectedTeam">
-          <img [src]="selectedTeam.logo" [alt]="selectedTeam.name" class="team-logo" (error)="onImageError($event)">
-          <span>{{ selectedTeam.name }}</span>
+          <img [src]="selectedTeam.logo" [alt]="getTeamDisplayName(selectedTeam)" class="team-logo" (error)="onImageError($event)">
+          <span>{{ getTeamDisplayName(selectedTeam) }}</span>
         </div>
-        <span *ngIf="!selectedTeam" class="placeholder">{{ placeholder }}</span>
+        <span *ngIf="!selectedTeam" class="placeholder">{{ getPlaceholder() }}</span>
         <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
           <path d="M6 8l4 4 4-4" stroke="#6b7280" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
@@ -37,24 +38,24 @@ import { ISRAELI_LEAGUES, Team, League } from '../../data/teams.data';
             type="text"
             [(ngModel)]="searchQuery"
             (input)="filterTeams()"
-            placeholder="חפש קבוצה..."
+            [placeholder]="getSearchPlaceholder()"
             class="search-input"
             #searchInput>
         </div>
 
         <div class="teams-list">
           <div *ngFor="let league of filteredLeagues" class="league-group">
-            <div class="league-header" *ngIf="league.teams.length > 0">{{ league.nameHe }}</div>
+            <div class="league-header" *ngIf="league.teams.length > 0">{{ getLeagueDisplayName(league) }}</div>
             <div
               *ngFor="let team of league.teams"
               class="team-option"
               [class.selected]="selectedTeam?.id === team.id"
               (click)="selectTeam(team)">
-              <img [src]="team.logo" [alt]="team.name" class="team-logo" (error)="onImageError($event)">
-              <span>{{ team.name }}</span>
+              <img [src]="team.logo" [alt]="getTeamDisplayName(team)" class="team-logo" (error)="onImageError($event)">
+              <span>{{ getTeamDisplayName(team) }}</span>
             </div>
           </div>
-          <div *ngIf="noResults" class="no-results">לא נמצאו תוצאות</div>
+          <div *ngIf="noResults" class="no-results">{{ getNoResultsText() }}</div>
         </div>
       </div>
     </div>
@@ -207,7 +208,7 @@ import { ISRAELI_LEAGUES, Team, League } from '../../data/teams.data';
   `]
 })
 export class TeamSelectComponent implements ControlValueAccessor {
-  @Input() placeholder = 'בחר קבוצה';
+  @Input() placeholder?: string;
 
   isOpen = false;
   searchQuery = '';
@@ -218,8 +219,39 @@ export class TeamSelectComponent implements ControlValueAccessor {
   private onChange: (value: string) => void = () => {};
   private onTouched: () => void = () => {};
 
-  constructor(private elementRef: ElementRef) {
+  constructor(
+    private elementRef: ElementRef,
+    private translationService: TranslationService
+  ) {
     this.filteredLeagues = this.leagues.map(l => ({ ...l, teams: [...l.teams] }));
+  }
+
+  getTeamDisplayName(team: Team): string {
+    const currentLang = this.translationService.getCurrentLanguage();
+    return translateTeamName(team, currentLang);
+  }
+
+  getLeagueDisplayName(league: League): string {
+    const currentLang = this.translationService.getCurrentLanguage();
+    return currentLang === 'he' ? league.nameHe : league.name;
+  }
+
+  getNoResultsText(): string {
+    const currentLang = this.translationService.getCurrentLanguage();
+    return currentLang === 'he' ? 'לא נמצאו תוצאות' : 'No results found';
+  }
+
+  getSearchPlaceholder(): string {
+    const currentLang = this.translationService.getCurrentLanguage();
+    return currentLang === 'he' ? 'חפש קבוצה...' : 'Search team...';
+  }
+
+  getPlaceholder(): string {
+    if (this.placeholder) {
+      return this.placeholder;
+    }
+    const currentLang = this.translationService.getCurrentLanguage();
+    return currentLang === 'he' ? 'בחר קבוצה' : 'Select team';
   }
 
   @HostListener('document:click', ['$event'])
@@ -232,7 +264,11 @@ export class TeamSelectComponent implements ControlValueAccessor {
   writeValue(value: string): void {
     if (value) {
       for (const league of this.leagues) {
-        const team = league.teams.find(t => t.name === value);
+        const team = league.teams.find(t =>
+          t.name === value ||
+          t.nameEn === value ||
+          t.nameHe === value
+        );
         if (team) {
           this.selectedTeam = team;
           break;
@@ -272,7 +308,9 @@ export class TeamSelectComponent implements ControlValueAccessor {
       this.filteredLeagues = this.leagues.map(league => ({
         ...league,
         teams: league.teams.filter(team =>
-          team.name.toLowerCase().includes(query)
+          team.name.toLowerCase().includes(query) ||
+          team.nameEn.toLowerCase().includes(query) ||
+          team.nameHe.toLowerCase().includes(query)
         )
       }));
     }
