@@ -37,6 +37,21 @@ const groupSchema = new mongoose.Schema({
     unique: true,
     required: true
   },
+  betType: {
+    type: String,
+    enum: ['classic', 'relative'],
+    default: 'classic'
+  },
+  startingCredits: {
+    type: Number,
+    default: 100,
+    min: 1
+  },
+  creditsGoal: {
+    type: Number,
+    default: 1000,
+    min: 1
+  },
   createdAt: {
     type: Date,
     default: Date.now

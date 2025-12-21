@@ -5,7 +5,7 @@ const calculatePoints = require('../utils/calculatePoints');
 
 exports.placeBet = async (req, res) => {
   try {
-    const { matchId, groupId, outcome } = req.body;
+    const { matchId, groupId, outcome, wagerAmount } = req.body;
 
     const match = await Match.findById(matchId);
 
@@ -50,6 +50,45 @@ exports.placeBet = async (req, res) => {
       });
     }
 
+    // Get user's current credits/points
+    const memberIndex = group.members.findIndex(
+      m => m.user.toString() === req.user._id.toString()
+    );
+
+    if (memberIndex === -1) {
+      return res.status(403).json({
+        success: false,
+        message: 'You are not a member of this group'
+      });
+    }
+
+    const userCredits = group.members[memberIndex].points;
+
+    // For relative groups, validate wager amount
+    if (group.betType === 'relative') {
+      // Prevent users with 0 credits from betting (they have lost)
+      if (userCredits <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'You have 0 credits and cannot place bets. You have lost this competition.'
+        });
+      }
+
+      if (!wagerAmount || wagerAmount <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Wager amount is required for relative betting groups'
+        });
+      }
+
+      if (wagerAmount > userCredits) {
+        return res.status(400).json({
+          success: false,
+          message: `Insufficient credits. You have ${userCredits} credits available`
+        });
+      }
+    }
+
     // Check if user already placed a bet on this match
     const existingBet = await Bet.findOne({
       user: req.user._id,
@@ -58,11 +97,23 @@ exports.placeBet = async (req, res) => {
     });
 
     if (existingBet) {
-      // Update existing bet instead of rejecting
+      // Refund old wager amount if applicable
+      if (group.betType === 'relative' && existingBet.wagerAmount) {
+        group.members[memberIndex].points += existingBet.wagerAmount;
+      }
+
+      // Deduct new wager amount for relative groups
+      if (group.betType === 'relative') {
+        group.members[memberIndex].points -= wagerAmount;
+      }
+
+      // Update existing bet
       existingBet.prediction = {
         outcome
       };
+      existingBet.wagerAmount = group.betType === 'relative' ? wagerAmount : null;
       await existingBet.save();
+      await group.save();
 
       return res.status(200).json({
         success: true,
@@ -71,13 +122,20 @@ exports.placeBet = async (req, res) => {
       });
     }
 
+    // Deduct wager amount for relative groups
+    if (group.betType === 'relative') {
+      group.members[memberIndex].points -= wagerAmount;
+      await group.save();
+    }
+
     const bet = await Bet.create({
       user: req.user._id,
       match: matchId,
       group: groupId,
       prediction: {
         outcome
-      }
+      },
+      wagerAmount: group.betType === 'relative' ? wagerAmount : null
     });
 
     res.status(201).json({

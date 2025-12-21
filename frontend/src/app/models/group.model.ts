@@ -2,6 +2,9 @@ export interface Group {
   _id: string;
   name: string;
   description?: string;
+  betType: 'classic' | 'relative';
+  startingCredits: number;
+  creditsGoal: number;
   creator: any;
   members: GroupMember[];
   inviteCode: string;
@@ -21,6 +24,9 @@ export interface GroupMember {
 export interface CreateGroupData {
   name: string;
   description?: string;
+  betType?: 'classic' | 'relative';
+  startingCredits?: number;
+  creditsGoal?: number;
 }
 
 export interface JoinGroupData {

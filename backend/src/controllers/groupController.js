@@ -5,7 +5,7 @@ const generateInviteCode = require('../utils/generateInviteCode');
 
 exports.createGroup = async (req, res) => {
   try {
-    const { name, description } = req.body;
+    const { name, description, betType, startingCredits, creditsGoal } = req.body;
 
     let inviteCode;
     let isUnique = false;
@@ -18,14 +18,20 @@ exports.createGroup = async (req, res) => {
       }
     }
 
+    // Set starting points/credits based on betType
+    const initialPoints = betType === 'relative' ? (startingCredits || 100) : 0;
+
     const group = await Group.create({
       name,
       description,
+      betType: betType || 'classic',
+      startingCredits: betType === 'relative' ? (startingCredits || 100) : 100,
+      creditsGoal: betType === 'relative' ? (creditsGoal || 1000) : 1000,
       creator: req.user._id,
       inviteCode,
       members: [{
         user: req.user._id,
-        points: 0
+        points: initialPoints
       }]
     });
 
@@ -69,9 +75,12 @@ exports.joinGroup = async (req, res) => {
       });
     }
 
+    // Set starting points/credits based on betType
+    const initialPoints = group.betType === 'relative' ? group.startingCredits : 0;
+
     group.members.push({
       user: req.user._id,
-      points: 0
+      points: initialPoints
     });
 
     await group.save();

@@ -23,6 +23,11 @@ const betSchema = new mongoose.Schema({
       required: true
     }
   },
+  wagerAmount: {
+    type: Number,
+    default: null,
+    min: 0
+  },
   points: {
     type: Number,
     default: null

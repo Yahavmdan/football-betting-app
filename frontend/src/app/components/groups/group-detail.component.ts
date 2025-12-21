@@ -97,10 +97,18 @@ import { getTeamByName, getAllTeams, Team } from '../../data/teams.data';
           <h2>{{ 'groups.leaderboard' | translate }}</h2>
           <div *ngIf="loadingLeaderboard" class="loading">{{ 'auth.loading' | translate }}</div>
           <div *ngIf="!loadingLeaderboard && leaderboard.length > 0" class="leaderboard">
-            <div *ngFor="let member of leaderboard; let i = index" class="leaderboard-item">
+            <div *ngFor="let member of leaderboard; let i = index" class="leaderboard-item"
+                 [class.winner]="isWinner(member)"
+                 [class.eliminated]="isEliminated(member)">
               <span class="rank">{{ i + 1 }}</span>
-              <span class="username">{{ member.user.username }}</span>
-              <span class="points">{{ member.points }} {{ 'groups.points' | translate }}</span>
+              <span class="username">
+                {{ member.user.username }}
+                <span *ngIf="isWinner(member)" class="trophy">🏆</span>
+                <span *ngIf="isEliminated(member)" class="status-label">({{ 'groups.eliminated' | translate }})</span>
+              </span>
+              <span class="points">
+                {{ member.points }} {{ group.betType === 'relative' ? ('groups.credits' | translate) : ('groups.points' | translate) }}
+              </span>
             </div>
           </div>
           <div *ngIf="!loadingLeaderboard && leaderboard.length === 0" class="empty-state">
@@ -969,5 +977,19 @@ export class GroupDetailComponent implements OnInit {
         }
       });
     }
+  }
+
+  // Winner and eliminated status helpers
+  isWinner(member: GroupMember): boolean {
+    // Winner: reached creditsGoal in relative betting groups
+    if (this.group?.betType !== 'relative') return false;
+    if (!this.group?.creditsGoal) return false;
+    return member.points >= this.group.creditsGoal;
+  }
+
+  isEliminated(member: GroupMember): boolean {
+    // Eliminated: has 0 credits in relative betting groups
+    if (this.group?.betType !== 'relative') return false;
+    return member.points <= 0;
   }
 }

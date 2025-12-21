@@ -41,6 +41,67 @@ import { TranslationService } from '../../services/translation.service';
               [placeholder]="'groups.enterDescription' | translate"
             ></textarea>
           </div>
+          <div class="form-group">
+            <label for="betType">{{ 'groups.betType' | translate }} *</label>
+            <div class="bet-type-selection">
+              <div class="bet-type-option"
+                   [class.selected]="groupData.betType === 'classic'"
+                   (click)="selectBetType('classic')">
+                <div class="option-header">
+                  <input type="radio"
+                         id="betTypeClassic"
+                         name="betType"
+                         value="classic"
+                         [(ngModel)]="groupData.betType"
+                         required />
+                  <label for="betTypeClassic">{{ 'groups.betTypeClassic' | translate }}</label>
+                </div>
+                <p class="option-description">{{ 'groups.betTypeClassicDesc' | translate }}</p>
+              </div>
+              <div class="bet-type-option"
+                   [class.selected]="groupData.betType === 'relative'"
+                   (click)="selectBetType('relative')">
+                <div class="option-header">
+                  <input type="radio"
+                         id="betTypeRelative"
+                         name="betType"
+                         value="relative"
+                         [(ngModel)]="groupData.betType"
+                         required />
+                  <label for="betTypeRelative">{{ 'groups.betTypeRelative' | translate }}</label>
+                </div>
+                <p class="option-description">{{ 'groups.betTypeRelativeDesc' | translate }}</p>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="groupData.betType === 'relative'" class="form-group">
+            <label for="startingCredits">{{ 'groups.startingCredits' | translate }} *</label>
+            <input
+              type="number"
+              id="startingCredits"
+              name="startingCredits"
+              [(ngModel)]="groupData.startingCredits"
+              min="1"
+              step="1"
+              class="form-control"
+              [placeholder]="'groups.creditsPerPlayer' | translate"
+              required>
+            <small class="form-hint">{{ 'groups.enterStartingCredits' | translate }}</small>
+          </div>
+          <div *ngIf="groupData.betType === 'relative'" class="form-group">
+            <label for="creditsGoal">{{ 'groups.creditsGoal' | translate }} *</label>
+            <input
+              type="number"
+              id="creditsGoal"
+              name="creditsGoal"
+              [(ngModel)]="groupData.creditsGoal"
+              min="1"
+              step="1"
+              class="form-control"
+              [placeholder]="'groups.goalToWin' | translate"
+              required>
+            <small class="form-hint">{{ 'groups.enterCreditsGoal' | translate }}</small>
+          </div>
           <div *ngIf="errorMessage" class="error-message">
             {{ errorMessage }}
           </div>
@@ -160,6 +221,61 @@ import { TranslationService } from '../../services/translation.service';
       font-weight: 500;
       font-size: 0.95rem;
     }
+    .bet-type-selection {
+      display: flex;
+      gap: 1rem;
+      flex-direction: column;
+    }
+    .bet-type-option {
+      padding: 1.25rem;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      background: #f8fafc;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .bet-type-option:hover {
+      border-color: #4ade80;
+      background: white;
+    }
+    .bet-type-option.selected {
+      border-color: #4ade80;
+      background: rgba(74, 222, 128, 0.05);
+      box-shadow: 0 0 0 4px rgba(74, 222, 128, 0.1);
+    }
+    .option-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+    .option-header input[type="radio"] {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      accent-color: #4ade80;
+    }
+    .option-header label {
+      margin-bottom: 0;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      cursor: pointer;
+    }
+    .option-description {
+      margin: 0;
+      padding-left: 2rem;
+      color: #64748b;
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+    .form-hint {
+      display: block;
+      margin-top: 0.5rem;
+      color: #64748b;
+      font-size: 0.85rem;
+      font-style: italic;
+    }
     @media (max-width: 640px) {
       .container {
         padding: 1rem;
@@ -179,7 +295,10 @@ import { TranslationService } from '../../services/translation.service';
 export class CreateGroupComponent {
   groupData: CreateGroupData = {
     name: '',
-    description: ''
+    description: '',
+    betType: 'classic',
+    startingCredits: 100,
+    creditsGoal: 1000
   };
   errorMessage = '';
   loading = false;
@@ -189,6 +308,19 @@ export class CreateGroupComponent {
     private router: Router,
     private translationService: TranslationService
   ) {}
+
+  selectBetType(type: 'classic' | 'relative'): void {
+    this.groupData.betType = type;
+    // Reset starting credits and goal to defaults when switching
+    if (type === 'relative') {
+      if (!this.groupData.startingCredits) {
+        this.groupData.startingCredits = 100;
+      }
+      if (!this.groupData.creditsGoal) {
+        this.groupData.creditsGoal = 1000;
+      }
+    }
+  }
 
   onSubmit(): void {
     this.loading = true;

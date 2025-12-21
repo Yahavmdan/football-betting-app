@@ -94,6 +94,51 @@ import { getTeamByName } from '../../data/teams.data';
                 required>
             </div>
           </div>
+          <div *ngIf="group?.betType === 'relative'" class="relative-points-section">
+            <h3>{{ 'matches.relativePoints' | translate }}</h3>
+            <p class="points-description">{{ 'groups.betTypeRelativeDesc' | translate }}</p>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="homeWinPoints">{{ 'matches.homeWinPoints' | translate }}</label>
+                <input
+                  type="number"
+                  id="homeWinPoints"
+                  [(ngModel)]="manualMatch.relativePoints.homeWin"
+                  name="homeWinPoints"
+                  class="form-control score-input"
+                  min="0.1"
+                  step="0.1"
+                  [placeholder]="'matches.pointsForHomeWin' | translate"
+                  required>
+              </div>
+              <div class="form-group">
+                <label for="drawPoints">{{ 'matches.drawPoints' | translate }}</label>
+                <input
+                  type="number"
+                  id="drawPoints"
+                  [(ngModel)]="manualMatch.relativePoints.draw"
+                  name="drawPoints"
+                  class="form-control score-input"
+                  min="0.1"
+                  step="0.1"
+                  [placeholder]="'matches.pointsForDraw' | translate"
+                  required>
+              </div>
+              <div class="form-group">
+                <label for="awayWinPoints">{{ 'matches.awayWinPoints' | translate }}</label>
+                <input
+                  type="number"
+                  id="awayWinPoints"
+                  [(ngModel)]="manualMatch.relativePoints.awayWin"
+                  name="awayWinPoints"
+                  class="form-control score-input"
+                  min="0.1"
+                  step="0.1"
+                  [placeholder]="'matches.pointsForAwayWin' | translate"
+                  required>
+              </div>
+            </div>
+          </div>
           <button
             type="submit"
             class="btn-primary"
@@ -230,6 +275,41 @@ import { getTeamByName } from '../../data/teams.data';
                     type="time"
                     [(ngModel)]="editMatchData.matchHour"
                     class="form-control">
+                </div>
+              </div>
+              <div *ngIf="group?.betType === 'relative'" class="relative-points-section">
+                <h3>{{ 'matches.relativePoints' | translate }}</h3>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>{{ 'matches.homeWinPoints' | translate }}</label>
+                    <input
+                      type="number"
+                      [(ngModel)]="editMatchData.relativePoints.homeWin"
+                      class="form-control score-input"
+                      min="0.1"
+                      step="0.1"
+                      required>
+                  </div>
+                  <div class="form-group">
+                    <label>{{ 'matches.drawPoints' | translate }}</label>
+                    <input
+                      type="number"
+                      [(ngModel)]="editMatchData.relativePoints.draw"
+                      class="form-control score-input"
+                      min="0.1"
+                      step="0.1"
+                      required>
+                  </div>
+                  <div class="form-group">
+                    <label>{{ 'matches.awayWinPoints' | translate }}</label>
+                    <input
+                      type="number"
+                      [(ngModel)]="editMatchData.relativePoints.awayWin"
+                      class="form-control score-input"
+                      min="0.1"
+                      step="0.1"
+                      required>
+                  </div>
                 </div>
               </div>
               <div class="button-row">
@@ -516,6 +596,26 @@ import { getTeamByName } from '../../data/teams.data';
       margin-bottom: 1.25rem;
       font-weight: 500;
     }
+    .relative-points-section {
+      margin-bottom: 1.5rem;
+      padding: 1.5rem;
+      background: #f0f9ff;
+      border-radius: 12px;
+      border: 2px solid #bfdbfe;
+    }
+    .relative-points-section h3 {
+      margin-top: 0;
+      margin-bottom: 0.5rem;
+      color: #1e40af;
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+    .points-description {
+      color: #475569;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+      font-style: italic;
+    }
     .score-input {
       max-width: 100px;
     }
@@ -648,13 +748,23 @@ export class ManageMatchesComponent implements OnInit {
     matchHour: string;
     homeScore: number | null;
     awayScore: number | null;
+    relativePoints: {
+      homeWin: number | null;
+      draw: number | null;
+      awayWin: number | null;
+    };
   } = {
     homeTeam: '',
     awayTeam: '',
     matchDate: '',
     matchHour: '',
     homeScore: null,
-    awayScore: null
+    awayScore: null,
+    relativePoints: {
+      homeWin: 1,
+      draw: 1,
+      awayWin: 1
+    }
   };
 
   // Score update
@@ -673,7 +783,14 @@ export class ManageMatchesComponent implements OnInit {
     awayTeam: string;
     matchDate: string;
     matchHour: string;
-  } = { homeTeam: '', awayTeam: '', matchDate: '', matchHour: '' };
+    relativePoints: { homeWin: number; draw: number; awayWin: number };
+  } = {
+    homeTeam: '',
+    awayTeam: '',
+    matchDate: '',
+    matchHour: '',
+    relativePoints: { homeWin: 1, draw: 1, awayWin: 1 }
+  };
   loadingEditMatch = false;
   editMatchError = '';
 
@@ -746,7 +863,22 @@ export class ManageMatchesComponent implements OnInit {
     if (!baseValid) return false;
 
     if (this.isPastMatch()) {
-      return this.manualMatch.homeScore !== null && this.manualMatch.awayScore !== null;
+      if (this.manualMatch.homeScore === null || this.manualMatch.awayScore === null) {
+        return false;
+      }
+    }
+
+    // Validate relative points if group is 'relative' type
+    if (this.group?.betType === 'relative') {
+      const pointsValid = !!(
+        this.manualMatch.relativePoints.homeWin &&
+        this.manualMatch.relativePoints.draw &&
+        this.manualMatch.relativePoints.awayWin &&
+        this.manualMatch.relativePoints.homeWin > 0 &&
+        this.manualMatch.relativePoints.draw > 0 &&
+        this.manualMatch.relativePoints.awayWin > 0
+      );
+      if (!pointsValid) return false;
     }
 
     return true;
@@ -773,6 +905,15 @@ export class ManageMatchesComponent implements OnInit {
       data.awayScore = this.manualMatch.awayScore;
     }
 
+    // Include relativePoints if group is 'relative' type
+    if (this.group?.betType === 'relative') {
+      data.relativePoints = {
+        homeWin: this.manualMatch.relativePoints.homeWin,
+        draw: this.manualMatch.relativePoints.draw,
+        awayWin: this.manualMatch.relativePoints.awayWin
+      };
+    }
+
     this.matchService.createManualMatch(data).subscribe({
       next: (response) => {
         this.manualMatchMessage = response.message;
@@ -784,7 +925,12 @@ export class ManageMatchesComponent implements OnInit {
           matchDate: '',
           matchHour: '',
           homeScore: null,
-          awayScore: null
+          awayScore: null,
+          relativePoints: {
+            homeWin: 1,
+            draw: 1,
+            awayWin: 1
+          }
         };
         // Reload matches to show the new one
         this.loadMatches();
@@ -888,11 +1034,19 @@ export class ManageMatchesComponent implements OnInit {
     const hours = matchDate.getHours().toString().padStart(2, '0');
     const minutes = matchDate.getMinutes().toString().padStart(2, '0');
 
+    // Get relative points for this group
+    const matchRelativePoints = match.relativePoints?.find(rp => rp.group === this.groupId);
+
     this.editMatchData = {
       homeTeam: match.homeTeam,
       awayTeam: match.awayTeam,
       matchDate: dateStr,
-      matchHour: `${hours}:${minutes}`
+      matchHour: `${hours}:${minutes}`,
+      relativePoints: {
+        homeWin: matchRelativePoints?.homeWin || 1,
+        draw: matchRelativePoints?.draw || 1,
+        awayWin: matchRelativePoints?.awayWin || 1
+      }
     };
     this.editMatchError = '';
   }
@@ -904,13 +1058,20 @@ export class ManageMatchesComponent implements OnInit {
     // Create a proper Date object from local date/time inputs
     const localDateTime = new Date(`${this.editMatchData.matchDate}T${this.editMatchData.matchHour}`);
 
-    this.matchService.editMatch({
+    const updateData: any = {
       matchId,
       groupId: this.groupId,
       homeTeam: this.editMatchData.homeTeam,
       awayTeam: this.editMatchData.awayTeam,
       matchDateTime: localDateTime.toISOString() // Send as ISO string (UTC)
-    }).subscribe({
+    };
+
+    // Include relative points if this is a relative group
+    if (this.group?.betType === 'relative') {
+      updateData.relativePoints = this.editMatchData.relativePoints;
+    }
+
+    this.matchService.editMatch(updateData).subscribe({
       next: () => {
         this.loadingEditMatch = false;
         this.editingMatchId = null;
@@ -927,7 +1088,13 @@ export class ManageMatchesComponent implements OnInit {
   cancelEditMatch(): void {
     this.editingMatchId = null;
     this.editingMatchDetails = false;
-    this.editMatchData = { homeTeam: '', awayTeam: '', matchDate: '', matchHour: '' };
+    this.editMatchData = {
+      homeTeam: '',
+      awayTeam: '',
+      matchDate: '',
+      matchHour: '',
+      relativePoints: { homeWin: 1, draw: 1, awayWin: 1 }
+    };
     this.editMatchError = '';
   }
 

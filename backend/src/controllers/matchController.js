@@ -342,7 +342,7 @@ exports.getAvailableLeagues = async (req, res) => {
 // Create a manual match (group admin only)
 exports.createManualMatch = async (req, res) => {
   try {
-    const { homeTeam, awayTeam, matchDateTime: matchDateTimeISO, matchDate, matchHour, groupId, homeScore, awayScore } = req.body;
+    const { homeTeam, awayTeam, matchDateTime: matchDateTimeISO, matchDate, matchHour, groupId, homeScore, awayScore, relativePoints } = req.body;
 
     // Validate required fields - accept either matchDateTime (ISO) or matchDate+matchHour
     if (!homeTeam || !awayTeam || !groupId || (!matchDateTimeISO && (!matchDate || !matchHour))) {
@@ -369,6 +369,16 @@ exports.createManualMatch = async (req, res) => {
         success: false,
         message: 'Only the group creator can add manual matches'
       });
+    }
+
+    // Validate relativePoints if group is 'relative' type
+    if (group.betType === 'relative') {
+      if (!relativePoints || !relativePoints.homeWin || !relativePoints.draw || !relativePoints.awayWin) {
+        return res.status(400).json({
+          success: false,
+          message: 'For relative betting groups, please provide relativePoints (homeWin, draw, awayWin)'
+        });
+      }
     }
 
     // Use ISO datetime if provided, otherwise combine date and hour
@@ -408,6 +418,17 @@ exports.createManualMatch = async (req, res) => {
       status = 'FINISHED';
     }
 
+    // Prepare relativePoints array for the match
+    const matchRelativePoints = [];
+    if (group.betType === 'relative' && relativePoints) {
+      matchRelativePoints.push({
+        group: groupId,
+        homeWin: parseFloat(relativePoints.homeWin),
+        draw: parseFloat(relativePoints.draw),
+        awayWin: parseFloat(relativePoints.awayWin)
+      });
+    }
+
     // Create the match with a unique manual ID
     const match = await Match.create({
       externalApiId: `manual_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -417,7 +438,8 @@ exports.createManualMatch = async (req, res) => {
       status,
       result,
       competition: 'Manual Match',
-      groups: [groupId]
+      groups: [groupId],
+      relativePoints: matchRelativePoints
     });
 
     res.status(201).json({
@@ -613,13 +635,24 @@ exports.markMatchAsFinished = async (req, res) => {
     const bets = await Bet.find({ match: matchId, group: groupId, calculated: false });
     let totalCalculated = 0;
 
+    // Get relative points for this match and group (if applicable)
+    const matchRelativePoints = match.relativePoints.find(
+      rp => rp.group.toString() === groupId
+    );
+
     for (const bet of bets) {
-      const points = calculatePoints(bet.prediction, match.result);
+      const points = calculatePoints(
+        bet.prediction,
+        match.result,
+        group.betType,
+        matchRelativePoints,
+        bet.wagerAmount
+      );
       bet.points = points;
       bet.calculated = true;
       await bet.save();
 
-      // Update user points in group
+      // Update user points/credits in group
       const memberIndex = group.members.findIndex(
         m => m.user.toString() === bet.user.toString()
       );
@@ -725,7 +758,7 @@ exports.deleteMatch = async (req, res) => {
 exports.editMatch = async (req, res) => {
   try {
     const { matchId } = req.params;
-    const { groupId, homeTeam, awayTeam, matchDateTime: matchDateTimeISO, matchDate, matchHour } = req.body;
+    const { groupId, homeTeam, awayTeam, matchDateTime: matchDateTimeISO, matchDate, matchHour, relativePoints } = req.body;
 
     if (!matchId || !groupId) {
       return res.status(400).json({
@@ -779,6 +812,27 @@ exports.editMatch = async (req, res) => {
       match.matchDate = new Date(matchDateTimeISO);
     } else if (matchDate && matchHour) {
       match.matchDate = new Date(`${matchDate}T${matchHour}`);
+    }
+
+    // Update relative points if provided (for relative betting groups)
+    if (relativePoints && group.betType === 'relative') {
+      // Find existing relativePoints entry for this group
+      const existingIndex = match.relativePoints.findIndex(rp => rp.group.toString() === groupId);
+
+      if (existingIndex !== -1) {
+        // Update existing entry
+        match.relativePoints[existingIndex].homeWin = relativePoints.homeWin || 1;
+        match.relativePoints[existingIndex].draw = relativePoints.draw || 1;
+        match.relativePoints[existingIndex].awayWin = relativePoints.awayWin || 1;
+      } else {
+        // Add new entry
+        match.relativePoints.push({
+          group: groupId,
+          homeWin: relativePoints.homeWin || 1,
+          draw: relativePoints.draw || 1,
+          awayWin: relativePoints.awayWin || 1
+        });
+      }
     }
 
     await match.save();

@@ -8,6 +8,7 @@ export interface Match {
   result: MatchResult;
   competition: string;
   groups: string[];
+  relativePoints: RelativePoints[];
   createdAt: Date;
 }
 
@@ -15,4 +16,11 @@ export interface MatchResult {
   homeScore: number | null;
   awayScore: number | null;
   outcome: '1' | 'X' | '2' | null;
+}
+
+export interface RelativePoints {
+  group: string;
+  homeWin: number;
+  draw: number;
+  awayWin: number;
 }

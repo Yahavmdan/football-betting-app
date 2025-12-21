@@ -139,6 +139,53 @@ h2 {
   border-radius: 8px;
   font-size: 0.9rem;
 }
+.leaderboard-item.winner {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(22, 163, 74, 0.15) 100%);
+  border: 2px solid #22c55e;
+}
+.leaderboard-item.winner:hover {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.25) 0%, rgba(22, 163, 74, 0.2) 100%);
+}
+.leaderboard-item.winner .username {
+  color: #16a34a;
+  font-weight: 700;
+}
+.leaderboard-item.winner .points {
+  background: #dcfce7;
+  color: #16a34a;
+  border: 2px solid #22c55e;
+}
+.leaderboard-item.eliminated {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.1) 100%);
+  border: 2px solid #f87171;
+  opacity: 0.75;
+}
+.leaderboard-item.eliminated:hover {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.15) 100%);
+}
+.leaderboard-item.eliminated .username {
+  color: #dc2626;
+}
+.leaderboard-item.eliminated .points {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 2px solid #f87171;
+}
+.trophy {
+  font-size: 1.2rem;
+  margin-left: 0.5rem;
+  animation: bounce 1s infinite;
+}
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+.status-label {
+  font-size: 0.75rem;
+  margin-left: 0.5rem;
+  font-weight: 600;
+  opacity: 0.8;
+}
 .matches-list {
   display: flex;
   flex-direction: column;

@@ -56,7 +56,23 @@
     "editGroup": "ערוך קבוצה",
     "confirmDelete": "האם אתה בטוח שברצונך למחוק את הקבוצה? פעולה זו לא ניתנת לביטול.",
     "confirmLeave": "האם אתה בטוח שברצונך לעזוב את הקבוצה?",
-    "leaveGroup": "עזוב קבוצה"
+    "leaveGroup": "עזוב קבוצה",
+    "betType": "סוג הימורים",
+    "selectBetType": "בחר סוג הימורים",
+    "betTypeClassic": "קלאסי",
+    "betTypeRelative": "יחסי",
+    "betTypeClassicDesc": "נקודה 1 עבור ניחוש נכון",
+    "betTypeRelativeDesc": "נקודות מותאמות לפי רמת הקושי",
+    "startingCredits": "נקודות זכות התחלתיות",
+    "enterStartingCredits": "הזן נקודות זכות התחלתיות לכל שחקן",
+    "creditsPerPlayer": "נקודות זכות לשחקן",
+    "credits": "נקודות זכות",
+    "creditsGoal": "יעד נקודות זכות",
+    "enterCreditsGoal": "הזן את היעד - שחקן ראשון שמגיע זוכה",
+    "goalToWin": "יעד לניצחון",
+    "winner": "מנצח",
+    "lost": "הפסיד",
+    "eliminated": "הודח"
   },
   "matches": {
     "scheduled": "מתוכנן",
@@ -99,7 +115,15 @@
     "markAsFinished": "סמן כהסתיים",
     "confirmMarkFinished": "האם אתה בטוח שברצונך לסמן את המשחק כהסתיים? הנקודות יחושבו.",
     "confirmDelete": "האם אתה בטוח שברצונך למחוק את המשחק? פעולה זו לא ניתנת לביטול.",
-    "ongoingScore": "תוצאה נוכחית"
+    "ongoingScore": "תוצאה נוכחית",
+    "relativePoints": "חלוקת נקודות",
+    "homeWinPoints": "נקודות לניצחון בית",
+    "drawPoints": "נקודות לתיקו",
+    "awayWinPoints": "נקודות לניצחון חוץ",
+    "enterPoints": "הזן נקודות",
+    "pointsForHomeWin": "נקודות עבור ניצחון בית",
+    "pointsForDraw": "נקודות עבור תיקו",
+    "pointsForAwayWin": "נקודות עבור ניצחון חוץ"
   },
   "bets": {
     "placeYourBet": "בצע את ההימור שלך",
@@ -125,7 +149,13 @@
     "viewGroupBets": "צפה בהימורי הקבוצה",
     "memberBets": "הימורי הקבוצה",
     "noBet": "---",
-    "close": "סגור"
+    "close": "סגור",
+    "wager": "הימור",
+    "wagerAmount": "סכום הימור",
+    "enterWagerAmount": "הזן סכום הימור",
+    "availableCredits": "נקודות זכות זמינות",
+    "insufficientCredits": "אין מספיק נקודות זכות",
+    "potentialWin": "ניצחון פוטנציאלי"
   },
   "common": {
     "required": "חובה",

@@ -49,6 +49,24 @@ const matchSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Group'
   }],
+  relativePoints: [{
+    group: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Group'
+    },
+    homeWin: {
+      type: Number,
+      default: 1
+    },
+    draw: {
+      type: Number,
+      default: 1
+    },
+    awayWin: {
+      type: Number,
+      default: 1
+    }
+  }],
   createdAt: {
     type: Date,
     default: Date.now

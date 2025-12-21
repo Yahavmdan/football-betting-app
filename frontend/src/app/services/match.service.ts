@@ -83,6 +83,7 @@ export class MatchService {
     matchDateTime?: string; // ISO string
     matchDate?: string;
     matchHour?: string;
+    relativePoints?: { homeWin: number; draw: number; awayWin: number };
   }): Observable<{ success: boolean; message: string; data: Match }> {
     return this.http.put<{ success: boolean; message: string; data: Match }>(`${this.apiUrl}/${data.matchId}`, data);
   }

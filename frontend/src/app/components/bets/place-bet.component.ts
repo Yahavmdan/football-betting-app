@@ -4,11 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BetService } from '../../services/bet.service';
 import { MatchService } from '../../services/match.service';
+import { GroupService } from '../../services/group.service';
 import { Match } from '../../models/match.model';
+import { Group } from '../../models/group.model';
 import { PlaceBetData } from '../../models/bet.model';
 import { TranslatePipe } from '../../services/translate.pipe';
 import { TeamTranslatePipe } from '../../pipes/team-translate.pipe';
 import { TranslationService } from '../../services/translation.service';
+import { AuthService } from '../../services/auth.service';
 import { getTeamByName } from '../../data/teams.data';
 
 @Component({
@@ -88,7 +91,51 @@ import { getTeamByName } from '../../data/teams.data';
 
           <div class="points-info">
             <h4>{{ 'bets.pointsSystem' | translate }}</h4>
-            <p>{{ 'bets.correctResultReward' | translate }}</p>
+            <p *ngIf="!getMatchRelativePoints()">{{ 'bets.correctResultReward' | translate }}</p>
+            <div *ngIf="getMatchRelativePoints()" class="relative-points-display">
+              <div class="points-row">
+                <span class="label">{{ match.homeTeam | teamTranslate }} (1):</span>
+                <span class="points">{{ getMatchRelativePoints()?.homeWin }} {{ getMatchRelativePoints()?.homeWin === 1 ? ('bets.point' | translate) : ('bets.points' | translate) }}</span>
+              </div>
+              <div class="points-row">
+                <span class="label">{{ 'bets.draw' | translate }} (X):</span>
+                <span class="points">{{ getMatchRelativePoints()?.draw }} {{ getMatchRelativePoints()?.draw === 1 ? ('bets.point' | translate) : ('bets.points' | translate) }}</span>
+              </div>
+              <div class="points-row">
+                <span class="label">{{ match.awayTeam | teamTranslate }} (2):</span>
+                <span class="points">{{ getMatchRelativePoints()?.awayWin }} {{ getMatchRelativePoints()?.awayWin === 1 ? ('bets.point' | translate) : ('bets.points' | translate) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="group?.betType === 'relative' && !isMatchInPast" class="wager-section">
+            <h4>{{ 'bets.wager' | translate }}</h4>
+            <div class="credits-display">
+              <span class="label">{{ 'bets.availableCredits' | translate }}:</span>
+              <span class="value">{{ userCredits }}</span>
+            </div>
+            <div class="form-group" style="margin-top: 1rem;">
+              <label for="wagerAmount">{{ 'bets.wagerAmount' | translate }} *</label>
+              <input
+                type="number"
+                id="wagerAmount"
+                name="wagerAmount"
+                [(ngModel)]="wagerAmount"
+                min="1"
+                [max]="userCredits"
+                step="1"
+                class="form-control"
+                [placeholder]="'bets.enterWagerAmount' | translate"
+                [disabled]="isMatchInPast || userCredits <= 0"
+                required>
+            </div>
+            <div *ngIf="wagerAmount && betData.outcome && getMatchRelativePoints()" class="potential-win">
+              <span class="label">{{ 'bets.potentialWin' | translate }}:</span>
+              <span class="value">{{ calculatePotentialWin() }} {{ 'groups.credits' | translate }}</span>
+            </div>
+            <div *ngIf="userCredits <= 0" class="error-message" style="margin-top: 1rem;">
+              {{ 'groups.eliminated' | translate }} - {{ 'bets.insufficientCredits' | translate }}
+            </div>
           </div>
 
           <div *ngIf="errorMessage" class="error-message">
@@ -104,7 +151,7 @@ import { getTeamByName } from '../../data/teams.data';
             <button
               type="submit"
               *ngIf="!isMatchInPast"
-              [disabled]="!betData.outcome || loading"
+              [disabled]="!betData.outcome || loading || (group?.betType === 'relative' && (!wagerAmount || userCredits <= 0))"
               class="btn-primary"
             >
               {{ loading ? ('bets.placingBet' | translate) : (hasExistingBet ? ('bets.updateBet' | translate) : ('matches.placeBet' | translate)) }}
@@ -288,6 +335,116 @@ import { getTeamByName } from '../../data/teams.data';
       color: #3b82f6;
       font-size: 0.9rem;
     }
+    .relative-points-display {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .points-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem;
+      background: white;
+      border-radius: 8px;
+      border: 1px solid #bfdbfe;
+    }
+    .points-row .label {
+      color: #475569;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    .points-row .points {
+      color: #1e40af;
+      font-weight: 700;
+      font-size: 1rem;
+    }
+    .wager-section {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%);
+      padding: 1.5rem;
+      border-radius: 12px;
+      margin-bottom: 1.75rem;
+      border-left: 4px solid #10b981;
+    }
+    .wager-section h4 {
+      margin: 0 0 1rem 0;
+      color: #047857;
+      font-size: 1rem;
+      font-weight: 700;
+    }
+    .credits-display {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      background: white;
+      border-radius: 8px;
+      border: 2px solid #a7f3d0;
+    }
+    .credits-display .label {
+      color: #475569;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    .credits-display .value {
+      color: #047857;
+      font-weight: 700;
+      font-size: 1.25rem;
+    }
+    .form-group {
+      margin-bottom: 0;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 0.6rem;
+      color: #047857;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    .form-control {
+      width: 100%;
+      padding: 1rem 1.25rem;
+      border: 2px solid #a7f3d0;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-family: inherit;
+      transition: all 0.3s ease;
+      background: white;
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: #10b981;
+      background: white;
+      box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+    }
+    .form-control::placeholder {
+      color: #94a3b8;
+    }
+    .form-control:disabled {
+      background: #f1f5f9;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    .potential-win {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      background: #dcfce7;
+      border-radius: 8px;
+      border: 2px solid #10b981;
+      margin-top: 1rem;
+    }
+    .potential-win .label {
+      color: #047857;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    .potential-win .value {
+      color: #047857;
+      font-weight: 700;
+      font-size: 1.25rem;
+    }
     .button-group {
       display: flex;
       gap: 1rem;
@@ -380,11 +537,14 @@ import { getTeamByName } from '../../data/teams.data';
 })
 export class PlaceBetComponent implements OnInit {
   match: Match | null = null;
+  group: Group | null = null;
   betData: PlaceBetData = {
     matchId: '',
     groupId: '',
     outcome: '' as any
   };
+  wagerAmount: number | null = null;
+  userCredits: number = 0;
   errorMessage = '';
   successMessage = '';
   loading = false;
@@ -397,6 +557,8 @@ export class PlaceBetComponent implements OnInit {
     private router: Router,
     private betService: BetService,
     private matchService: MatchService,
+    private groupService: GroupService,
+    private authService: AuthService,
     private translationService: TranslationService
   ) {}
 
@@ -408,6 +570,10 @@ export class PlaceBetComponent implements OnInit {
       if (this.betData.matchId) {
         this.loadMatch();
         this.checkExistingBet();
+      }
+
+      if (this.betData.groupId) {
+        this.loadGroup();
       }
     });
   }
@@ -434,6 +600,9 @@ export class PlaceBetComponent implements OnInit {
         if (this.hasExistingBet && this.existingBet) {
           // Pre-fill form with existing bet
           this.betData.outcome = this.existingBet.prediction.outcome;
+          if (this.existingBet.wagerAmount) {
+            this.wagerAmount = this.existingBet.wagerAmount;
+          }
         }
       },
       error: (error) => {
@@ -442,8 +611,62 @@ export class PlaceBetComponent implements OnInit {
     });
   }
 
+  loadGroup(): void {
+    this.groupService.getGroupById(this.betData.groupId).subscribe({
+      next: (response) => {
+        this.group = response.data;
+        // Calculate user's current credits from group members
+        const currentUserId = this.authService.getCurrentUser()?.id;
+        if (currentUserId && this.group.members) {
+          const member = this.group.members.find(m => m.user._id === currentUserId);
+          if (member) {
+            this.userCredits = member.points;
+          }
+        }
+      },
+      error: (error) => {
+        console.error('Failed to load group:', error);
+      }
+    });
+  }
+
+  calculatePotentialWin(): number {
+    if (!this.wagerAmount || !this.betData.outcome) {
+      return 0;
+    }
+
+    const relativePoints = this.getMatchRelativePoints();
+    if (!relativePoints) {
+      return this.wagerAmount;
+    }
+
+    let multiplier = 1;
+    switch (this.betData.outcome) {
+      case '1':
+        multiplier = relativePoints.homeWin;
+        break;
+      case 'X':
+        multiplier = relativePoints.draw;
+        break;
+      case '2':
+        multiplier = relativePoints.awayWin;
+        break;
+    }
+
+    return Math.round(this.wagerAmount * multiplier);
+  }
+
   selectOutcome(outcome: '1' | 'X' | '2'): void {
     this.betData.outcome = outcome;
+  }
+
+  getMatchRelativePoints(): { homeWin: number; draw: number; awayWin: number } | null {
+    if (!this.match || !this.match.relativePoints || this.match.relativePoints.length === 0) {
+      return null;
+    }
+    // Find the relative points for this group
+    const matchPoints = this.match.relativePoints.find(rp => rp.group === this.betData.groupId);
+    return matchPoints || null;
   }
 
   onSubmit(): void {
@@ -451,7 +674,16 @@ export class PlaceBetComponent implements OnInit {
     this.errorMessage = '';
     this.successMessage = '';
 
-    this.betService.placeBet(this.betData).subscribe({
+    // Include wagerAmount for relative betting groups
+    const betDataToSubmit: PlaceBetData = {
+      ...this.betData
+    };
+
+    if (this.group?.betType === 'relative' && this.wagerAmount) {
+      betDataToSubmit.wagerAmount = this.wagerAmount;
+    }
+
+    this.betService.placeBet(betDataToSubmit).subscribe({
       next: (response) => {
         this.successMessage = response.message || this.translationService.translate('bets.betPlacedSuccess');
         setTimeout(() => {

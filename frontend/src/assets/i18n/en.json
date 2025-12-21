@@ -56,7 +56,23 @@
     "editGroup": "Edit Group",
     "confirmDelete": "Are you sure you want to delete this group? This action cannot be undone.",
     "confirmLeave": "Are you sure you want to leave this group?",
-    "leaveGroup": "Leave Group"
+    "leaveGroup": "Leave Group",
+    "betType": "Betting Type",
+    "selectBetType": "Select betting type",
+    "betTypeClassic": "Classic",
+    "betTypeRelative": "Relative",
+    "betTypeClassicDesc": "1 point for correct prediction",
+    "betTypeRelativeDesc": "Custom points based on match difficulty",
+    "startingCredits": "Starting Credits",
+    "enterStartingCredits": "Enter starting credits for each player",
+    "creditsPerPlayer": "Credits per player",
+    "credits": "credits",
+    "creditsGoal": "Credits Goal",
+    "enterCreditsGoal": "Enter the goal - first player to reach this wins",
+    "goalToWin": "Goal to win",
+    "winner": "Winner",
+    "lost": "Lost",
+    "eliminated": "Eliminated"
   },
   "matches": {
     "scheduled": "SCHEDULED",
@@ -99,7 +115,15 @@
     "markAsFinished": "Mark as Finished",
     "confirmMarkFinished": "Are you sure you want to mark this match as finished? Points will be calculated.",
     "confirmDelete": "Are you sure you want to delete this match? This action cannot be undone.",
-    "ongoingScore": "Current Score"
+    "ongoingScore": "Current Score",
+    "relativePoints": "Points Distribution",
+    "homeWinPoints": "Home Win Points",
+    "drawPoints": "Draw Points",
+    "awayWinPoints": "Away Win Points",
+    "enterPoints": "Enter points",
+    "pointsForHomeWin": "Points for home win",
+    "pointsForDraw": "Points for draw",
+    "pointsForAwayWin": "Points for away win"
   },
   "bets": {
     "placeYourBet": "Place Your Bet",
@@ -125,7 +149,13 @@
     "viewGroupBets": "View Group Bets",
     "memberBets": "Group Bets",
     "noBet": "---",
-    "close": "Close"
+    "close": "Close",
+    "wager": "Wager",
+    "wagerAmount": "Wager Amount",
+    "enterWagerAmount": "Enter wager amount",
+    "availableCredits": "Available Credits",
+    "insufficientCredits": "Insufficient credits",
+    "potentialWin": "Potential Win"
   },
   "common": {
     "required": "required",
