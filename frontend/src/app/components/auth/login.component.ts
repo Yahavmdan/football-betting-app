@@ -13,6 +13,9 @@ import { TranslationService } from '../../services/translation.service';
   imports: [CommonModule, FormsModule, RouterModule, TranslatePipe],
   template: `
     <div class="auth-container">
+      <div class="logo-container">
+        <img src="assets/utilities/app-logo.png" alt="Logo" class="auth-logo">
+      </div>
       <div class="auth-card">
         <h2>{{ 'auth.login' | translate }}</h2>
         <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
@@ -56,6 +59,7 @@ import { TranslationService } from '../../services/translation.service';
   styles: [`
     .auth-container {
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
@@ -63,6 +67,7 @@ import { TranslationService } from '../../services/translation.service';
       padding: 2rem;
       position: relative;
       overflow: hidden;
+      gap: 2rem;
     }
     .auth-container::before {
       content: '';
@@ -81,11 +86,11 @@ import { TranslationService } from '../../services/translation.service';
     .auth-card {
       background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(20px);
-      padding: 3rem;
+      padding: 2rem;
       border-radius: 24px;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1);
       width: 100%;
-      max-width: 420px;
+      max-width: 380px;
       position: relative;
       z-index: 1;
       animation: slideUp 0.5s ease-out;
@@ -94,16 +99,26 @@ import { TranslationService } from '../../services/translation.service';
       from { opacity: 0; transform: translateY(30px); }
       to { opacity: 1; transform: translateY(0); }
     }
+    .logo-container {
+      text-align: center;
+      z-index: 1;
+    }
+    .auth-logo {
+      height: 120px;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.3));
+    }
     h2 {
       text-align: center;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
       color: #1a1a2e;
-      font-size: 2rem;
+      font-size: 1.5rem;
       font-weight: 700;
       font-family: 'Poppins', sans-serif;
     }
     .form-group {
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.25rem;
     }
     label {
       display: block;

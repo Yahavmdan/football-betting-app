@@ -254,14 +254,12 @@ import { TranslatePipe } from '../../services/translate.pipe';
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
       z-index: 1000;
       transform: translateY(-120%);
-      opacity: 0;
-      transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.3s ease;
+      transition: transform 0.2s ease-out;
       border-bottom-left-radius: 20px;
       border-bottom-right-radius: 20px;
     }
     .mobile-menu.open {
       transform: translateY(0);
-      opacity: 1;
     }
     .mobile-menu a {
       color: rgba(255, 255, 255, 0.85);
@@ -304,12 +302,20 @@ import { TranslatePipe } from '../../services/translate.pipe';
     @media (max-width: 768px) {
       .nav-container {
         padding: 0 1.25rem;
+        position: relative;
+      }
+      .nav-brand {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
       }
       .desktop-menu {
         display: none;
       }
       .hamburger {
         display: flex;
+        position: absolute;
+        left: 1.25rem;
       }
       .mobile-menu {
         display: flex;
@@ -318,7 +324,7 @@ import { TranslatePipe } from '../../services/translate.pipe';
         display: block;
       }
       .app-logo {
-        height: 40px;
+        height: 60px;
       }
     }
   `]
