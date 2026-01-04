@@ -72,7 +72,14 @@
     "goalToWin": "יעד לניצחון",
     "winner": "מנצח",
     "lost": "הפסיד",
-    "eliminated": "הודח"
+    "eliminated": "הודח",
+    "pendingRequests": "בקשות ממתינות",
+    "approve": "אשר",
+    "reject": "דחה",
+    "kick": "הסר",
+    "kickMember": "הסר חבר",
+    "confirmKick": "האם אתה בטוח שברצונך להסיר חבר זה מהקבוצה?",
+    "joinRequestPending": "בקשת ההצטרפות שלך ממתינה לאישור"
   },
   "matches": {
     "scheduled": "מתוכנן",

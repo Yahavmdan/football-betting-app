@@ -7,6 +7,7 @@ export interface Group {
   creditsGoal: number;
   creator: any;
   members: GroupMember[];
+  pendingMembers: PendingMember[];
   inviteCode: string;
   createdAt: Date;
 }
@@ -19,6 +20,15 @@ export interface GroupMember {
   };
   joinedAt: Date;
   points: number;
+}
+
+export interface PendingMember {
+  user: {
+    _id: string;
+    username: string;
+    email: string;
+  };
+  requestedAt: Date;
 }
 
 export interface CreateGroupData {

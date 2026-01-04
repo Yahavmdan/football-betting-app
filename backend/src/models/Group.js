@@ -32,6 +32,17 @@ const groupSchema = new mongoose.Schema({
       default: 0
     }
   }],
+  pendingMembers: [{
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    requestedAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
   inviteCode: {
     type: String,
     unique: true,

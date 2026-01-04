@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Group, CreateGroupData, JoinGroupData, GroupMember } from '../models/group.model';
+import { Group, CreateGroupData, JoinGroupData, GroupMember, PendingMember } from '../models/group.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -16,8 +16,8 @@ export class GroupService {
     return this.http.post<{ success: boolean; data: Group }>(`${this.apiUrl}`, data);
   }
 
-  joinGroup(data: JoinGroupData): Observable<{ success: boolean; data: Group }> {
-    return this.http.post<{ success: boolean; data: Group }>(`${this.apiUrl}/join`, data);
+  joinGroup(data: JoinGroupData): Observable<{ success: boolean; message?: string; data: Group }> {
+    return this.http.post<{ success: boolean; message?: string; data: Group }>(`${this.apiUrl}/join`, data);
   }
 
   getMyGroups(): Observable<{ success: boolean; data: Group[] }> {
@@ -55,5 +55,22 @@ export class GroupService {
 
   clearFilterPreferences(groupId: string): Observable<{ success: boolean; message: string }> {
     return this.http.delete<{ success: boolean; message: string }>(`${this.apiUrl}/${groupId}/filter-preferences`);
+  }
+
+  // Member management
+  getPendingMembers(groupId: string): Observable<{ success: boolean; data: PendingMember[] }> {
+    return this.http.get<{ success: boolean; data: PendingMember[] }>(`${this.apiUrl}/${groupId}/pending`);
+  }
+
+  approveMember(groupId: string, userId: string): Observable<{ success: boolean; message: string }> {
+    return this.http.post<{ success: boolean; message: string }>(`${this.apiUrl}/${groupId}/approve/${userId}`, {});
+  }
+
+  rejectMember(groupId: string, userId: string): Observable<{ success: boolean; message: string }> {
+    return this.http.post<{ success: boolean; message: string }>(`${this.apiUrl}/${groupId}/reject/${userId}`, {});
+  }
+
+  kickMember(groupId: string, userId: string): Observable<{ success: boolean; message: string }> {
+    return this.http.post<{ success: boolean; message: string }>(`${this.apiUrl}/${groupId}/kick/${userId}`, {});
   }
 }

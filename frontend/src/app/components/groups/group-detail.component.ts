@@ -7,7 +7,7 @@ import { MatchService } from '../../services/match.service';
 import { BetService } from '../../services/bet.service';
 import { AuthService } from '../../services/auth.service';
 import { TranslationService } from '../../services/translation.service';
-import { Group, GroupMember } from '../../models/group.model';
+import { Group, GroupMember, PendingMember } from '../../models/group.model';
 import { Match } from '../../models/match.model';
 import { MemberBet, Bet } from '../../models/bet.model';
 import { TranslatePipe } from '../../services/translate.pipe';
@@ -109,10 +109,56 @@ import { getTeamByName, getAllTeams, Team } from '../../data/teams.data';
               <span class="points">
                 {{ member.points }} {{ group.betType === 'relative' ? ('groups.credits' | translate) : ('groups.points' | translate) }}
               </span>
+              <button
+                *ngIf="canManageGroup() && !isGroupCreatorMember(member.user._id)"
+                (click)="confirmKickMember(member.user._id)"
+                class="btn-kick"
+                [title]="'groups.kickMember' | translate">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+            <!-- Kick confirmation -->
+            <div *ngIf="kickingMemberId" class="kick-confirm">
+              <p>{{ 'groups.confirmKick' | translate }}</p>
+              <div class="button-row">
+                <button (click)="kickMember(kickingMemberId)" [disabled]="loadingKickMember" class="btn-delete-group btn-small">
+                  {{ loadingKickMember ? ('auth.loading' | translate) : ('groups.kick' | translate) }}
+                </button>
+                <button (click)="cancelKickMember()" class="btn-secondary btn-small">
+                  {{ 'groups.cancel' | translate }}
+                </button>
+              </div>
             </div>
           </div>
           <div *ngIf="!loadingLeaderboard && leaderboard.length === 0" class="empty-state">
             {{ 'groups.noMembers' | translate }}
+          </div>
+
+          <!-- Pending Members Section (Admin/Creator only) -->
+          <div *ngIf="canManageGroup() && pendingMembers.length > 0" class="pending-section">
+            <h3>{{ 'groups.pendingRequests' | translate }} ({{ pendingMembers.length }})</h3>
+            <div class="pending-list">
+              <div *ngFor="let pending of pendingMembers" class="pending-item">
+                <span class="pending-username">{{ pending.user.username }}</span>
+                <span class="pending-date">{{ pending.requestedAt | date:'dd/MM/yy' }}</span>
+                <div class="pending-actions">
+                  <button (click)="approveMember(pending.user._id)" class="btn-approve" [title]="'groups.approve' | translate">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                  </button>
+                  <button (click)="rejectMember(pending.user._id)" class="btn-reject" [title]="'groups.reject' | translate">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -427,6 +473,12 @@ export class GroupDetailComponent implements OnInit {
   leavingGroup = false;
   loadingLeaveGroup = false;
 
+  // Member management
+  pendingMembers: PendingMember[] = [];
+  loadingPendingMembers = false;
+  kickingMemberId: string | null = null;
+  loadingKickMember = false;
+
   // Member bets viewer
   viewingBetsForMatch: string | null = null;
   memberBets: MemberBet[] = [];
@@ -468,6 +520,7 @@ export class GroupDetailComponent implements OnInit {
     this.loadSavedFilters(); // Load saved filters before loading matches
     this.loadMyBets();
     this.loadAllBets();
+    this.loadPendingMembers();
   }
 
   loadGroupDetails(): void {
@@ -725,6 +778,75 @@ export class GroupDetailComponent implements OnInit {
 
   cancelLeaveGroup(): void {
     this.leavingGroup = false;
+  }
+
+  // Member management methods
+  loadPendingMembers(): void {
+    if (!this.canManageGroup()) return;
+
+    this.loadingPendingMembers = true;
+    this.groupService.getPendingMembers(this.groupId).subscribe({
+      next: (response) => {
+        this.pendingMembers = response.data;
+        this.loadingPendingMembers = false;
+      },
+      error: (error) => {
+        console.error('Failed to load pending members:', error);
+        this.loadingPendingMembers = false;
+      }
+    });
+  }
+
+  approveMember(userId: string): void {
+    this.groupService.approveMember(this.groupId, userId).subscribe({
+      next: () => {
+        this.loadPendingMembers();
+        this.loadLeaderboard();
+        this.loadGroupDetails();
+      },
+      error: (error) => {
+        console.error('Failed to approve member:', error);
+      }
+    });
+  }
+
+  rejectMember(userId: string): void {
+    this.groupService.rejectMember(this.groupId, userId).subscribe({
+      next: () => {
+        this.loadPendingMembers();
+      },
+      error: (error) => {
+        console.error('Failed to reject member:', error);
+      }
+    });
+  }
+
+  confirmKickMember(userId: string): void {
+    this.kickingMemberId = userId;
+  }
+
+  kickMember(userId: string): void {
+    this.loadingKickMember = true;
+    this.groupService.kickMember(this.groupId, userId).subscribe({
+      next: () => {
+        this.loadingKickMember = false;
+        this.kickingMemberId = null;
+        this.loadLeaderboard();
+        this.loadGroupDetails();
+      },
+      error: (error) => {
+        console.error('Failed to kick member:', error);
+        this.loadingKickMember = false;
+      }
+    });
+  }
+
+  cancelKickMember(): void {
+    this.kickingMemberId = null;
+  }
+
+  isGroupCreatorMember(memberId: string): boolean {
+    return this.group?.creator?._id === memberId || this.group?.creator === memberId;
   }
 
   // Member bets methods

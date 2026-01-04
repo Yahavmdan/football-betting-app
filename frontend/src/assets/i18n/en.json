@@ -72,7 +72,14 @@
     "goalToWin": "Goal to win",
     "winner": "Winner",
     "lost": "Lost",
-    "eliminated": "Eliminated"
+    "eliminated": "Eliminated",
+    "pendingRequests": "Pending Requests",
+    "approve": "Approve",
+    "reject": "Reject",
+    "kick": "Kick",
+    "kickMember": "Kick Member",
+    "confirmKick": "Are you sure you want to kick this member from the group?",
+    "joinRequestPending": "Your join request is pending approval"
   },
   "matches": {
     "scheduled": "SCHEDULED",

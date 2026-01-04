@@ -214,10 +214,13 @@ export class JoinGroupComponent {
 
     this.groupService.joinGroup(this.joinData).subscribe({
       next: (response) => {
-        this.successMessage = this.translationService.translate('groups.successJoined');
+        // Show pending approval message
+        this.successMessage = response.message || this.translationService.translate('groups.joinRequestPending');
+        this.loading = false;
+        // Navigate back to groups after a delay
         setTimeout(() => {
-          this.router.navigate(['/groups', response.data._id]);
-        }, 1000);
+          this.router.navigate(['/groups']);
+        }, 2000);
       },
       error: (error) => {
         this.errorMessage = error.error?.message || this.translationService.translate('groups.joinFailed');

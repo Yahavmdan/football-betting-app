@@ -75,22 +75,28 @@ exports.joinGroup = async (req, res) => {
       });
     }
 
-    // Set starting points/credits based on betType
-    const initialPoints = group.betType === 'relative' ? group.startingCredits : 0;
+    // Check if already pending
+    const isPending = group.pendingMembers.some(
+      pending => pending.user.toString() === req.user._id.toString()
+    );
 
-    group.members.push({
-      user: req.user._id,
-      points: initialPoints
+    if (isPending) {
+      return res.status(400).json({
+        success: false,
+        message: 'Your join request is already pending approval'
+      });
+    }
+
+    // Add to pending members instead of members
+    group.pendingMembers.push({
+      user: req.user._id
     });
 
     await group.save();
 
-    await User.findByIdAndUpdate(req.user._id, {
-      $push: { groups: group._id }
-    });
-
     res.status(200).json({
       success: true,
+      message: 'Join request sent. Waiting for admin approval.',
       data: group
     });
   } catch (error) {
@@ -123,6 +129,7 @@ exports.getGroupById = async (req, res) => {
   try {
     const group = await Group.findById(req.params.id)
       .populate('members.user', 'username email')
+      .populate('pendingMembers.user', 'username email')
       .populate('creator', 'username email');
 
     if (!group) {
@@ -435,6 +442,224 @@ exports.clearFilterPreferences = async (req, res) => {
     res.status(200).json({
       success: true,
       message: 'Filter preferences cleared'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Get pending members (admin/creator only)
+exports.getPendingMembers = async (req, res) => {
+  try {
+    const groupId = req.params.id;
+
+    const group = await Group.findById(groupId)
+      .populate('pendingMembers.user', 'username email');
+
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        message: 'Group not found'
+      });
+    }
+
+    // Check if user is the group creator OR is admin
+    const isCreator = group.creator.toString() === req.user._id.toString();
+    if (!isCreator && !req.user.isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: 'Only the group admin can view pending members'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: group.pendingMembers
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Approve pending member (admin/creator only)
+exports.approveMember = async (req, res) => {
+  try {
+    const { id: groupId, userId } = req.params;
+
+    const group = await Group.findById(groupId);
+
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        message: 'Group not found'
+      });
+    }
+
+    // Check if user is the group creator OR is admin
+    const isCreator = group.creator.toString() === req.user._id.toString();
+    if (!isCreator && !req.user.isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: 'Only the group admin can approve members'
+      });
+    }
+
+    // Find the pending member
+    const pendingIndex = group.pendingMembers.findIndex(
+      p => p.user.toString() === userId
+    );
+
+    if (pendingIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found in pending list'
+      });
+    }
+
+    // Remove from pending and add to members
+    group.pendingMembers.splice(pendingIndex, 1);
+
+    // Set starting points/credits based on betType
+    const initialPoints = group.betType === 'relative' ? group.startingCredits : 0;
+
+    group.members.push({
+      user: userId,
+      points: initialPoints
+    });
+
+    await group.save();
+
+    // Add group to user's groups array
+    await User.findByIdAndUpdate(userId, {
+      $push: { groups: groupId }
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Member approved successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Reject pending member (admin/creator only)
+exports.rejectMember = async (req, res) => {
+  try {
+    const { id: groupId, userId } = req.params;
+
+    const group = await Group.findById(groupId);
+
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        message: 'Group not found'
+      });
+    }
+
+    // Check if user is the group creator OR is admin
+    const isCreator = group.creator.toString() === req.user._id.toString();
+    if (!isCreator && !req.user.isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: 'Only the group admin can reject members'
+      });
+    }
+
+    // Find and remove the pending member
+    const pendingIndex = group.pendingMembers.findIndex(
+      p => p.user.toString() === userId
+    );
+
+    if (pendingIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found in pending list'
+      });
+    }
+
+    group.pendingMembers.splice(pendingIndex, 1);
+    await group.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Member request rejected'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Kick member from group (admin/creator only)
+exports.kickMember = async (req, res) => {
+  try {
+    const { id: groupId, userId } = req.params;
+
+    const group = await Group.findById(groupId);
+
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        message: 'Group not found'
+      });
+    }
+
+    // Check if user is the group creator OR is admin
+    const isCreator = group.creator.toString() === req.user._id.toString();
+    if (!isCreator && !req.user.isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: 'Only the group admin can kick members'
+      });
+    }
+
+    // Cannot kick the creator
+    if (group.creator.toString() === userId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot kick the group creator'
+      });
+    }
+
+    // Find and remove the member
+    const memberIndex = group.members.findIndex(
+      m => m.user.toString() === userId
+    );
+
+    if (memberIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found in group members'
+      });
+    }
+
+    group.members.splice(memberIndex, 1);
+    await group.save();
+
+    // Remove group from user's groups array
+    await User.findByIdAndUpdate(userId, {
+      $pull: { groups: groupId }
+    });
+
+    // Optionally delete user's bets in this group
+    const Bet = require('../models/Bet');
+    await Bet.deleteMany({ user: userId, group: groupId });
+
+    res.status(200).json({
+      success: true,
+      message: 'Member kicked successfully'
     });
   } catch (error) {
     res.status(500).json({
