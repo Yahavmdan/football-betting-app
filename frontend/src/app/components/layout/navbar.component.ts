@@ -4,6 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { TranslationService } from '../../services/translation.service';
 import { TranslatePipe } from '../../services/translate.pipe';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-navbar',
@@ -45,7 +46,19 @@ import { TranslatePipe } from '../../services/translate.pipe';
             </button>
           </div>
           <div class="user-menu">
-            <span class="username">{{ user.username }}</span>
+            <a routerLink="/profile" class="user-profile-link">
+              <img
+                *ngIf="user.profilePicture"
+                [src]="getProfilePictureUrl(user.profilePicture)"
+                alt="Profile"
+                class="nav-profile-picture"
+                (error)="onImageError($event)"
+              />
+              <span *ngIf="!user.profilePicture" class="nav-profile-placeholder">
+                {{ user.username.charAt(0).toUpperCase() }}
+              </span>
+              <span class="username">{{ user.username }}</span>
+            </a>
             <button (click)="logout()" class="logout-btn">{{ 'nav.logout' | translate }}</button>
           </div>
         </div>
@@ -53,9 +66,19 @@ import { TranslatePipe } from '../../services/translate.pipe';
         <!-- Mobile dropdown menu -->
         <div class="mobile-menu" [class.open]="mobileMenuOpen">
           <a routerLink="/groups" routerLinkActive="active" (click)="closeMobileMenu()">{{ 'nav.myGroups' | translate }}</a>
-          <div class="mobile-user-info">
+          <a routerLink="/profile" class="mobile-user-info" (click)="closeMobileMenu()">
+            <img
+              *ngIf="user.profilePicture"
+              [src]="getProfilePictureUrl(user.profilePicture)"
+              alt="Profile"
+              class="nav-profile-picture mobile"
+              (error)="onImageError($event)"
+            />
+            <span *ngIf="!user.profilePicture" class="nav-profile-placeholder mobile">
+              {{ user.username.charAt(0).toUpperCase() }}
+            </span>
             <span class="username">{{ user.username }}</span>
-          </div>
+          </a>
           <div class="language-switcher">
             <button
               (click)="switchLanguage('en')"
@@ -157,12 +180,50 @@ import { TranslatePipe } from '../../services/translate.pipe';
       align-items: center;
       gap: 1rem;
     }
+    .user-profile-link {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+      padding: 0.4rem 1rem 0.4rem 0.4rem;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 25px;
+      transition: all 0.3s ease;
+    }
+    .user-profile-link:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+    .nav-profile-picture {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #4ade80;
+    }
+    .nav-profile-picture.mobile {
+      width: 36px;
+      height: 36px;
+    }
+    .nav-profile-placeholder {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: white;
+    }
+    .nav-profile-placeholder.mobile {
+      width: 36px;
+      height: 36px;
+      font-size: 1rem;
+    }
     .username {
       font-weight: 600;
       color: rgba(255, 255, 255, 0.9);
-      padding: 0.5rem 1rem;
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 20px;
       font-size: 0.9rem;
     }
     .logout-btn {
@@ -275,10 +336,19 @@ import { TranslatePipe } from '../../services/translate.pipe';
       color: #4ade80;
     }
     .mobile-user-info {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
       padding: 1rem 1.25rem;
       border-top: 1px solid rgba(255, 255, 255, 0.1);
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       margin: 0.5rem 0;
+      text-decoration: none;
+      color: rgba(255, 255, 255, 0.9);
+      transition: all 0.3s ease;
+    }
+    .mobile-user-info:hover {
+      background: rgba(74, 222, 128, 0.1);
     }
     .mobile-logout {
       width: 100%;
@@ -332,6 +402,7 @@ import { TranslatePipe } from '../../services/translate.pipe';
 export class NavbarComponent {
   currentLang: string = 'en';
   mobileMenuOpen: boolean = false;
+  private apiBaseUrl = environment.apiUrl.replace('/api', '');
 
   constructor(
     public authService: AuthService,
@@ -341,6 +412,17 @@ export class NavbarComponent {
     this.translationService.currentLang$.subscribe(lang => {
       this.currentLang = lang;
     });
+  }
+
+  getProfilePictureUrl(path: string): string {
+    if (!path) return '';
+    // Cloudinary URLs are already full URLs
+    return path;
+  }
+
+  onImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.style.display = 'none';
   }
 
   logout(): void {

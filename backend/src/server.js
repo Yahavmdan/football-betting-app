@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const connectDB = require('./config/database');
 
 const authRoutes = require('./routes/authRoutes');
@@ -8,6 +9,7 @@ const groupRoutes = require('./routes/groupRoutes');
 const matchRoutes = require('./routes/matchRoutes');
 const betRoutes = require('./routes/betRoutes');
 const testRoutes = require('./routes/testRoutes');
+const userRoutes = require('./routes/userRoutes');
 
 const app = express();
 
@@ -43,11 +45,15 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Serve static files for uploaded images
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
 app.use('/api/auth', authRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/matches', matchRoutes);
 app.use('/api/bets', betRoutes);
 app.use('/api/test', testRoutes);
+app.use('/api/users', userRoutes);
 
 app.get('/api/health', (req, res) => {
   res.status(200).json({ success: true, message: 'Server is running' });

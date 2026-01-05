@@ -240,7 +240,7 @@ exports.getBetsByMatch = async (req, res) => {
     const bets = await Bet.find({
       match: matchId,
       group: groupId
-    }).populate('user', 'username');
+    }).populate('user', 'username profilePicture');
 
     res.status(200).json({
       success: true,
@@ -259,7 +259,7 @@ exports.getGroupMembersBets = async (req, res) => {
   try {
     const { matchId, groupId } = req.params;
 
-    const group = await Group.findById(groupId).populate('members.user', 'username');
+    const group = await Group.findById(groupId).populate('members.user', 'username profilePicture');
 
     if (!group) {
       return res.status(404).json({

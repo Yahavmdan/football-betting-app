@@ -17,6 +17,7 @@ export interface GroupMember {
     _id: string;
     username: string;
     email: string;
+    profilePicture?: string | null;
   };
   joinedAt: Date;
   points: number;

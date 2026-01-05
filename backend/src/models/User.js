@@ -28,6 +28,10 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Group'
   }],
+  profilePicture: {
+    type: String,
+    default: null
+  },
   isAdmin: {
     type: Boolean,
     default: false

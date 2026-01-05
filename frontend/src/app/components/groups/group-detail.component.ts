@@ -13,6 +13,7 @@ import { MemberBet, Bet } from '../../models/bet.model';
 import { TranslatePipe } from '../../services/translate.pipe';
 import { TeamTranslatePipe } from '../../pipes/team-translate.pipe';
 import { getTeamByName, getAllTeams, Team } from '../../data/teams.data';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-group-detail',
@@ -101,6 +102,16 @@ import { getTeamByName, getAllTeams, Team } from '../../data/teams.data';
                  [class.winner]="isWinner(member)"
                  [class.eliminated]="isEliminated(member)">
               <span class="rank">{{ i + 1 }}</span>
+              <img
+                *ngIf="member.user.profilePicture"
+                [src]="getProfilePictureUrl(member.user.profilePicture)"
+                alt=""
+                class="leaderboard-profile-picture"
+                (error)="onProfileImageError($event)"
+              />
+              <span *ngIf="!member.user.profilePicture" class="leaderboard-profile-placeholder">
+                {{ member.user.username.charAt(0).toUpperCase() }}
+              </span>
               <span class="username">
                 {{ member.user.username }}
                 <span *ngIf="isWinner(member)" class="trophy">🏆</span>
@@ -491,6 +502,7 @@ export class GroupDetailComponent implements OnInit {
   teamSearchQuery = '';
   allTeams: Team[] = getAllTeams();
   saveFiltersEnabled = false;
+  private apiBaseUrl = environment.apiUrl.replace('/api', '');
   filters = {
     showFinished: false,
     showNotStarted: false,
@@ -884,6 +896,18 @@ export class GroupDetailComponent implements OnInit {
   }
 
   onImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.style.display = 'none';
+  }
+
+  // Profile picture helpers
+  getProfilePictureUrl(path: string): string {
+    if (!path) return '';
+    // Cloudinary URLs are already full URLs
+    return path;
+  }
+
+  onProfileImageError(event: Event): void {
     const img = event.target as HTMLImageElement;
     img.style.display = 'none';
   }

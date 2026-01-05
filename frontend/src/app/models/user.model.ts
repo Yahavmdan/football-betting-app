@@ -2,6 +2,7 @@ export interface User {
   id: string;
   username: string;
   email: string;
+  profilePicture?: string | null;
   isAdmin?: boolean;
   groups?: string[];
   createdAt?: Date;
@@ -13,6 +14,7 @@ export interface AuthResponse {
     id: string;
     username: string;
     email: string;
+    profilePicture?: string | null;
     isAdmin: boolean;
     token: string;
   };

@@ -111,7 +111,7 @@ exports.getMyGroups = async (req, res) => {
   try {
     const groups = await Group.find({
       'members.user': req.user._id
-    }).populate('members.user', 'username email');
+    }).populate('members.user', 'username email profilePicture');
 
     res.status(200).json({
       success: true,
@@ -128,9 +128,9 @@ exports.getMyGroups = async (req, res) => {
 exports.getGroupById = async (req, res) => {
   try {
     const group = await Group.findById(req.params.id)
-      .populate('members.user', 'username email')
-      .populate('pendingMembers.user', 'username email')
-      .populate('creator', 'username email');
+      .populate('members.user', 'username email profilePicture')
+      .populate('pendingMembers.user', 'username email profilePicture')
+      .populate('creator', 'username email profilePicture');
 
     if (!group) {
       return res.status(404).json({
@@ -166,7 +166,7 @@ exports.getGroupById = async (req, res) => {
 exports.getLeaderboard = async (req, res) => {
   try {
     const group = await Group.findById(req.params.id)
-      .populate('members.user', 'username email');
+      .populate('members.user', 'username email profilePicture');
 
     if (!group) {
       return res.status(404).json({
@@ -457,7 +457,7 @@ exports.getPendingMembers = async (req, res) => {
     const groupId = req.params.id;
 
     const group = await Group.findById(groupId)
-      .populate('pendingMembers.user', 'username email');
+      .populate('pendingMembers.user', 'username email profilePicture');
 
     if (!group) {
       return res.status(404).json({

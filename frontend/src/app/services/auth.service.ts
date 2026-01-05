@@ -50,16 +50,26 @@ export class AuthService {
     this.currentUserSubject.next(null);
   }
 
-  private setAuthData(data: { id: string; username: string; email: string; isAdmin: boolean; token: string }): void {
+  private setAuthData(data: { id: string; username: string; email: string; profilePicture?: string | null; isAdmin: boolean; token: string }): void {
     localStorage.setItem('token', data.token);
     const user: User = {
       id: data.id,
       username: data.username,
       email: data.email,
+      profilePicture: data.profilePicture || null,
       isAdmin: data.isAdmin
     };
     localStorage.setItem('user', JSON.stringify(user));
     this.currentUserSubject.next(user);
+  }
+
+  updateCurrentUser(updates: Partial<User>): void {
+    const currentUser = this.getCurrentUser();
+    if (currentUser) {
+      const updatedUser = { ...currentUser, ...updates };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      this.currentUserSubject.next(updatedUser);
+    }
   }
 
   isAdmin(): boolean {
