@@ -129,7 +129,7 @@ exports.getGroupById = async (req, res) => {
   try {
     const group = await Group.findById(req.params.id)
       .populate('members.user', 'username email profilePicture')
-      .populate('pendingMembers.user', 'username email profilePicture')
+      .populate('pendingMembers.user', 'username email profilePicture lastActive')
       .populate('creator', 'username email profilePicture');
 
     if (!group) {
@@ -166,7 +166,7 @@ exports.getGroupById = async (req, res) => {
 exports.getLeaderboard = async (req, res) => {
   try {
     const group = await Group.findById(req.params.id)
-      .populate('members.user', 'username email profilePicture');
+      .populate('members.user', 'username email profilePicture lastActive');
 
     if (!group) {
       return res.status(404).json({
@@ -457,7 +457,7 @@ exports.getPendingMembers = async (req, res) => {
     const groupId = req.params.id;
 
     const group = await Group.findById(groupId)
-      .populate('pendingMembers.user', 'username email profilePicture');
+      .populate('pendingMembers.user', 'username email profilePicture lastActive');
 
     if (!group) {
       return res.status(404).json({

@@ -36,10 +36,24 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  lastActive: {
+    type: Date,
+    default: Date.now
+  },
   createdAt: {
     type: Date,
     default: Date.now
   }
+}, {
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+});
+
+// Virtual to check if user is online (active in last 5 minutes)
+userSchema.virtual('isOnline').get(function() {
+  if (!this.lastActive) return false;
+  const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+  return this.lastActive > fiveMinutesAgo;
 });
 
 userSchema.pre('save', async function(next) {

@@ -102,16 +102,19 @@ import { environment } from '../../../environments/environment';
                  [class.winner]="isWinner(member)"
                  [class.eliminated]="isEliminated(member)">
               <span class="rank">{{ i + 1 }}</span>
-              <img
-                *ngIf="member.user.profilePicture"
-                [src]="getProfilePictureUrl(member.user.profilePicture)"
-                alt=""
-                class="leaderboard-profile-picture"
-                (error)="onProfileImageError($event)"
-              />
-              <span *ngIf="!member.user.profilePicture" class="leaderboard-profile-placeholder">
-                {{ member.user.username.charAt(0).toUpperCase() }}
-              </span>
+              <div class="profile-picture-wrapper" (click)="openProfilePicture(member.user)">
+                <img
+                  *ngIf="member.user.profilePicture"
+                  [src]="getProfilePictureUrl(member.user.profilePicture)"
+                  alt=""
+                  class="leaderboard-profile-picture"
+                  (error)="onProfileImageError($event)"
+                />
+                <span *ngIf="!member.user.profilePicture" class="leaderboard-profile-placeholder">
+                  {{ member.user.username.charAt(0).toUpperCase() }}
+                </span>
+                <span class="online-indicator" [class.online]="isUserOnline(member.user.lastActive)"></span>
+              </div>
               <span class="username">
                 {{ member.user.username }}
                 <span *ngIf="isWinner(member)" class="trophy">🏆</span>
@@ -448,6 +451,33 @@ import { environment } from '../../../environments/environment';
           </div>
         </div>
       </div>
+
+      <!-- Profile Picture Modal -->
+      <div *ngIf="viewingProfilePicture" class="profile-picture-modal" (click)="closeProfilePicture()">
+        <div class="profile-picture-modal-content" (click)="$event.stopPropagation()">
+          <button class="close-modal-btn" (click)="closeProfilePicture()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+          <img
+            *ngIf="viewingProfilePicture.profilePicture"
+            [src]="getProfilePictureUrl(viewingProfilePicture.profilePicture)"
+            [alt]="viewingProfilePicture.username"
+            class="modal-profile-picture"
+          />
+          <div *ngIf="!viewingProfilePicture.profilePicture" class="modal-profile-placeholder">
+            {{ viewingProfilePicture.username.charAt(0).toUpperCase() }}
+          </div>
+          <div class="modal-username">
+            {{ viewingProfilePicture.username }}
+            <span class="modal-online-status" [class.online]="isUserOnline(viewingProfilePicture.lastActive)">
+              {{ isUserOnline(viewingProfilePicture.lastActive) ? 'Online' : 'Offline' }}
+            </span>
+          </div>
+        </div>
+      </div>
     </div>
   `,
   styleUrls: ['./group-detail.component.css']
@@ -494,6 +524,9 @@ export class GroupDetailComponent implements OnInit {
   viewingBetsForMatch: string | null = null;
   memberBets: MemberBet[] = [];
   loadingMemberBets = false;
+
+  // Profile picture modal
+  viewingProfilePicture: { username: string; profilePicture?: string | null; lastActive?: Date } | null = null;
 
   // Filter state
   showFilterDialog = false;
@@ -1137,5 +1170,21 @@ export class GroupDetailComponent implements OnInit {
     // Eliminated: has 0 credits in relative betting groups
     if (this.group?.betType !== 'relative') return false;
     return member.points <= 0;
+  }
+
+  // Online status helper
+  isUserOnline(lastActive?: Date): boolean {
+    if (!lastActive) return false;
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    return new Date(lastActive) > fiveMinutesAgo;
+  }
+
+  // Profile picture modal methods
+  openProfilePicture(user: { username: string; profilePicture?: string | null; lastActive?: Date }): void {
+    this.viewingProfilePicture = user;
+  }
+
+  closeProfilePicture(): void {
+    this.viewingProfilePicture = null;
   }
 }

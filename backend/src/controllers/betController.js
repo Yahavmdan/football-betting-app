@@ -259,7 +259,7 @@ exports.getGroupMembersBets = async (req, res) => {
   try {
     const { matchId, groupId } = req.params;
 
-    const group = await Group.findById(groupId).populate('members.user', 'username profilePicture');
+    const group = await Group.findById(groupId).populate('members.user', 'username profilePicture lastActive');
 
     if (!group) {
       return res.status(404).json({

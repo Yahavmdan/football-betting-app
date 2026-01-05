@@ -26,6 +26,9 @@ exports.protect = async (req, res, next) => {
       });
     }
 
+    // Update lastActive timestamp (async, don't wait)
+    User.findByIdAndUpdate(req.user._id, { lastActive: new Date() }).exec();
+
     next();
   } catch (error) {
     return res.status(401).json({

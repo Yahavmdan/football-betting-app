@@ -18,6 +18,7 @@ export interface GroupMember {
     username: string;
     email: string;
     profilePicture?: string | null;
+    lastActive?: Date;
   };
   joinedAt: Date;
   points: number;
@@ -28,6 +29,7 @@ export interface PendingMember {
     _id: string;
     username: string;
     email: string;
+    lastActive?: Date;
   };
   requestedAt: Date;
 }

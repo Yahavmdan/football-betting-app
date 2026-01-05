@@ -5,6 +5,7 @@ export interface User {
   profilePicture?: string | null;
   isAdmin?: boolean;
   groups?: string[];
+  lastActive?: Date;
   createdAt?: Date;
 }
 
