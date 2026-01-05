@@ -45,6 +45,10 @@ export class AuthService {
   }
 
   logout(): void {
+    // Call backend to mark user as offline
+    this.http.post(`${this.apiUrl}/logout`, {}).subscribe({
+      error: () => {} // Ignore errors, still clear local data
+    });
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     this.currentUserSubject.next(null);

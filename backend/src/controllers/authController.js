@@ -70,6 +70,10 @@ exports.login = async (req, res) => {
       });
     }
 
+    // Mark user as online immediately on login
+    user.lastActive = new Date();
+    await user.save();
+
     const token = generateToken(user._id);
 
     res.status(200).json({
@@ -98,6 +102,23 @@ exports.getMe = async (req, res) => {
     res.status(200).json({
       success: true,
       data: user
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+exports.logout = async (req, res) => {
+  try {
+    // Mark user as offline by setting lastActive to null
+    await User.findByIdAndUpdate(req.user._id, { lastActive: null });
+
+    res.status(200).json({
+      success: true,
+      message: 'Logged out successfully'
     });
   } catch (error) {
     res.status(500).json({
