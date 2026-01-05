@@ -109,13 +109,33 @@ exports.joinGroup = async (req, res) => {
 
 exports.getMyGroups = async (req, res) => {
   try {
-    const groups = await Group.find({
+    // Get groups where user is a member
+    const memberGroups = await Group.find({
       'members.user': req.user._id
     }).populate('members.user', 'username email profilePicture');
 
+    // Get groups where user has a pending request
+    const pendingGroups = await Group.find({
+      'pendingMembers.user': req.user._id
+    }).populate('members.user', 'username email profilePicture');
+
+    // Add isPending flag to each group
+    const memberGroupsWithFlag = memberGroups.map(group => ({
+      ...group.toObject(),
+      isPending: false
+    }));
+
+    const pendingGroupsWithFlag = pendingGroups.map(group => ({
+      ...group.toObject(),
+      isPending: true
+    }));
+
+    // Combine and return all groups
+    const allGroups = [...memberGroupsWithFlag, ...pendingGroupsWithFlag];
+
     res.status(200).json({
       success: true,
-      data: groups
+      data: allGroups
     });
   } catch (error) {
     res.status(500).json({

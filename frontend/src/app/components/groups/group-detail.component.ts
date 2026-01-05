@@ -151,26 +151,38 @@ import { environment } from '../../../environments/environment';
             {{ 'groups.noMembers' | translate }}
           </div>
 
-          <!-- Pending Members Section (Admin/Creator only) -->
-          <div *ngIf="canManageGroup() && pendingMembers.length > 0" class="pending-section">
-            <h3>{{ 'groups.pendingRequests' | translate }} ({{ pendingMembers.length }})</h3>
-            <div class="pending-list">
-              <div *ngFor="let pending of pendingMembers" class="pending-item">
-                <span class="pending-username">{{ pending.user.username }}</span>
-                <span class="pending-date">{{ pending.requestedAt | date:'dd/MM/yy' }}</span>
-                <div class="pending-actions">
-                  <button (click)="approveMember(pending.user._id)" class="btn-approve" [title]="'groups.approve' | translate">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                  </button>
-                  <button (click)="rejectMember(pending.user._id)" class="btn-reject" [title]="'groups.reject' | translate">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <line x1="18" y1="6" x2="6" y2="18"></line>
-                      <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                  </button>
-                </div>
+          <!-- Pending Members in Leaderboard (shown to admin/creator) -->
+          <div *ngIf="canManageGroup() && pendingMembers.length > 0" class="pending-in-leaderboard">
+            <div *ngFor="let pending of pendingMembers" class="leaderboard-item pending">
+              <span class="rank">-</span>
+              <div class="profile-picture-wrapper" (click)="openProfilePicture(pending.user)">
+                <img
+                  *ngIf="pending.user.profilePicture"
+                  [src]="getProfilePictureUrl(pending.user.profilePicture)"
+                  alt=""
+                  class="leaderboard-profile-picture"
+                  (error)="onProfileImageError($event)"
+                />
+                <span *ngIf="!pending.user.profilePicture" class="leaderboard-profile-placeholder">
+                  {{ pending.user.username.charAt(0).toUpperCase() }}
+                </span>
+                <span class="online-indicator" [class.online]="isUserOnline(pending.user.lastActive)"></span>
+              </div>
+              <span class="username">
+                {{ pending.user.username }}
+              </span>
+              <div class="pending-actions">
+                <button (click)="approveMember(pending.user._id)" class="btn-approve" [title]="'groups.approve' | translate">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </button>
+                <button (click)="rejectMember(pending.user._id)" class="btn-reject" [title]="'groups.reject' | translate">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
               </div>
             </div>
           </div>
@@ -565,13 +577,14 @@ export class GroupDetailComponent implements OnInit {
     this.loadSavedFilters(); // Load saved filters before loading matches
     this.loadMyBets();
     this.loadAllBets();
-    this.loadPendingMembers();
   }
 
   loadGroupDetails(): void {
     this.groupService.getGroupById(this.groupId).subscribe({
       next: (response) => {
         this.group = response.data;
+        // Load pending members after group is loaded (needs group data for canManageGroup check)
+        this.loadPendingMembers();
       },
       error: (error) => {
         console.error('Failed to load group:', error);

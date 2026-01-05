@@ -27,7 +27,14 @@ import { TranslatePipe } from '../../services/translate.pipe';
       </div>
 
       <div class="groups-grid">
-        <div *ngFor="let group of groups" class="group-card" [routerLink]="['/groups', group._id]">
+        <div *ngFor="let group of groups"
+             class="group-card"
+             [class.pending]="group.isPending"
+             [routerLink]="group.isPending ? null : ['/groups', group._id]"
+             [style.cursor]="group.isPending ? 'default' : 'pointer'">
+          <div *ngIf="group.isPending" class="pending-badge">
+            {{ 'groups.joinRequestPending' | translate }}
+          </div>
           <h3>{{ group.name }}</h3>
           <p class="description">{{ group.description || ('groups.noDescription' | translate) }}</p>
           <div class="group-info">
@@ -144,12 +151,33 @@ import { TranslatePipe } from '../../services/translate.pipe';
       transform: scaleX(0);
       transition: transform 0.3s ease;
     }
-    .group-card:hover {
+    .group-card:hover:not(.pending) {
       transform: translateY(-8px);
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
     }
-    .group-card:hover::before {
+    .group-card:hover:not(.pending)::before {
       transform: scaleX(1);
+    }
+    .group-card.pending {
+      opacity: 0.7;
+      background: #f8fafc;
+      border: 2px dashed #94a3b8;
+    }
+    .group-card.pending::before {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      transform: scaleX(1);
+    }
+    .pending-badge {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: white;
+      padding: 0.35rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
     }
     .group-card h3 {
       margin: 0 0 0.75rem 0;
@@ -187,7 +215,7 @@ import { TranslatePipe } from '../../services/translate.pipe';
     }
     @media (max-width: 768px) {
       .container {
-        padding: 1.5rem;
+        padding: 1rem;
       }
       .header {
         flex-direction: column;

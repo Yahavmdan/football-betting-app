@@ -10,6 +10,7 @@ export interface Group {
   pendingMembers: PendingMember[];
   inviteCode: string;
   createdAt: Date;
+  isPending?: boolean;
 }
 
 export interface GroupMember {
@@ -29,6 +30,7 @@ export interface PendingMember {
     _id: string;
     username: string;
     email: string;
+    profilePicture?: string | null;
     lastActive?: Date;
   };
   requestedAt: Date;

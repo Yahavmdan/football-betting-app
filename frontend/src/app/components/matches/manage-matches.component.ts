@@ -716,7 +716,7 @@ import { getTeamByName } from '../../data/teams.data';
     }
     @media (max-width: 768px) {
       .container {
-        padding: 1.25rem;
+        padding: 1rem;
       }
       .header {
         flex-direction: column;
