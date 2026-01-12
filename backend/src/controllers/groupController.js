@@ -1,5 +1,6 @@
 const Group = require('../models/Group');
 const User = require('../models/User');
+const Bet = require('../models/Bet');
 const FilterPreference = require('../models/FilterPreference');
 const generateInviteCode = require('../utils/generateInviteCode');
 
@@ -207,7 +208,27 @@ exports.getLeaderboard = async (req, res) => {
       });
     }
 
-    const sortedMembers = group.members.sort((a, b) => b.points - a.points);
+    // For relative betting groups, check for ongoing bets per member
+    let membersWithOngoingBets = new Set();
+    if (group.betType === 'relative') {
+      const ongoingBets = await Bet.find({
+        group: group._id,
+        calculated: false
+      });
+      ongoingBets.forEach(bet => {
+        membersWithOngoingBets.add(bet.user.toString());
+      });
+    }
+
+    // Add hasOngoingBets field to each member
+    const membersWithBetInfo = group.members.map(member => ({
+      user: member.user,
+      joinedAt: member.joinedAt,
+      points: member.points,
+      hasOngoingBets: membersWithOngoingBets.has(member.user._id.toString())
+    }));
+
+    const sortedMembers = membersWithBetInfo.sort((a, b) => b.points - a.points);
 
     res.status(200).json({
       success: true,

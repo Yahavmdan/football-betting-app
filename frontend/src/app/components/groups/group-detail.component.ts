@@ -1180,9 +1180,10 @@ export class GroupDetailComponent implements OnInit {
   }
 
   isEliminated(member: GroupMember): boolean {
-    // Eliminated: has 0 credits in relative betting groups
+    // Eliminated: has 0 credits AND no ongoing bets in relative betting groups
+    // If user has credits invested in ongoing bets, they are not eliminated yet
     if (this.group?.betType !== 'relative') return false;
-    return member.points <= 0;
+    return member.points <= 0 && !member.hasOngoingBets;
   }
 
   // Online status helper

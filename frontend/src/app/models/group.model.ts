@@ -23,6 +23,7 @@ export interface GroupMember {
   };
   joinedAt: Date;
   points: number;
+  hasOngoingBets?: boolean;
 }
 
 export interface PendingMember {

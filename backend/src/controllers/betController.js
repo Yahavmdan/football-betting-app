@@ -66,11 +66,11 @@ exports.placeBet = async (req, res) => {
 
     // For relative groups, validate wager amount
     if (group.betType === 'relative') {
-      // Prevent users with 0 credits from betting (they have lost)
+      // Prevent users with 0 credits from betting
       if (userCredits <= 0) {
         return res.status(400).json({
           success: false,
-          message: 'You have 0 credits and cannot place bets. You have lost this competition.'
+          message: 'You have 0 available credits and cannot place new bets.'
         });
       }
 
