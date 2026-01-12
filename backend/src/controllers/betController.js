@@ -64,16 +64,15 @@ exports.placeBet = async (req, res) => {
 
     const userCredits = group.members[memberIndex].points;
 
+    // Check if user already placed a bet on this match
+    const existingBet = await Bet.findOne({
+      user: req.user._id,
+      match: matchId,
+      group: groupId
+    });
+
     // For relative groups, validate wager amount
     if (group.betType === 'relative') {
-      // Prevent users with 0 credits from betting
-      if (userCredits <= 0) {
-        return res.status(400).json({
-          success: false,
-          message: 'You have 0 available credits and cannot place new bets.'
-        });
-      }
-
       if (!wagerAmount || wagerAmount <= 0) {
         return res.status(400).json({
           success: false,
@@ -81,20 +80,25 @@ exports.placeBet = async (req, res) => {
         });
       }
 
-      if (wagerAmount > userCredits) {
+      // Calculate effective credits (include refund if editing existing bet)
+      const refundAmount = existingBet?.wagerAmount || 0;
+      const effectiveCredits = userCredits + refundAmount;
+
+      // Prevent users with 0 effective credits from betting (truly eliminated)
+      if (effectiveCredits <= 0) {
         return res.status(400).json({
           success: false,
-          message: `Insufficient credits. You have ${userCredits} credits available`
+          message: 'You have 0 available credits and cannot place new bets.'
+        });
+      }
+
+      if (wagerAmount > effectiveCredits) {
+        return res.status(400).json({
+          success: false,
+          message: `Insufficient credits. You have ${effectiveCredits} credits available`
         });
       }
     }
-
-    // Check if user already placed a bet on this match
-    const existingBet = await Bet.findOne({
-      user: req.user._id,
-      match: matchId,
-      group: groupId
-    });
 
     if (existingBet) {
       // Refund old wager amount if applicable
