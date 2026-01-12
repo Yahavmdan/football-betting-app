@@ -112,7 +112,7 @@ import { getTeamByName } from '../../data/teams.data';
             <h4>{{ 'bets.wager' | translate }}</h4>
             <div class="credits-display">
               <span class="label">{{ 'bets.availableCredits' | translate }}:</span>
-              <span class="value">{{ userCredits }}</span>
+              <span class="value">{{ effectiveCredits }}</span>
             </div>
             <div class="form-group" style="margin-top: 1rem;">
               <label for="wagerAmount">{{ 'bets.wagerAmount' | translate }} *</label>
@@ -122,18 +122,18 @@ import { getTeamByName } from '../../data/teams.data';
                 name="wagerAmount"
                 [(ngModel)]="wagerAmount"
                 min="1"
-                [max]="userCredits"
+                [max]="effectiveCredits"
                 step="1"
                 class="form-control"
                 [placeholder]="'bets.enterWagerAmount' | translate"
-                [disabled]="isMatchInPast || userCredits <= 0"
+                [disabled]="isMatchInPast || effectiveCredits <= 0"
                 required>
             </div>
             <div *ngIf="wagerAmount && betData.outcome && getMatchRelativePoints()" class="potential-win">
               <span class="label">{{ 'bets.potentialWin' | translate }}:</span>
               <span class="value">{{ calculatePotentialWin() }} {{ 'groups.credits' | translate }}</span>
             </div>
-            <div *ngIf="userCredits <= 0" class="error-message" style="margin-top: 1rem;">
+            <div *ngIf="effectiveCredits <= 0" class="error-message" style="margin-top: 1rem;">
               {{ 'groups.eliminated' | translate }} - {{ 'bets.insufficientCredits' | translate }}
             </div>
           </div>
@@ -151,7 +151,7 @@ import { getTeamByName } from '../../data/teams.data';
             <button
               type="submit"
               *ngIf="!isMatchInPast"
-              [disabled]="!betData.outcome || loading || (group?.betType === 'relative' && (!wagerAmount || userCredits <= 0))"
+              [disabled]="!betData.outcome || loading || (group?.betType === 'relative' && (!wagerAmount || effectiveCredits <= 0))"
               class="btn-primary"
             >
               {{ loading ? ('bets.placingBet' | translate) : (hasExistingBet ? ('bets.updateBet' | translate) : ('matches.placeBet' | translate)) }}
@@ -551,6 +551,14 @@ export class PlaceBetComponent implements OnInit {
   hasExistingBet = false;
   existingBet: any = null;
   isMatchInPast = false;
+
+  // Effective credits = current credits + existing bet wager (if editing)
+  get effectiveCredits(): number {
+    if (this.hasExistingBet && this.existingBet?.wagerAmount) {
+      return this.userCredits + this.existingBet.wagerAmount;
+    }
+    return this.userCredits;
+  }
 
   constructor(
     private route: ActivatedRoute,
