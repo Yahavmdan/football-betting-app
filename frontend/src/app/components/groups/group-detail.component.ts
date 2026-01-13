@@ -414,6 +414,9 @@ import { environment } from '../../../environments/environment';
                       <span *ngIf="memberBet.hasBet" class="bet-outcome" [class.home]="memberBet.bet?.outcome === '1'" [class.draw]="memberBet.bet?.outcome === 'X'" [class.away]="memberBet.bet?.outcome === '2'">
                         {{ memberBet.bet?.outcome === '1' ? (match.homeTeam | teamTranslate) : (memberBet.bet?.outcome === '2' ? (match.awayTeam | teamTranslate) : ('bets.draw' | translate)) }}
                       </span>
+                      <span *ngIf="memberBet.hasBet && group?.betType === 'relative' && memberBet.bet?.wagerAmount" class="bet-wager">
+                        {{ memberBet.bet?.wagerAmount }} {{ 'groups.credits' | translate }}
+                      </span>
                       <span *ngIf="!memberBet.hasBet" class="no-bet">{{ 'bets.noBet' | translate }}</span>
                       <span *ngIf="memberBet.hasBet" class="bet-time">{{ memberBet.bet?.createdAt | date:'dd/MM/yy, HH:mm' }}</span>
                     </div>

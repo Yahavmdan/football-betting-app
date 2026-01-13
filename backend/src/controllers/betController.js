@@ -305,7 +305,8 @@ exports.getGroupMembersBets = async (req, res) => {
       betsByUser[bet.user.toString()] = {
         outcome: bet.prediction.outcome,
         createdAt: bet.createdAt,
-        points: bet.points
+        points: bet.points,
+        wagerAmount: bet.wagerAmount
       };
     });
 
@@ -323,7 +324,8 @@ exports.getGroupMembersBets = async (req, res) => {
         bet: userBet ? {
           outcome: userBet.outcome,
           createdAt: userBet.createdAt,
-          points: userBet.points
+          points: userBet.points,
+          wagerAmount: userBet.wagerAmount
         } : null
       };
     });

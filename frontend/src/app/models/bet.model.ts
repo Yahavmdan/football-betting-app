@@ -31,5 +31,6 @@ export interface MemberBet {
     outcome: '1' | 'X' | '2';
     createdAt: Date;
     points: number | null;
+    wagerAmount: number | null;
   } | null;
 }

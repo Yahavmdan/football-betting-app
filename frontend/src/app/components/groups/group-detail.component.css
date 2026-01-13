@@ -500,6 +500,15 @@ h2 {
     color: #94a3b8;
 }
 
+.bet-wager {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #f59e0b;
+    background: #fef3c7;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+}
+
 .btn-primary {
     padding: 0.6rem 1.25rem;
     background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
