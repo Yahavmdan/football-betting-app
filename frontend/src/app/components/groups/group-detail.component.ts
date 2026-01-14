@@ -121,7 +121,7 @@ import { environment } from '../../../environments/environment';
                 <span *ngIf="isEliminated(member)" class="status-label">({{ 'groups.eliminated' | translate }})</span>
               </span>
               <span class="points">
-                {{ member.points }} {{ group.betType === 'relative' ? ('groups.credits' | translate) : ('groups.points' | translate) }}
+                {{ member.points }}
               </span>
               <button
                 *ngIf="canManageGroup() && !isGroupCreatorMember(member.user._id)"
