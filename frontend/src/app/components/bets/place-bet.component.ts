@@ -533,6 +533,148 @@ import { getTeamByName } from '../../data/teams.data';
         gap: 1rem;
       }
     }
+    @media (max-width: 400px) {
+      .container {
+        padding: 0.75rem;
+        margin: 1rem auto;
+      }
+      .back-btn {
+        font-size: 0.85rem;
+        padding: 0.6rem 1rem;
+        margin-bottom: 1rem;
+      }
+      .bet-card {
+        padding: 1rem;
+        border-radius: 16px;
+      }
+      h2 {
+        font-size: 1.25rem;
+        margin-bottom: 1.25rem;
+      }
+      .match-info {
+        padding: 1rem;
+        margin-bottom: 1.25rem;
+        border-radius: 12px;
+      }
+      .competition {
+        font-size: 0.8rem;
+      }
+      .teams {
+        flex-direction: column;
+        gap: 0.5rem;
+        font-size: 1rem;
+        margin: 0.75rem 0;
+      }
+      .team {
+        justify-content: center !important;
+      }
+      .team-logo {
+        width: 26px;
+        height: 26px;
+      }
+      .vs {
+        margin: 0.25rem 0;
+      }
+      .date {
+        font-size: 0.85rem;
+      }
+      h3 {
+        font-size: 1rem;
+        margin-bottom: 1rem;
+      }
+      .outcome-buttons {
+        gap: 0.75rem;
+      }
+      .outcome-btn {
+        padding: 1rem 0.75rem;
+        border-radius: 12px;
+        gap: 0.75rem;
+      }
+      .outcome-btn .label {
+        font-size: 1.5rem;
+      }
+      .outcome-btn .team-name {
+        font-size: 0.8rem;
+      }
+      .outcome-logo {
+        width: 32px;
+        height: 32px;
+      }
+      .points-info {
+        padding: 1rem;
+        margin-bottom: 1.25rem;
+      }
+      .points-info h4 {
+        font-size: 0.9rem;
+      }
+      .points-info p {
+        font-size: 0.85rem;
+      }
+      .points-row {
+        padding: 0.6rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+      }
+      .points-row .label {
+        font-size: 0.85rem;
+      }
+      .points-row .points {
+        font-size: 0.9rem;
+      }
+      .wager-section {
+        padding: 1rem;
+        margin-bottom: 1.25rem;
+      }
+      .wager-section h4 {
+        font-size: 0.9rem;
+      }
+      .credits-display {
+        padding: 0.75rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+      }
+      .credits-display .label {
+        font-size: 0.85rem;
+      }
+      .credits-display .value {
+        font-size: 1.1rem;
+      }
+      .form-group label {
+        font-size: 0.85rem;
+      }
+      .form-control {
+        padding: 0.85rem 1rem;
+        font-size: 0.95rem;
+      }
+      .potential-win {
+        padding: 0.75rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+      }
+      .potential-win .label {
+        font-size: 0.85rem;
+      }
+      .potential-win .value {
+        font-size: 1.1rem;
+      }
+      .button-group {
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+      .btn-primary, .btn-secondary {
+        width: 100%;
+        padding: 0.85rem 1rem;
+        font-size: 0.95rem;
+      }
+      .error-message, .success-message, .warning-message, .info-message {
+        padding: 0.85rem;
+        font-size: 0.85rem;
+        margin-bottom: 1rem;
+      }
+    }
   `]
 })
 export class PlaceBetComponent implements OnInit {

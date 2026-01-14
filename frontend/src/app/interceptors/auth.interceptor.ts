@@ -18,9 +18,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     });
   }
 
+  // Skip 401 handling for auth endpoints to prevent infinite loop
+  const isAuthEndpoint = req.url.includes('/auth/login') || req.url.includes('/auth/logout') || req.url.includes('/auth/register');
+
   return next(request).pipe(
     catchError((error: HttpErrorResponse) => {
-      if (error.status === 401) {
+      if (error.status === 401 && !isAuthEndpoint) {
         authService.logout();
         void router.navigate(['/login']);
       }

@@ -729,6 +729,157 @@ import { getTeamByName } from '../../data/teams.data';
         grid-template-columns: 1fr;
       }
     }
+    @media (max-width: 400px) {
+      .container {
+        padding: 0.75rem;
+      }
+      .header {
+        margin-bottom: 1.25rem;
+        gap: 0.75rem;
+      }
+      h1 {
+        font-size: 1.25rem;
+      }
+      h2 {
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+      }
+      .section {
+        padding: 1rem;
+        border-radius: 14px;
+        margin-bottom: 1.25rem;
+      }
+      .btn-secondary {
+        padding: 0.65rem 1rem;
+        font-size: 0.85rem;
+      }
+      .form-group {
+        max-width: 100%;
+      }
+      label {
+        font-size: 0.85rem;
+        margin-bottom: 0.4rem;
+      }
+      .form-control {
+        padding: 0.75rem 0.85rem;
+        font-size: 0.9rem;
+        border-radius: 10px;
+      }
+      .form-row {
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+      }
+      .relative-points-section {
+        padding: 1rem;
+        margin-bottom: 1rem;
+      }
+      .relative-points-section h3 {
+        font-size: 1rem;
+      }
+      .points-description {
+        font-size: 0.8rem;
+      }
+      .score-input {
+        max-width: 80px;
+      }
+      .btn-primary {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+        width: 100%;
+      }
+      .info-message, .error-message, .past-match-notice {
+        padding: 0.85rem;
+        font-size: 0.85rem;
+      }
+      .matches-grid {
+        gap: 0.85rem;
+      }
+      .match-card {
+        padding: 0.85rem;
+        border-radius: 12px;
+      }
+      .match-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.35rem;
+      }
+      .competition {
+        font-size: 0.8rem;
+      }
+      .status {
+        font-size: 0.7rem;
+        padding: 0.25rem 0.5rem;
+      }
+      .match-teams {
+        flex-direction: column;
+        gap: 0.5rem;
+        margin: 0.75rem 0;
+      }
+      .team {
+        justify-content: center !important;
+        font-size: 0.85rem;
+      }
+      .team-logo {
+        width: 22px;
+        height: 22px;
+      }
+      .vs {
+        padding: 0.2rem 0;
+      }
+      .match-footer {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+      }
+      .date {
+        font-size: 0.8rem;
+        text-align: center;
+      }
+      .result {
+        font-size: 1rem;
+        padding: 0.3rem 0.75rem;
+        text-align: center;
+      }
+      .result.ongoing {
+        font-size: 0.8rem;
+      }
+      .match-actions {
+        justify-content: center;
+        gap: 0.35rem;
+      }
+      .btn-update-score, .btn-mark-finished, .btn-edit, .btn-delete {
+        font-size: 0.75rem;
+        padding: 0.4rem 0.65rem;
+        flex: 1;
+        text-align: center;
+      }
+      .score-update-form, .edit-match-form {
+        margin-top: 1rem;
+        padding-top: 1rem;
+      }
+      .button-row {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      .button-row button {
+        width: 100%;
+      }
+      .btn-small {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+      }
+      .delete-confirm {
+        padding: 1rem;
+        margin-top: 1rem;
+      }
+      .delete-confirm p {
+        font-size: 0.85rem;
+      }
+      .loading, .empty-state {
+        padding: 1.5rem;
+        font-size: 0.9rem;
+      }
+    }
   `]
 })
 export class ManageMatchesComponent implements OnInit {

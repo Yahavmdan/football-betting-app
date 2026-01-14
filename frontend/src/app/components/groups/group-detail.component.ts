@@ -329,6 +329,11 @@ import { environment } from '../../../environments/environment';
           <div *ngIf="loadingMatches" class="loading">{{ 'auth.loading' | translate }}</div>
           <div *ngIf="!loadingMatches && filteredMatches.length > 0" class="matches-list">
             <div *ngFor="let match of filteredMatches" class="match-card" [class.has-bet]="hasBetOnMatch(match._id)">
+              <!-- Team logo backgrounds -->
+              <div class="match-bg-logos">
+                <div class="bg-logo bg-logo-home" *ngIf="getTeamLogo(match.homeTeam)" [style.background-image]="'url(' + getTeamLogo(match.homeTeam) + ')'"></div>
+                <div class="bg-logo bg-logo-away" *ngIf="getTeamLogo(match.awayTeam)" [style.background-image]="'url(' + getTeamLogo(match.awayTeam) + ')'"></div>
+              </div>
               <div class="match-header">
                 <span class="competition">{{ match.competition }}</span>
                 <div class="status-badges">
@@ -365,10 +370,10 @@ import { environment } from '../../../environments/environment';
                     </svg>
                   </button>
                   <button
-                    [routerLink]="['/bets', 'place']"
-                    [queryParams]="{matchId: match._id, groupId: groupId}"
+                    (click)="openInlineBetForm(match)"
                     class="btn-bet"
                     *ngIf="match.status === 'SCHEDULED' && !isMatchInPast(match.matchDate)"
+                    [class.active]="placingBetForMatch === match._id"
                   >
                     {{ hasBetOnMatch(match._id) ? ('bets.editBet' | translate) : ('matches.placeBet' | translate) }}
                   </button>
@@ -459,6 +464,120 @@ import { environment } from '../../../environments/environment';
                 </div>
                 <div *ngIf="scoreUpdateError" class="error-message">{{ scoreUpdateError }}</div>
               </div>
+
+              <!-- Inline Bet Form Panel -->
+              <div *ngIf="placingBetForMatch === match._id" class="inline-bet-panel">
+                <div class="inline-bet-header">
+                  <h4>{{ inlineExistingBet ? ('bets.yourBet' | translate) : ('bets.placeYourBet' | translate) }}</h4>
+                  <button (click)="closeInlineBetForm()" class="btn-close-bet">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                  </button>
+                </div>
+
+                <!-- Existing bet info -->
+                <div *ngIf="inlineExistingBet" class="inline-bet-info-message">
+                  ℹ️ {{ 'bets.canUpdateBet' | translate }}
+                </div>
+
+                <!-- Outcome buttons -->
+                <div class="inline-bet-section">
+                  <label class="inline-bet-label">{{ 'bets.matchResult' | translate }}</label>
+                  <div class="inline-outcome-buttons">
+                    <button
+                      type="button"
+                      class="inline-outcome-btn"
+                      [class.selected]="inlineBetData.outcome === '1'"
+                      (click)="selectInlineOutcome('1')">
+                      <img *ngIf="getTeamLogo(match.homeTeam)" [src]="getTeamLogo(match.homeTeam)" class="inline-outcome-logo" (error)="onImageError($event)">
+                      <span class="inline-outcome-number">1</span>
+                      <span class="inline-outcome-name">{{ match.homeTeam | teamTranslate }}</span>
+                    </button>
+                    <button
+                      type="button"
+                      class="inline-outcome-btn"
+                      [class.selected]="inlineBetData.outcome === 'X'"
+                      (click)="selectInlineOutcome('X')">
+                      <span class="inline-outcome-number">X</span>
+                      <span class="inline-outcome-name">{{ 'bets.draw' | translate }}</span>
+                    </button>
+                    <button
+                      type="button"
+                      class="inline-outcome-btn"
+                      [class.selected]="inlineBetData.outcome === '2'"
+                      (click)="selectInlineOutcome('2')">
+                      <img *ngIf="getTeamLogo(match.awayTeam)" [src]="getTeamLogo(match.awayTeam)" class="inline-outcome-logo" (error)="onImageError($event)">
+                      <span class="inline-outcome-number">2</span>
+                      <span class="inline-outcome-name">{{ match.awayTeam | teamTranslate }}</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Points info for relative betting -->
+                <div *ngIf="getMatchRelativePoints(match)" class="inline-points-info">
+                  <label class="inline-bet-label">{{ 'bets.pointsSystem' | translate }}</label>
+                  <div class="inline-points-grid">
+                    <div class="inline-points-item">
+                      <span>{{ match.homeTeam | teamTranslate }} (1)</span>
+                      <span class="inline-points-value">{{ getMatchRelativePoints(match)?.homeWin }}x</span>
+                    </div>
+                    <div class="inline-points-item">
+                      <span>{{ 'bets.draw' | translate }} (X)</span>
+                      <span class="inline-points-value">{{ getMatchRelativePoints(match)?.draw }}x</span>
+                    </div>
+                    <div class="inline-points-item">
+                      <span>{{ match.awayTeam | teamTranslate }} (2)</span>
+                      <span class="inline-points-value">{{ getMatchRelativePoints(match)?.awayWin }}x</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Wager section for relative betting -->
+                <div *ngIf="group?.betType === 'relative'" class="inline-wager-section">
+                  <label class="inline-bet-label">{{ 'bets.wager' | translate }}</label>
+                  <div class="inline-credits-display">
+                    <span>{{ 'bets.availableCredits' | translate }}:</span>
+                    <span class="inline-credits-value">{{ inlineEffectiveCredits }}</span>
+                  </div>
+                  <div class="inline-wager-input-group">
+                    <input
+                      type="number"
+                      [(ngModel)]="inlineWagerAmount"
+                      min="1"
+                      [max]="inlineEffectiveCredits"
+                      step="1"
+                      class="inline-wager-input"
+                      [placeholder]="'bets.enterWagerAmount' | translate"
+                      [disabled]="inlineEffectiveCredits <= 0">
+                  </div>
+                  <div *ngIf="inlineWagerAmount && inlineBetData.outcome && getMatchRelativePoints(match)" class="inline-potential-win">
+                    <span>{{ 'bets.potentialWin' | translate }}:</span>
+                    <span class="inline-potential-value">{{ calculateInlinePotentialWin(match) }} {{ 'groups.credits' | translate }}</span>
+                  </div>
+                  <div *ngIf="inlineEffectiveCredits <= 0" class="inline-error-message">
+                    {{ 'groups.eliminated' | translate }} - {{ 'bets.insufficientCredits' | translate }}
+                  </div>
+                </div>
+
+                <!-- Error and success messages -->
+                <div *ngIf="inlineBetError" class="inline-error-message">{{ inlineBetError }}</div>
+                <div *ngIf="inlineBetSuccess" class="inline-success-message">{{ inlineBetSuccess }}</div>
+
+                <!-- Submit button -->
+                <div class="inline-bet-actions">
+                  <button (click)="closeInlineBetForm()" class="btn-secondary btn-small">
+                    {{ 'groups.cancel' | translate }}
+                  </button>
+                  <button
+                    (click)="submitInlineBet()"
+                    [disabled]="!inlineBetData.outcome || inlineLoadingBet || (group?.betType === 'relative' && (!inlineWagerAmount || inlineEffectiveCredits <= 0))"
+                    class="btn-primary btn-small">
+                    {{ inlineLoadingBet ? ('bets.placingBet' | translate) : (inlineExistingBet ? ('bets.updateBet' | translate) : ('matches.placeBet' | translate)) }}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
           <div *ngIf="!loadingMatches && filteredMatches.length === 0" class="empty-state">
@@ -542,6 +661,20 @@ export class GroupDetailComponent implements OnInit {
 
   // Profile picture modal
   viewingProfilePicture: { username: string; profilePicture?: string | null; lastActive?: Date } | null = null;
+
+  // Inline bet form state
+  placingBetForMatch: string | null = null;
+  inlineBetData: { matchId: string; groupId: string; outcome: '1' | 'X' | '2' | '' } = {
+    matchId: '',
+    groupId: '',
+    outcome: ''
+  };
+  inlineWagerAmount: number | null = null;
+  inlineLoadingBet = false;
+  inlineBetError = '';
+  inlineBetSuccess = '';
+  inlineExistingBet: any = null;
+  inlineUserCredits = 0;
 
   // Filter state
   showFilterDialog = false;
@@ -1203,5 +1336,149 @@ export class GroupDetailComponent implements OnInit {
 
   closeProfilePicture(): void {
     this.viewingProfilePicture = null;
+  }
+
+  // Inline bet form methods
+  openInlineBetForm(match: Match): void {
+    // Close any other open panels
+    this.closeMemberBets();
+    this.cancelScoreUpdate();
+
+    this.placingBetForMatch = match._id;
+    this.inlineBetData = {
+      matchId: match._id,
+      groupId: this.groupId,
+      outcome: ''
+    };
+    this.inlineWagerAmount = null;
+    this.inlineBetError = '';
+    this.inlineBetSuccess = '';
+    this.inlineExistingBet = null;
+
+    // Load user credits for relative betting
+    this.loadUserCredits();
+
+    // Check for existing bet
+    this.checkExistingBetForMatch(match._id);
+  }
+
+  closeInlineBetForm(): void {
+    this.placingBetForMatch = null;
+    this.inlineBetData = { matchId: '', groupId: '', outcome: '' };
+    this.inlineWagerAmount = null;
+    this.inlineBetError = '';
+    this.inlineBetSuccess = '';
+    this.inlineExistingBet = null;
+  }
+
+  loadUserCredits(): void {
+    const currentUserId = this.authService.getCurrentUser()?.id;
+    if (currentUserId && this.group?.members) {
+      const member = this.group.members.find(m => m.user._id === currentUserId);
+      if (member) {
+        this.inlineUserCredits = member.points;
+      }
+    }
+  }
+
+  get inlineEffectiveCredits(): number {
+    if (this.inlineExistingBet?.wagerAmount) {
+      return this.inlineUserCredits + this.inlineExistingBet.wagerAmount;
+    }
+    return this.inlineUserCredits;
+  }
+
+  checkExistingBetForMatch(matchId: string): void {
+    this.betService.checkExistingBet(matchId, this.groupId).subscribe({
+      next: (response) => {
+        if (response.data.hasBet && response.data.bet) {
+          this.inlineExistingBet = response.data.bet;
+          this.inlineBetData.outcome = response.data.bet.prediction.outcome;
+          if (response.data.bet.wagerAmount) {
+            this.inlineWagerAmount = response.data.bet.wagerAmount;
+          }
+        }
+      },
+      error: (error) => {
+        console.error('Failed to check existing bet:', error);
+      }
+    });
+  }
+
+  selectInlineOutcome(outcome: '1' | 'X' | '2'): void {
+    this.inlineBetData.outcome = outcome;
+  }
+
+  getMatchRelativePoints(match: Match): { homeWin: number; draw: number; awayWin: number } | null {
+    if (!match || !match.relativePoints || match.relativePoints.length === 0) {
+      return null;
+    }
+    const matchPoints = match.relativePoints.find(rp => rp.group === this.groupId);
+    return matchPoints || null;
+  }
+
+  calculateInlinePotentialWin(match: Match): number {
+    if (!this.inlineWagerAmount || !this.inlineBetData.outcome) {
+      return 0;
+    }
+
+    const relativePoints = this.getMatchRelativePoints(match);
+    if (!relativePoints) {
+      return this.inlineWagerAmount;
+    }
+
+    let multiplier = 1;
+    switch (this.inlineBetData.outcome) {
+      case '1':
+        multiplier = relativePoints.homeWin;
+        break;
+      case 'X':
+        multiplier = relativePoints.draw;
+        break;
+      case '2':
+        multiplier = relativePoints.awayWin;
+        break;
+    }
+
+    return Math.round(this.inlineWagerAmount * multiplier);
+  }
+
+  submitInlineBet(): void {
+    this.inlineLoadingBet = true;
+    this.inlineBetError = '';
+    this.inlineBetSuccess = '';
+
+    const betDataToSubmit: any = {
+      matchId: this.inlineBetData.matchId,
+      groupId: this.inlineBetData.groupId,
+      outcome: this.inlineBetData.outcome
+    };
+
+    if (this.group?.betType === 'relative' && this.inlineWagerAmount) {
+      betDataToSubmit.wagerAmount = this.inlineWagerAmount;
+    }
+
+    this.betService.placeBet(betDataToSubmit).subscribe({
+      next: (response) => {
+        this.inlineBetSuccess = response.message || this.translationService.translate('bets.betPlacedSuccess');
+        this.inlineLoadingBet = false;
+        // Refresh data
+        this.loadMyBets();
+        this.loadLeaderboard();
+        this.loadGroupDetails();
+        // Close form after short delay
+        setTimeout(() => {
+          this.closeInlineBetForm();
+        }, 1500);
+      },
+      error: (error) => {
+        this.inlineBetError = error.error?.message || this.translationService.translate('bets.placeBetFailed');
+        this.inlineLoadingBet = false;
+      }
+    });
+  }
+
+  hasExistingBetOnMatch(matchId: string): boolean {
+    return !!this.inlineExistingBet && this.placingBetForMatch === matchId;
   }
 }

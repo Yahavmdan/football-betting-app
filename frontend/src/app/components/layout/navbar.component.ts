@@ -11,98 +11,100 @@ import {environment} from '../../../environments/environment';
     standalone: true,
     imports: [CommonModule, RouterModule, TranslatePipe],
     template: `
-        <nav class="navbar" *ngIf="authService.currentUser$ | async as user">
-            <div class="nav-container">
-                <div class="nav-brand">
-                    <a routerLink="/groups">
-                        <img src="assets/utilities/app-logo.png" alt="Football Betting" class="app-logo">
-                    </a>
-                </div>
-
-                <!-- Hamburger button for mobile -->
-                <button class="hamburger" (click)="toggleMobileMenu()" [class.open]="mobileMenuOpen">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
-
-                <!-- Desktop menu -->
-                <div class="nav-menu desktop-menu">
-                    <a routerLink="/groups" routerLinkActive="active">{{ 'nav.myGroups' | translate }}</a>
-                    <div class="language-switcher">
-                        <button
-                                (click)="switchLanguage('en')"
-                                [class.active]="currentLang === 'en'"
-                                class="lang-btn"
-                        >
-                            EN
-                        </button>
-                        <button
-                                (click)="switchLanguage('he')"
-                                [class.active]="currentLang === 'he'"
-                                class="lang-btn"
-                        >
-                            עב
-                        </button>
+        <ng-container *ngIf="authService.currentUser$ | async as user">
+            <nav class="navbar">
+                <div class="nav-container">
+                    <div class="nav-brand">
+                        <a routerLink="/groups">
+                            <img src="assets/utilities/app-logo.png" alt="Football Betting" class="app-logo">
+                        </a>
                     </div>
-                    <div class="user-menu">
-                        <a routerLink="/profile" class="user-profile-link">
+
+                    <!-- Hamburger button for mobile -->
+                    <button class="hamburger" (click)="toggleMobileMenu()" [class.open]="mobileMenuOpen">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+
+                    <!-- Desktop menu -->
+                    <div class="nav-menu desktop-menu">
+                        <a routerLink="/groups" routerLinkActive="active">{{ 'nav.myGroups' | translate }}</a>
+                        <div class="language-switcher">
+                            <button
+                                    (click)="switchLanguage('en')"
+                                    [class.active]="currentLang === 'en'"
+                                    class="lang-btn"
+                            >
+                                EN
+                            </button>
+                            <button
+                                    (click)="switchLanguage('he')"
+                                    [class.active]="currentLang === 'he'"
+                                    class="lang-btn"
+                            >
+                                עב
+                            </button>
+                        </div>
+                        <div class="user-menu">
+                            <a routerLink="/profile" class="user-profile-link">
+                                <img
+                                        *ngIf="user.profilePicture"
+                                        [src]="getProfilePictureUrl(user.profilePicture)"
+                                        alt="Profile"
+                                        class="nav-profile-picture"
+                                        (error)="onImageError($event)"
+                                />
+                                <span *ngIf="!user.profilePicture" class="nav-profile-placeholder">
+                    {{ user.username.charAt(0).toUpperCase() }}
+                  </span>
+                                <span class="username">{{ user.username }}</span>
+                            </a>
+                            <button (click)="logout()" class="logout-btn">{{ 'nav.logout' | translate }}</button>
+                        </div>
+                    </div>
+
+                    <!-- Mobile dropdown menu -->
+                    <div class="mobile-menu" [class.open]="mobileMenuOpen">
+                        <a routerLink="/groups" routerLinkActive="active"
+                           (click)="closeMobileMenu()">{{ 'nav.myGroups' | translate }}</a>
+                        <a routerLink="/profile" class="mobile-user-info" (click)="closeMobileMenu()">
                             <img
                                     *ngIf="user.profilePicture"
                                     [src]="getProfilePictureUrl(user.profilePicture)"
                                     alt="Profile"
-                                    class="nav-profile-picture"
+                                    class="nav-profile-picture mobile"
                                     (error)="onImageError($event)"
                             />
-                            <span *ngIf="!user.profilePicture" class="nav-profile-placeholder">
-                {{ user.username.charAt(0).toUpperCase() }}
-              </span>
+                            <span *ngIf="!user.profilePicture" class="nav-profile-placeholder mobile">
+                  {{ user.username.charAt(0).toUpperCase() }}
+                </span>
                             <span class="username">{{ user.username }}</span>
                         </a>
-                        <button (click)="logout()" class="logout-btn">{{ 'nav.logout' | translate }}</button>
+                        <div class="language-switcher">
+                            <button
+                                    (click)="switchLanguage('en')"
+                                    [class.active]="currentLang === 'en'"
+                                    class="lang-btn"
+                            >
+                                EN
+                            </button>
+                            <button
+                                    (click)="switchLanguage('he')"
+                                    [class.active]="currentLang === 'he'"
+                                    class="lang-btn"
+                            >
+                                עב
+                            </button>
+                        </div>
+                        <button (click)="logout()" class="logout-btn mobile-logout">{{ 'nav.logout' | translate }}</button>
                     </div>
                 </div>
+            </nav>
 
-                <!-- Mobile dropdown menu -->
-                <div class="mobile-menu" [class.open]="mobileMenuOpen">
-                    <a routerLink="/groups" routerLinkActive="active"
-                       (click)="closeMobileMenu()">{{ 'nav.myGroups' | translate }}</a>
-                    <a routerLink="/profile" class="mobile-user-info" (click)="closeMobileMenu()">
-                        <img
-                                *ngIf="user.profilePicture"
-                                [src]="getProfilePictureUrl(user.profilePicture)"
-                                alt="Profile"
-                                class="nav-profile-picture mobile"
-                                (error)="onImageError($event)"
-                        />
-                        <span *ngIf="!user.profilePicture" class="nav-profile-placeholder mobile">
-              {{ user.username.charAt(0).toUpperCase() }}
-            </span>
-                        <span class="username">{{ user.username }}</span>
-                    </a>
-                    <div class="language-switcher">
-                        <button
-                                (click)="switchLanguage('en')"
-                                [class.active]="currentLang === 'en'"
-                                class="lang-btn"
-                        >
-                            EN
-                        </button>
-                        <button
-                                (click)="switchLanguage('he')"
-                                [class.active]="currentLang === 'he'"
-                                class="lang-btn"
-                        >
-                            עב
-                        </button>
-                    </div>
-                    <button (click)="logout()" class="logout-btn mobile-logout">{{ 'nav.logout' | translate }}</button>
-                </div>
-            </div>
-
-            <!-- Overlay for mobile menu -->
-            <div class="mobile-overlay" *ngIf="mobileMenuOpen" (click)="closeMobileMenu()"></div>
-        </nav>
+            <!-- Overlay OUTSIDE navbar to avoid stacking context issues -->
+            <div class="mobile-overlay" [class.open]="mobileMenuOpen" (click)="closeMobileMenu()"></div>
+        </ng-container>
     `,
     styles: [`
         .navbar {
@@ -393,15 +395,24 @@ import {environment} from '../../../environments/environment';
         }
 
         .mobile-overlay {
-            display: none;
             position: fixed;
-            top: 70px;
+            top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(4px);
-            z-index: 999;
+            z-index: 99;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .mobile-overlay.open {
+            opacity: 1;
+            visibility: visible;
         }
 
         /* Mobile responsive */
@@ -429,10 +440,6 @@ import {environment} from '../../../environments/environment';
 
             .mobile-menu {
                 display: flex;
-            }
-
-            .mobile-overlay {
-                display: block;
             }
 
             .app-logo {

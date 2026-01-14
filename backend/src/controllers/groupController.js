@@ -208,25 +208,37 @@ exports.getLeaderboard = async (req, res) => {
       });
     }
 
-    // For relative betting groups, check for ongoing bets per member
+    // For relative betting groups, check for ongoing bets per member and sum at-risk credits
     let membersWithOngoingBets = new Set();
+    let memberAtRiskCredits = {};
     if (group.betType === 'relative') {
       const ongoingBets = await Bet.find({
         group: group._id,
         calculated: false
       });
       ongoingBets.forEach(bet => {
-        membersWithOngoingBets.add(bet.user.toString());
+        const userId = bet.user.toString();
+        membersWithOngoingBets.add(userId);
+        // Sum up the wager amounts for each user
+        if (!memberAtRiskCredits[userId]) {
+          memberAtRiskCredits[userId] = 0;
+        }
+        memberAtRiskCredits[userId] += bet.wagerAmount || 0;
       });
     }
 
-    // Add hasOngoingBets field to each member
-    const membersWithBetInfo = group.members.map(member => ({
-      user: member.user,
-      joinedAt: member.joinedAt,
-      points: member.points,
-      hasOngoingBets: membersWithOngoingBets.has(member.user._id.toString())
-    }));
+    // Add hasOngoingBets field to each member and include at-risk credits in total
+    const membersWithBetInfo = group.members.map(member => {
+      const userId = member.user._id.toString();
+      const atRiskCredits = memberAtRiskCredits[userId] || 0;
+      return {
+        user: member.user,
+        joinedAt: member.joinedAt,
+        // For relative mode, show total credits including at-risk amount
+        points: member.points + atRiskCredits,
+        hasOngoingBets: membersWithOngoingBets.has(userId)
+      };
+    });
 
     const sortedMembers = membersWithBetInfo.sort((a, b) => b.points - a.points);
 
