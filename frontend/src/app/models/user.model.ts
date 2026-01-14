@@ -1,6 +1,7 @@
 export interface UserSettings {
   language: 'en' | 'he';
   theme: 'light' | 'dark' | 'system';
+  autoBet: boolean;
 }
 
 export interface User {

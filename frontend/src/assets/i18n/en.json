@@ -207,7 +207,9 @@
     "themeLight": "Light",
     "themeDark": "Dark",
     "settingsSaved": "Settings saved successfully",
-    "settingsFailed": "Failed to save settings"
+    "settingsFailed": "Failed to save settings",
+    "autoBet": "Auto Bet",
+    "autoBetDescription": "If enabled, the system will automatically place a random bet for you if you haven't placed one before a match starts."
   },
   "filters": {
     "filter": "Filter",

@@ -46,6 +46,10 @@ const userSchema = new mongoose.Schema({
       type: String,
       enum: ['light', 'dark', 'system'],
       default: 'system'
+    },
+    autoBet: {
+      type: Boolean,
+      default: false
     }
   },
   lastActive: {

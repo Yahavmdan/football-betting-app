@@ -196,6 +196,19 @@ import { environment } from '../../../environments/environment';
             </div>
           </div>
 
+          <div class="setting-group toggle-group">
+            <label>{{ 'profile.autoBet' | translate }}</label>
+            <p class="setting-description">{{ 'profile.autoBetDescription' | translate }}</p>
+            <label class="toggle-switch">
+              <input
+                type="checkbox"
+                [(ngModel)]="settingsData.autoBet"
+                (change)="onSettingChange()"
+              />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
           <div *ngIf="settingsError" class="error-message">{{ settingsError }}</div>
           <div *ngIf="settingsSuccess" class="success-message">{{ settingsSuccess }}</div>
           <button
@@ -267,7 +280,8 @@ export class ProfileComponent implements OnInit {
 
   settingsData = {
     language: 'en' as 'en' | 'he',
-    theme: 'system' as 'light' | 'dark' | 'system'
+    theme: 'system' as 'light' | 'dark' | 'system',
+    autoBet: false
   };
   originalSettings = JSON.stringify(this.settingsData);
   settingsChanged = false;
@@ -320,7 +334,8 @@ export class ProfileComponent implements OnInit {
         if (user.settings) {
           this.settingsData = {
             language: user.settings.language || 'en',
-            theme: user.settings.theme || 'system'
+            theme: user.settings.theme || 'system',
+            autoBet: user.settings.autoBet || false
           };
           this.originalSettings = JSON.stringify(this.settingsData);
           this.settingsChanged = false;

@@ -255,7 +255,7 @@ exports.deleteProfilePicture = async (req, res) => {
 // Update user settings
 exports.updateSettings = async (req, res) => {
   try {
-    const { language, theme } = req.body;
+    const { language, theme, autoBet } = req.body;
     const userId = req.user._id;
 
     const user = await User.findById(userId);
@@ -273,6 +273,9 @@ exports.updateSettings = async (req, res) => {
     }
     if (theme !== undefined) {
       user.settings.theme = theme;
+    }
+    if (autoBet !== undefined) {
+      user.settings.autoBet = autoBet;
     }
 
     await user.save();

@@ -207,7 +207,9 @@
     "themeLight": "בהיר",
     "themeDark": "כהה",
     "settingsSaved": "ההגדרות נשמרו בהצלחה",
-    "settingsFailed": "שמירת ההגדרות נכשלה"
+    "settingsFailed": "שמירת ההגדרות נכשלה",
+    "autoBet": "הימור אוטומטי",
+    "autoBetDescription": "אם מופעל, המערכת תבצע עבורך הימור אקראי אם לא ביצעת הימור לפני תחילת המשחק."
   },
   "filters": {
     "filter": "סינון",

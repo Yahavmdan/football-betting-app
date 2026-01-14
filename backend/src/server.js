@@ -10,6 +10,7 @@ const matchRoutes = require('./routes/matchRoutes');
 const betRoutes = require('./routes/betRoutes');
 const testRoutes = require('./routes/testRoutes');
 const userRoutes = require('./routes/userRoutes');
+const autoBetJob = require('./jobs/autoBetJob');
 
 const app = express();
 
@@ -71,4 +72,7 @@ const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+
+  // Start the auto-bet scheduler
+  autoBetJob.start();
 });

@@ -22,6 +22,7 @@ export interface ChangePasswordData {
 export interface UpdateSettingsData {
   language?: 'en' | 'he';
   theme?: 'light' | 'dark' | 'system';
+  autoBet?: boolean;
 }
 
 @Injectable({
