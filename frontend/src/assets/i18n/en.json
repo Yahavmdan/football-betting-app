@@ -199,7 +199,15 @@
     "pictureUploadFailed": "Failed to upload profile picture",
     "pictureDeleteFailed": "Failed to delete profile picture",
     "fileTooLarge": "File is too large. Maximum size is 5MB",
-    "deleteFailed": "Failed to delete account"
+    "deleteFailed": "Failed to delete account",
+    "settings": "Settings",
+    "language": "Language",
+    "theme": "Theme",
+    "themeSystem": "System Default",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "settingsSaved": "Settings saved successfully",
+    "settingsFailed": "Failed to save settings"
   },
   "filters": {
     "filter": "Filter",

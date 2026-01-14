@@ -36,6 +36,18 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  settings: {
+    language: {
+      type: String,
+      enum: ['en', 'he'],
+      default: 'en'
+    },
+    theme: {
+      type: String,
+      enum: ['light', 'dark', 'system'],
+      default: 'system'
+    }
+  },
   lastActive: {
     type: Date,
     default: null

@@ -572,7 +572,7 @@ import { environment } from '../../../environments/environment';
                   </button>
                   <button
                     (click)="submitInlineBet()"
-                    [disabled]="!inlineBetData.outcome || inlineLoadingBet || (group?.betType === 'relative' && (!inlineWagerAmount || inlineEffectiveCredits <= 0))"
+                    [disabled]="!inlineBetData.outcome || inlineLoadingBet || (group.betType === 'relative' && (!inlineWagerAmount || inlineEffectiveCredits <= 0))"
                     class="btn-primary btn-small">
                     {{ inlineLoadingBet ? ('bets.placingBet' | translate) : (inlineExistingBet ? ('bets.updateBet' | translate) : ('matches.placeBet' | translate)) }}
                   </button>

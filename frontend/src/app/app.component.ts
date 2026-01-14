@@ -23,5 +23,33 @@ export class AppComponent implements OnInit {
   ngOnInit(): void {
     const savedLang = localStorage.getItem('language') || 'en';
     this.translationService.setLanguage(savedLang);
+
+    // Initialize theme
+    this.initializeTheme();
+  }
+
+  private initializeTheme(): void {
+    const savedTheme = localStorage.getItem('theme') || 'system';
+    this.applyTheme(savedTheme as 'light' | 'dark' | 'system');
+
+    // Listen for system theme changes
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+      const currentTheme = localStorage.getItem('theme') || 'system';
+      if (currentTheme === 'system') {
+        this.applyTheme('system');
+      }
+    });
+  }
+
+  private applyTheme(theme: 'light' | 'dark' | 'system'): void {
+    const htmlElement = document.documentElement;
+    htmlElement.classList.remove('light-theme', 'dark-theme');
+
+    if (theme === 'system') {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      htmlElement.classList.add(prefersDark ? 'dark-theme' : 'light-theme');
+    } else {
+      htmlElement.classList.add(`${theme}-theme`);
+    }
   }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -134,6 +134,79 @@ import { environment } from '../../../environments/environment';
           </form>
         </div>
 
+        <!-- Settings Section -->
+        <div class="section">
+          <h2>{{ 'profile.settings' | translate }}</h2>
+
+          <div class="setting-group">
+            <label>{{ 'profile.language' | translate }}</label>
+            <div class="custom-select" [class.open]="isLanguageDropdownOpen">
+              <div class="custom-select-input" (click)="toggleLanguageDropdown()">
+                <span>{{ getLanguageLabel(settingsData.language) }}</span>
+                <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div class="custom-select-dropdown" *ngIf="isLanguageDropdownOpen">
+                <div
+                  class="custom-select-option"
+                  [class.selected]="settingsData.language === 'en'"
+                  (click)="selectLanguage('en')">
+                  English
+                </div>
+                <div
+                  class="custom-select-option"
+                  [class.selected]="settingsData.language === 'he'"
+                  (click)="selectLanguage('he')">
+                  עברית
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <label>{{ 'profile.theme' | translate }}</label>
+            <div class="custom-select" [class.open]="isThemeDropdownOpen">
+              <div class="custom-select-input" (click)="toggleThemeDropdown()">
+                <span>{{ getThemeLabel(settingsData.theme) }}</span>
+                <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div class="custom-select-dropdown" *ngIf="isThemeDropdownOpen">
+                <div
+                  class="custom-select-option"
+                  [class.selected]="settingsData.theme === 'system'"
+                  (click)="selectTheme('system')">
+                  {{ 'profile.themeSystem' | translate }}
+                </div>
+                <div
+                  class="custom-select-option"
+                  [class.selected]="settingsData.theme === 'light'"
+                  (click)="selectTheme('light')">
+                  {{ 'profile.themeLight' | translate }}
+                </div>
+                <div
+                  class="custom-select-option"
+                  [class.selected]="settingsData.theme === 'dark'"
+                  (click)="selectTheme('dark')">
+                  {{ 'profile.themeDark' | translate }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="settingsError" class="error-message">{{ settingsError }}</div>
+          <div *ngIf="settingsSuccess" class="success-message">{{ settingsSuccess }}</div>
+          <button
+            (click)="saveSettings()"
+            [disabled]="loadingSettings || !settingsChanged"
+            class="btn-primary"
+          >
+            {{ loadingSettings ? ('auth.loading' | translate) : ('common.save' | translate) }}
+          </button>
+        </div>
+
         <!-- Delete Account Section -->
         <div class="section danger-section">
           <h2>{{ 'profile.deleteAccount' | translate }}</h2>
@@ -192,12 +265,22 @@ export class ProfileComponent implements OnInit {
     confirmPassword: ''
   };
 
+  settingsData = {
+    language: 'en' as 'en' | 'he',
+    theme: 'system' as 'light' | 'dark' | 'system'
+  };
+  originalSettings = JSON.stringify(this.settingsData);
+  settingsChanged = false;
+  isLanguageDropdownOpen = false;
+  isThemeDropdownOpen = false;
+
   deletePassword = '';
   showDeleteConfirm = false;
 
   loadingProfile = false;
   loadingPassword = false;
   loadingPicture = false;
+  loadingSettings = false;
   loadingDelete = false;
 
   profileError = '';
@@ -206,6 +289,8 @@ export class ProfileComponent implements OnInit {
   passwordSuccess = '';
   pictureError = '';
   pictureSuccess = '';
+  settingsError = '';
+  settingsSuccess = '';
   deleteError = '';
 
   private apiBaseUrl = environment.apiUrl.replace('/api', '');
@@ -214,8 +299,17 @@ export class ProfileComponent implements OnInit {
     private authService: AuthService,
     private userService: UserService,
     private router: Router,
-    private translationService: TranslationService
+    private translationService: TranslationService,
+    private elementRef: ElementRef
   ) {}
+
+  @HostListener('document:click', ['$event'])
+  onClickOutside(event: Event): void {
+    if (!this.elementRef.nativeElement.contains(event.target)) {
+      this.isLanguageDropdownOpen = false;
+      this.isThemeDropdownOpen = false;
+    }
+  }
 
   ngOnInit(): void {
     this.authService.currentUser$.subscribe(user => {
@@ -223,6 +317,14 @@ export class ProfileComponent implements OnInit {
       if (user) {
         this.profileData.username = user.username;
         this.profileData.email = user.email;
+        if (user.settings) {
+          this.settingsData = {
+            language: user.settings.language || 'en',
+            theme: user.settings.theme || 'system'
+          };
+          this.originalSettings = JSON.stringify(this.settingsData);
+          this.settingsChanged = false;
+        }
       }
     });
   }
@@ -371,5 +473,86 @@ export class ProfileComponent implements OnInit {
         this.loadingDelete = false;
       }
     });
+  }
+
+  toggleLanguageDropdown(): void {
+    this.isLanguageDropdownOpen = !this.isLanguageDropdownOpen;
+    this.isThemeDropdownOpen = false;
+  }
+
+  toggleThemeDropdown(): void {
+    this.isThemeDropdownOpen = !this.isThemeDropdownOpen;
+    this.isLanguageDropdownOpen = false;
+  }
+
+  selectLanguage(lang: 'en' | 'he'): void {
+    this.settingsData.language = lang;
+    this.isLanguageDropdownOpen = false;
+    this.onSettingChange();
+  }
+
+  selectTheme(theme: 'light' | 'dark' | 'system'): void {
+    this.settingsData.theme = theme;
+    this.isThemeDropdownOpen = false;
+    this.onSettingChange();
+  }
+
+  getLanguageLabel(lang: string): string {
+    return lang === 'en' ? 'English' : 'עברית';
+  }
+
+  getThemeLabel(theme: string): string {
+    switch (theme) {
+      case 'light': return this.translationService.translate('profile.themeLight');
+      case 'dark': return this.translationService.translate('profile.themeDark');
+      default: return this.translationService.translate('profile.themeSystem');
+    }
+  }
+
+  onSettingChange(): void {
+    this.settingsChanged = JSON.stringify(this.settingsData) !== this.originalSettings;
+    this.settingsSuccess = '';
+    this.settingsError = '';
+  }
+
+  saveSettings(): void {
+    this.loadingSettings = true;
+    this.settingsError = '';
+    this.settingsSuccess = '';
+
+    this.userService.updateSettings(this.settingsData).subscribe({
+      next: (response) => {
+        this.authService.updateCurrentUser({ settings: response.data.settings });
+        this.originalSettings = JSON.stringify(this.settingsData);
+        this.settingsChanged = false;
+        this.settingsSuccess = this.translationService.translate('profile.settingsSaved');
+        this.loadingSettings = false;
+
+        // Apply language change immediately
+        if (this.settingsData.language !== this.translationService.getCurrentLanguage()) {
+          this.translationService.setLanguage(this.settingsData.language);
+        }
+
+        // Apply theme change immediately
+        this.applyTheme(this.settingsData.theme);
+      },
+      error: (error) => {
+        this.settingsError = error.error?.message || this.translationService.translate('profile.settingsFailed');
+        this.loadingSettings = false;
+      }
+    });
+  }
+
+  private applyTheme(theme: 'light' | 'dark' | 'system'): void {
+    const htmlElement = document.documentElement;
+    htmlElement.classList.remove('light-theme', 'dark-theme');
+
+    if (theme === 'system') {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      htmlElement.classList.add(prefersDark ? 'dark-theme' : 'light-theme');
+    } else {
+      htmlElement.classList.add(`${theme}-theme`);
+    }
+    localStorage.setItem('theme', theme);
   }
 }

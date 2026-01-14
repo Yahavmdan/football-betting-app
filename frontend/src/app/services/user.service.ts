@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { User } from '../models/user.model';
+import { User, UserSettings } from '../models/user.model';
 import { environment } from '../../environments/environment';
 
 export interface ProfileResponse {
@@ -17,6 +17,11 @@ export interface UpdateProfileData {
 export interface ChangePasswordData {
   currentPassword: string;
   newPassword: string;
+}
+
+export interface UpdateSettingsData {
+  language?: 'en' | 'he';
+  theme?: 'light' | 'dark' | 'system';
 }
 
 @Injectable({
@@ -56,5 +61,9 @@ export class UserService {
     return this.http.delete<{ success: boolean; message: string }>(`${this.apiUrl}/account`, {
       body: { password }
     });
+  }
+
+  updateSettings(data: UpdateSettingsData): Observable<{ success: boolean; message: string; data: { settings: UserSettings } }> {
+    return this.http.put<{ success: boolean; message: string; data: { settings: UserSettings } }>(`${this.apiUrl}/settings`, data);
   }
 }

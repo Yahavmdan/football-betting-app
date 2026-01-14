@@ -235,6 +235,43 @@ import { TranslatePipe } from '../../services/translate.pipe';
         grid-template-columns: 1fr;
       }
     }
+
+    /* Dark Mode Styles */
+    :host-context(.dark-theme) h1 {
+      color: #f9fafb;
+    }
+    :host-context(.dark-theme) .loading {
+      color: #9ca3af;
+    }
+    :host-context(.dark-theme) .empty-state {
+      background: #1f2937;
+      color: #9ca3af;
+    }
+    :host-context(.dark-theme) .group-card {
+      background: #1f2937;
+      border-color: #374151;
+    }
+    :host-context(.dark-theme) .group-card:hover:not(.pending) {
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+    :host-context(.dark-theme) .group-card.pending {
+      background: #111827;
+      border-color: #4b5563;
+    }
+    :host-context(.dark-theme) .group-card h3 {
+      color: #f9fafb;
+    }
+    :host-context(.dark-theme) .description {
+      color: #9ca3af;
+    }
+    :host-context(.dark-theme) .group-info {
+      color: #9ca3af;
+      border-top-color: #374151;
+    }
+    :host-context(.dark-theme) .invite-code {
+      background: rgba(34, 197, 94, 0.15);
+      color: #4ade80;
+    }
   `]
 })
 export class GroupsListComponent implements OnInit {

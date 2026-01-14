@@ -186,6 +186,96 @@
     outline: none;
 }
 
+/* Settings Section */
+.setting-group {
+    margin-bottom: 1.25rem;
+}
+
+.setting-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #475569;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* Custom Select (matching team-select style) */
+.custom-select {
+    position: relative;
+    width: 100%;
+}
+
+.custom-select-input {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    background: #f8fafc;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-height: 52px;
+    font-size: 1rem;
+    color: #1a1a2e;
+}
+
+.custom-select-input:hover {
+    border-color: #cbd5e1;
+}
+
+.custom-select.open .custom-select-input {
+    border-color: #4ade80;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.15);
+}
+
+.custom-select-input .dropdown-arrow {
+    transition: transform 0.2s ease;
+    color: #6b7280;
+}
+
+.custom-select.open .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+.custom-select-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    overflow: hidden;
+    animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.custom-select-option {
+    padding: 0.85rem 1rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-size: 0.95rem;
+    color: #1a1a2e;
+}
+
+.custom-select-option:hover {
+    background: #f1f5f9;
+}
+
+.custom-select-option.selected {
+    background: linear-gradient(135deg, rgba(74, 222, 128, 0.15) 0%, rgba(34, 197, 94, 0.1) 100%);
+    color: #16a34a;
+    font-weight: 600;
+}
+
 /* Buttons */
 .btn-primary {
     padding: 0.75rem 1.5rem;
@@ -348,4 +438,140 @@
         margin: 0 -1.5rem -1.5rem -1.5rem;
         padding: 1.5rem;
     }
+}
+
+/* ========================================
+   DARK MODE STYLES
+   ======================================== */
+
+:host-context(.dark-theme) .profile-card {
+    background: #1f2937;
+    border-color: #374151;
+}
+
+:host-context(.dark-theme) .profile-card h1 {
+    color: #f9fafb;
+}
+
+:host-context(.dark-theme) .profile-picture-section {
+    border-bottom-color: #374151;
+}
+
+:host-context(.dark-theme) .section {
+    border-bottom-color: #374151;
+}
+
+:host-context(.dark-theme) h2 {
+    color: #f9fafb;
+}
+
+:host-context(.dark-theme) .form-group label,
+:host-context(.dark-theme) .setting-group label {
+    color: #d1d5db;
+}
+
+:host-context(.dark-theme) .form-control {
+    background: #111827;
+    border-color: #374151;
+    color: #e5e7eb;
+}
+
+:host-context(.dark-theme) .form-control:focus {
+    border-color: #4ade80;
+    background: #1f2937;
+}
+
+:host-context(.dark-theme) .form-control::placeholder {
+    color: #6b7280;
+}
+
+
+:host-context(.dark-theme) .btn-secondary {
+    background: #374151;
+    color: #e5e7eb;
+}
+
+:host-context(.dark-theme) .btn-secondary:hover {
+    background: #4b5563;
+}
+
+:host-context(.dark-theme) .btn-remove-picture {
+    background: #374151;
+    color: #9ca3af;
+}
+
+:host-context(.dark-theme) .btn-remove-picture:hover {
+    background: #7f1d1d;
+    color: #fca5a5;
+}
+
+:host-context(.dark-theme) .error-message {
+    background: rgba(239, 68, 68, 0.15);
+    color: #fca5a5;
+}
+
+:host-context(.dark-theme) .success-message {
+    background: rgba(34, 197, 94, 0.15);
+    color: #86efac;
+}
+
+:host-context(.dark-theme) .danger-section {
+    background: rgba(127, 29, 29, 0.2);
+    border-top-color: #7f1d1d;
+}
+
+:host-context(.dark-theme) .danger-section h2 {
+    color: #fca5a5;
+}
+
+:host-context(.dark-theme) .warning-text {
+    color: #fca5a5;
+}
+
+:host-context(.dark-theme) .delete-confirm {
+    background: #1f2937;
+    border-color: #7f1d1d;
+}
+
+:host-context(.dark-theme) .delete-confirm p {
+    color: #e5e7eb;
+}
+
+/* Custom Select Dark Mode */
+:host-context(.dark-theme) .custom-select-input {
+    background: #111827;
+    border-color: #374151;
+    color: #e5e7eb;
+}
+
+:host-context(.dark-theme) .custom-select-input:hover {
+    border-color: #4b5563;
+}
+
+:host-context(.dark-theme) .custom-select.open .custom-select-input {
+    background: #1f2937;
+    border-color: #4ade80;
+}
+
+:host-context(.dark-theme) .custom-select-input .dropdown-arrow {
+    color: #9ca3af;
+}
+
+:host-context(.dark-theme) .custom-select-dropdown {
+    background: #1f2937;
+    border-color: #374151;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+:host-context(.dark-theme) .custom-select-option {
+    color: #e5e7eb;
+}
+
+:host-context(.dark-theme) .custom-select-option:hover {
+    background: #374151;
+}
+
+:host-context(.dark-theme) .custom-select-option.selected {
+    background: rgba(74, 222, 128, 0.15);
+    color: #4ade80;
 }

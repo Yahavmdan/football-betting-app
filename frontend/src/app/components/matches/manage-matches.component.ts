@@ -27,7 +27,7 @@ import { getTeamByName } from '../../data/teams.data';
       <div class="section" *ngIf="canManageGroup()">
         <h2>{{ 'matches.addManually' | translate }}</h2>
         <form (ngSubmit)="createManualMatch()" class="manual-match-form">
-          <div class="form-row">
+          <div class="form-row teams-row">
             <div class="form-group">
               <label for="homeTeam">{{ 'matches.homeTeam' | translate }}</label>
               <app-team-select
@@ -45,7 +45,7 @@ import { getTeamByName } from '../../data/teams.data';
               </app-team-select>
             </div>
           </div>
-          <div class="form-row">
+          <div class="form-row datetime-row">
             <div class="form-group">
               <label for="matchDate">{{ 'matches.matchDate' | translate }}</label>
               <input
@@ -70,7 +70,7 @@ import { getTeamByName } from '../../data/teams.data';
           <div *ngIf="isPastMatch()" class="past-match-notice">
             {{ 'matches.pastMatchNotice' | translate }}
           </div>
-          <div *ngIf="isPastMatch()" class="form-row">
+          <div *ngIf="isPastMatch()" class="form-row score-row">
             <div class="form-group">
               <label for="homeScore">{{ 'matches.homeScore' | translate }}</label>
               <input
@@ -569,15 +569,61 @@ import { getTeamByName } from '../../data/teams.data';
       font-weight: 500;
     }
     .manual-match-form {
-      max-width: 640px;
+      max-width: 700px;
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      padding: 1.75rem;
+      border-radius: 16px;
+      border: 2px solid #e2e8f0;
     }
     .form-row {
       display: flex;
-      gap: 1rem;
-      margin-bottom: 1.25rem;
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+      align-items: flex-end;
     }
     .form-row .form-group {
       flex: 1;
+    }
+    .form-row.teams-row {
+      background: white;
+      padding: 1.25rem;
+      border-radius: 12px;
+      border: 2px solid #e2e8f0;
+      position: relative;
+      align-items: center;
+    }
+    .form-row.teams-row .form-group {
+      flex: 1;
+    }
+    .form-row.teams-row::after {
+      content: 'VS';
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+      color: white;
+      font-weight: 700;
+      font-size: 0.75rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: 8px;
+      z-index: 10;
+      box-shadow: 0 2px 8px rgba(74, 222, 128, 0.3);
+    }
+    .form-row.datetime-row {
+      background: white;
+      padding: 1.25rem;
+      border-radius: 12px;
+      border: 2px solid #e2e8f0;
+    }
+    .form-row.score-row {
+      background: rgba(245, 158, 11, 0.1);
+      padding: 1.25rem;
+      border-radius: 12px;
+      border: 2px solid rgba(245, 158, 11, 0.3);
+    }
+    .form-row.score-row .form-group {
+      max-width: 150px;
     }
     .error-message {
       padding: 1rem;
@@ -879,6 +925,116 @@ import { getTeamByName } from '../../data/teams.data';
         padding: 1.5rem;
         font-size: 0.9rem;
       }
+    }
+
+    /* Dark Mode Styles */
+    :host-context(.dark-theme) h1,
+    :host-context(.dark-theme) h2,
+    :host-context(.dark-theme) h3 {
+      color: #f9fafb;
+    }
+    :host-context(.dark-theme) .section {
+      background: #1f2937;
+      border-color: #374151;
+    }
+    :host-context(.dark-theme) label {
+      color: #d1d5db;
+    }
+    :host-context(.dark-theme) .form-control {
+      background: #111827;
+      border-color: #374151;
+      color: #e5e7eb;
+    }
+    :host-context(.dark-theme) .form-control:focus {
+      background: #1f2937;
+      border-color: #4ade80;
+    }
+    :host-context(.dark-theme) .loading,
+    :host-context(.dark-theme) .empty-state {
+      color: #9ca3af;
+    }
+    :host-context(.dark-theme) .match-card {
+      background: #1f2937;
+      border-color: #374151;
+    }
+    :host-context(.dark-theme) .match-card:hover {
+      border-color: #4b5563;
+    }
+    :host-context(.dark-theme) .match-card.active {
+      border-color: rgba(74, 222, 128, 0.4);
+      background: linear-gradient(135deg, rgba(74, 222, 128, 0.1) 0%, rgba(34, 197, 94, 0.05) 100%);
+    }
+    :host-context(.dark-theme) .competition {
+      color: #9ca3af;
+    }
+    :host-context(.dark-theme) .team {
+      color: #f9fafb;
+    }
+    :host-context(.dark-theme) .vs {
+      color: #6b7280;
+    }
+    :host-context(.dark-theme) .date {
+      color: #9ca3af;
+    }
+    :host-context(.dark-theme) .result {
+      background: rgba(34, 197, 94, 0.15);
+      color: #4ade80;
+    }
+    :host-context(.dark-theme) .result.ongoing {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+    }
+    :host-context(.dark-theme) .info-message {
+      background: rgba(59, 130, 246, 0.15);
+      color: #93c5fd;
+    }
+    :host-context(.dark-theme) .error-message {
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+    }
+    :host-context(.dark-theme) .warning-message,
+    :host-context(.dark-theme) .past-match-notice {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+    }
+    :host-context(.dark-theme) .relative-points-section {
+      background: rgba(59, 130, 246, 0.1);
+      border-color: rgba(59, 130, 246, 0.3);
+    }
+    :host-context(.dark-theme) .relative-points-section h3 {
+      color: #93c5fd;
+    }
+    :host-context(.dark-theme) .points-description {
+      color: #9ca3af;
+    }
+    :host-context(.dark-theme) .score-update-form,
+    :host-context(.dark-theme) .edit-match-form {
+      border-top-color: #374151;
+    }
+    :host-context(.dark-theme) .delete-confirm {
+      background: rgba(239, 68, 68, 0.1);
+    }
+    :host-context(.dark-theme) .delete-confirm p {
+      color: #fca5a5;
+    }
+    :host-context(.dark-theme) .btn-secondary {
+      background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+    }
+    :host-context(.dark-theme) .manual-match-form {
+      background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+      border-color: #374151;
+    }
+    :host-context(.dark-theme) .form-row.teams-row {
+      background: #1f2937;
+      border-color: #374151;
+    }
+    :host-context(.dark-theme) .form-row.datetime-row {
+      background: #1f2937;
+      border-color: #374151;
+    }
+    :host-context(.dark-theme) .form-row.score-row {
+      background: rgba(245, 158, 11, 0.1);
+      border-color: rgba(245, 158, 11, 0.3);
     }
   `]
 })

@@ -2323,3 +2323,585 @@ h2 {
         width: 100%;
     }
 }
+
+/* ========================================
+   DARK MODE STYLES
+   ======================================== */
+
+:host-context(.dark-theme) .group-header {
+    background: #1f2937;
+    border-color: #374151;
+}
+
+:host-context(.dark-theme) .group-header h1 {
+    color: #f9fafb;
+}
+
+:host-context(.dark-theme) .description {
+    color: #9ca3af;
+}
+
+:host-context(.dark-theme) .invite-info {
+    color: #9ca3af;
+}
+
+:host-context(.dark-theme) .invite-code {
+    background: rgba(34, 197, 94, 0.15);
+    color: #4ade80;
+}
+
+:host-context(.dark-theme) .leaderboard-section,
+:host-context(.dark-theme) .matches-section {
+    background: #1f2937;
+    border-color: #374151;
+}
+
+:host-context(.dark-theme) h2,
+:host-context(.dark-theme) h3 {
+    color: #f9fafb;
+}
+
+:host-context(.dark-theme) .loading,
+:host-context(.dark-theme) .empty-state {
+    color: #9ca3af;
+}
+
+:host-context(.dark-theme) .leaderboard-item {
+    background: #111827;
+}
+
+:host-context(.dark-theme) .leaderboard-item:hover {
+    background: #1f2937;
+}
+
+:host-context(.dark-theme) .leaderboard-item:first-child {
+    background: linear-gradient(135deg, rgba(74, 222, 128, 0.2) 0%, rgba(34, 197, 94, 0.1) 100%);
+}
+
+:host-context(.dark-theme) .rank {
+    color: #9ca3af;
+}
+
+:host-context(.dark-theme) .leaderboard-item:first-child .rank {
+    color: #4ade80;
+}
+
+:host-context(.dark-theme) .username {
+    color: #f9fafb;
+}
+
+:host-context(.dark-theme) .points {
+    background: rgba(34, 197, 94, 0.15);
+    color: #4ade80;
+}
+
+:host-context(.dark-theme) .leaderboard-item.winner .username {
+    color: #4ade80;
+}
+
+:host-context(.dark-theme) .leaderboard-item.winner .points {
+    background: rgba(34, 197, 94, 0.2);
+    color: #4ade80;
+    border-color: #22c55e;
+}
+
+:host-context(.dark-theme) .leaderboard-item.eliminated .username {
+    color: #f87171;
+}
+
+:host-context(.dark-theme) .leaderboard-item.eliminated .points {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+    border-color: #ef4444;
+}
+
+:host-context(.dark-theme) .status-label {
+    color: #9ca3af;
+}
+
+:host-context(.dark-theme) .match-card {
+    background: #1f2937;
+    border-color: #374151;
+}
+
+:host-context(.dark-theme) .match-card:hover {
+    border-color: #4b5563;
+}
+
+:host-context(.dark-theme) .match-card.has-bet {
+    border-color: rgba(74, 222, 128, 0.4);
+    background: linear-gradient(135deg, rgba(74, 222, 128, 0.1) 0%, rgba(34, 197, 94, 0.05) 100%);
+}
+
+:host-context(.dark-theme) .competition {
+    color: #9ca3af;
+}
+
+:host-context(.dark-theme) .team {
+    color: #f9fafb;
+}
+
+:host-context(.dark-theme) .vs {
+    color: #6b7280;
+}
+
+:host-context(.dark-theme) .date {
+    color: #9ca3af;
+}
+
+:host-context(.dark-theme) .result {
+    background: rgba(34, 197, 94, 0.15);
+    color: #4ade80;
+}
+
+:host-context(.dark-theme) .result.ongoing {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+}
+
+:host-context(.dark-theme) .btn-people {
+    background: #374151;
+    color: #9ca3af;
+}
+
+:host-context(.dark-theme) .btn-people:hover {
+    background: #4b5563;
+    color: #e5e7eb;
+}
+
+:host-context(.dark-theme) .btn-filter {
+    background: #374151;
+    border-color: #4b5563;
+    color: #e5e7eb;
+}
+
+:host-context(.dark-theme) .btn-filter:hover {
+    background: #4b5563;
+}
+
+:host-context(.dark-theme) .btn-filter.has-filters {
+    background: rgba(59, 130, 246, 0.2);
+    border-color: #3b82f6;
+    color: #93c5fd;
+}
+
+:host-context(.dark-theme) .save-filter-checkbox {
+    background: #374151;
+    border-color: #4b5563;
+    color: #9ca3af;
+}
+
+:host-context(.dark-theme) .save-filter-checkbox:hover {
+    background: #4b5563;
+}
+
+:host-context(.dark-theme) .save-filter-checkbox:has(input:checked) {
+    background: rgba(34, 197, 94, 0.2);
+    border-color: #22c55e;
+    color: #4ade80;
+}
+
+:host-context(.dark-theme) .match-count {
+    color: #9ca3af;
+}
+
+:host-context(.dark-theme) .member-bets-panel {
+    background: #111827;
+    border-color: #374151;
+}
+
+:host-context(.dark-theme) .member-bets-header h4 {
+    color: #f9fafb;
+}
+
+:host-context(.dark-theme) .btn-close-bets {
+    color: #9ca3af;
+}
+
+:host-context(.dark-theme) .btn-close-bets:hover {
+    background: #374151;
+    color: #f9fafb;
+}
+
+:host-context(.dark-theme) .loading-bets,
+:host-context(.dark-theme) .empty-bets {
+    color: #9ca3af;
+}
+
+:host-context(.dark-theme) .member-bet-item {
+    background: #1f2937;
+    border-color: #374151;
+}
+
+:host-context(.dark-theme) .member-name {
+    color: #f9fafb;
+}
+
+:host-context(.dark-theme) .no-bet {
+    color: #6b7280;
+}
+
+:host-context(.dark-theme) .bet-time {
+    color: #6b7280;
+}
+
+:host-context(.dark-theme) .btn-secondary {
+    background: #374151;
+    color: #e5e7eb;
+}
+
+:host-context(.dark-theme) .btn-secondary:hover {
+    background: #4b5563;
+}
+
+:host-context(.dark-theme) .score-update-form {
+    border-top-color: #374151;
+}
+
+:host-context(.dark-theme) .score-form-group label {
+    color: #d1d5db;
+}
+
+:host-context(.dark-theme) .score-input {
+    background: #111827;
+    border-color: #374151;
+    color: #e5e7eb;
+}
+
+:host-context(.dark-theme) .score-input:focus {
+    border-color: #4ade80;
+}
+
+:host-context(.dark-theme) .error-message {
+    background: rgba(239, 68, 68, 0.15);
+    color: #fca5a5;
+}
+
+:host-context(.dark-theme) .edit-group-form {
+    background: #111827;
+    border-color: #374151;
+}
+
+:host-context(.dark-theme) .edit-group-form h3 {
+    color: #f9fafb;
+}
+
+:host-context(.dark-theme) .form-group label {
+    color: #d1d5db;
+}
+
+:host-context(.dark-theme) .form-control {
+    background: #1f2937;
+    border-color: #374151;
+    color: #e5e7eb;
+}
+
+:host-context(.dark-theme) .form-control:focus {
+    border-color: #4ade80;
+}
+
+:host-context(.dark-theme) .delete-confirm,
+:host-context(.dark-theme) .leave-confirm,
+:host-context(.dark-theme) .kick-confirm {
+    background: rgba(239, 68, 68, 0.1);
+}
+
+:host-context(.dark-theme) .leave-confirm {
+    background: rgba(245, 158, 11, 0.1);
+}
+
+:host-context(.dark-theme) .delete-confirm p,
+:host-context(.dark-theme) .leave-confirm p,
+:host-context(.dark-theme) .kick-confirm p {
+    color: #e5e7eb;
+}
+
+:host-context(.dark-theme) .filter-overlay {
+    background: rgba(0, 0, 0, 0.7);
+}
+
+:host-context(.dark-theme) .filter-dialog {
+    background: #1f2937;
+}
+
+:host-context(.dark-theme) .filter-header {
+    border-bottom-color: #374151;
+}
+
+:host-context(.dark-theme) .filter-header h3 {
+    color: #f9fafb;
+}
+
+:host-context(.dark-theme) .btn-close-filter {
+    color: #9ca3af;
+}
+
+:host-context(.dark-theme) .btn-close-filter:hover {
+    background: #374151;
+    color: #f9fafb;
+}
+
+:host-context(.dark-theme) .filter-label {
+    color: #f9fafb;
+}
+
+:host-context(.dark-theme) .checkbox-item {
+    background: #111827;
+    border-color: #374151;
+}
+
+:host-context(.dark-theme) .checkbox-item:hover {
+    border-color: #4b5563;
+}
+
+:host-context(.dark-theme) .checkbox-item span {
+    color: #e5e7eb;
+}
+
+:host-context(.dark-theme) .date-range .form-control {
+    background: #111827;
+    border-color: #374151;
+    color: #e5e7eb;
+}
+
+:host-context(.dark-theme) .date-separator {
+    color: #6b7280;
+}
+
+:host-context(.dark-theme) .selected-items {
+    background: #111827;
+    border-color: #374151;
+}
+
+:host-context(.dark-theme) .selected-items:hover {
+    border-color: #4b5563;
+}
+
+:host-context(.dark-theme) .selected-items span {
+    color: #9ca3af;
+}
+
+:host-context(.dark-theme) .dropdown-options {
+    background: #1f2937;
+    border-color: #374151;
+}
+
+:host-context(.dark-theme) .dropdown-option {
+    color: #e5e7eb;
+}
+
+:host-context(.dark-theme) .dropdown-option:hover {
+    background: #374151;
+}
+
+:host-context(.dark-theme) .dropdown-option span {
+    color: #e5e7eb;
+}
+
+:host-context(.dark-theme) .team-search {
+    background: #111827;
+    border-bottom-color: #374151;
+    color: #e5e7eb;
+}
+
+:host-context(.dark-theme) .score-input-group label {
+    color: #d1d5db;
+}
+
+:host-context(.dark-theme) .score-separator {
+    color: #6b7280;
+}
+
+:host-context(.dark-theme) .filter-footer {
+    border-top-color: #374151;
+    background: #111827;
+}
+
+:host-context(.dark-theme) .btn-kick:hover {
+    background: rgba(239, 68, 68, 0.15);
+}
+
+:host-context(.dark-theme) .pending-in-leaderboard {
+    border-top-color: #f59e0b;
+}
+
+:host-context(.dark-theme) .leaderboard-item.pending {
+    background: rgba(245, 158, 11, 0.1);
+    border-color: rgba(245, 158, 11, 0.3);
+}
+
+:host-context(.dark-theme) .leaderboard-item.pending .username {
+    color: #fbbf24;
+}
+
+:host-context(.dark-theme) .pending-label {
+    color: #fbbf24;
+    background: rgba(245, 158, 11, 0.2);
+}
+
+:host-context(.dark-theme) .profile-picture-modal {
+    background: rgba(0, 0, 0, 0.85);
+}
+
+:host-context(.dark-theme) .profile-picture-modal-content {
+    background: #1f2937;
+}
+
+:host-context(.dark-theme) .close-modal-btn {
+    color: #9ca3af;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+:host-context(.dark-theme) .close-modal-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #f9fafb;
+}
+
+:host-context(.dark-theme) .modal-username {
+    color: #f9fafb;
+}
+
+:host-context(.dark-theme) .modal-online-status {
+    background: #374151;
+    color: #9ca3af;
+}
+
+:host-context(.dark-theme) .modal-online-status.online {
+    background: rgba(34, 197, 94, 0.15);
+    color: #4ade80;
+}
+
+:host-context(.dark-theme) .inline-bet-panel {
+    background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+    border-color: #374151;
+}
+
+:host-context(.dark-theme) .inline-bet-header h4 {
+    color: #f9fafb;
+}
+
+:host-context(.dark-theme) .btn-close-bet {
+    color: #9ca3af;
+}
+
+:host-context(.dark-theme) .btn-close-bet:hover {
+    background: #374151;
+    color: #f9fafb;
+}
+
+:host-context(.dark-theme) .inline-bet-info-message {
+    background: rgba(59, 130, 246, 0.15);
+    color: #93c5fd;
+    border-left-color: #3b82f6;
+}
+
+:host-context(.dark-theme) .inline-bet-label {
+    color: #f9fafb;
+}
+
+:host-context(.dark-theme) .inline-outcome-btn {
+    background: #1f2937;
+    border-color: #374151;
+}
+
+:host-context(.dark-theme) .inline-outcome-btn:hover {
+    border-color: #4ade80;
+}
+
+:host-context(.dark-theme) .inline-outcome-btn.selected {
+    background: rgba(74, 222, 128, 0.15);
+    border-color: #22c55e;
+}
+
+:host-context(.dark-theme) .inline-outcome-number {
+    color: #f9fafb;
+}
+
+:host-context(.dark-theme) .inline-outcome-btn.selected .inline-outcome-number {
+    color: #4ade80;
+}
+
+:host-context(.dark-theme) .inline-outcome-name {
+    color: #9ca3af;
+}
+
+:host-context(.dark-theme) .inline-points-info {
+    background: rgba(59, 130, 246, 0.1);
+    border-left-color: #3b82f6;
+}
+
+:host-context(.dark-theme) .inline-points-item {
+    background: #1f2937;
+}
+
+:host-context(.dark-theme) .inline-points-item span:first-child {
+    color: #d1d5db;
+}
+
+:host-context(.dark-theme) .inline-points-value {
+    color: #60a5fa;
+}
+
+:host-context(.dark-theme) .inline-wager-section {
+    background: rgba(16, 185, 129, 0.1);
+    border-left-color: #10b981;
+}
+
+:host-context(.dark-theme) .inline-credits-display {
+    background: #1f2937;
+    border-color: #374151;
+}
+
+:host-context(.dark-theme) .inline-credits-display span:first-child {
+    color: #d1d5db;
+}
+
+:host-context(.dark-theme) .inline-credits-value {
+    color: #4ade80;
+}
+
+:host-context(.dark-theme) .inline-wager-input {
+    background: #1f2937;
+    border-color: #374151;
+    color: #e5e7eb;
+}
+
+:host-context(.dark-theme) .inline-wager-input:focus {
+    border-color: #10b981;
+}
+
+:host-context(.dark-theme) .inline-wager-input:disabled {
+    background: #111827;
+}
+
+:host-context(.dark-theme) .inline-potential-win {
+    background: rgba(16, 185, 129, 0.15);
+    border-color: #10b981;
+}
+
+:host-context(.dark-theme) .inline-potential-win span:first-child {
+    color: #4ade80;
+}
+
+:host-context(.dark-theme) .inline-potential-value {
+    color: #4ade80;
+}
+
+:host-context(.dark-theme) .inline-error-message {
+    background: rgba(239, 68, 68, 0.15);
+    color: #fca5a5;
+}
+
+:host-context(.dark-theme) .inline-success-message {
+    background: rgba(34, 197, 94, 0.15);
+    color: #86efac;
+}
+
+:host-context(.dark-theme) .past-match-label {
+    color: #fbbf24;
+}
+
+:host-context(.dark-theme) .bet-wager {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+}

@@ -110,6 +110,1298 @@ app-root {
     width: 100%;
 }
 
+/* Dark Theme */
+html.dark-theme {
+  --gray-50: #1a1a2e;
+  --gray-100: #16213e;
+  --gray-200: #1f2937;
+  --gray-300: #374151;
+  --gray-400: #4b5563;
+  --gray-500: #6b7280;
+  --gray-600: #9ca3af;
+  --gray-700: #d1d5db;
+  --gray-800: #e5e7eb;
+  --gray-900: #f9fafb;
+
+  --gradient-card: linear-gradient(145deg, #1f2937 0%, #111827 100%);
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+}
+
+html.dark-theme body {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: var(--gray-800);
+}
+
+html.dark-theme ::-webkit-scrollbar-track {
+  background: #1f2937;
+}
+
+html.dark-theme ::-webkit-scrollbar-thumb {
+  background: #4b5563;
+}
+
+html.dark-theme ::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+html.dark-theme ::selection {
+  background: var(--primary-700);
+  color: white;
+}
+
+/* Dark theme component overrides */
+html.dark-theme .profile-card,
+html.dark-theme .group-card,
+html.dark-theme .match-card,
+html.dark-theme .auth-card,
+html.dark-theme .modal-content,
+html.dark-theme .filter-dropdown {
+  background: #1f2937;
+  border-color: #374151;
+  color: #e5e7eb;
+}
+
+html.dark-theme .section {
+  border-bottom-color: #374151;
+}
+
+html.dark-theme .form-control,
+html.dark-theme input,
+html.dark-theme select,
+html.dark-theme textarea {
+  background: #111827;
+  border-color: #374151;
+  color: #e5e7eb;
+}
+
+html.dark-theme .form-control:focus,
+html.dark-theme input:focus,
+html.dark-theme select:focus,
+html.dark-theme textarea:focus {
+  border-color: #4ade80;
+  background: #1f2937;
+}
+
+html.dark-theme .form-control::placeholder,
+html.dark-theme input::placeholder {
+  color: #6b7280;
+}
+
+html.dark-theme h1,
+html.dark-theme h2,
+html.dark-theme h3,
+html.dark-theme h4 {
+  color: #f9fafb;
+}
+
+html.dark-theme .form-group label,
+html.dark-theme .setting-group label {
+  color: #d1d5db;
+}
+
+html.dark-theme .btn-secondary {
+  background: #374151;
+  color: #e5e7eb;
+}
+
+html.dark-theme .btn-secondary:hover {
+  background: #4b5563;
+}
+
+html.dark-theme .danger-section {
+  background: #1c1917;
+  border-top-color: #7f1d1d;
+}
+
+html.dark-theme .warning-text {
+  color: #fca5a5;
+}
+
+html.dark-theme .delete-confirm {
+  background: #1f2937;
+  border-color: #7f1d1d;
+}
+
+html.dark-theme .back-btn {
+  background: rgba(74, 222, 128, 0.15);
+}
+
+html.dark-theme .back-btn:hover {
+  background: rgba(74, 222, 128, 0.25);
+}
+
+html.dark-theme .profile-picture-container {
+  border-color: #22c55e;
+}
+
+html.dark-theme .btn-remove-picture {
+  background: #374151;
+  color: #9ca3af;
+}
+
+html.dark-theme .btn-remove-picture:hover {
+  background: #7f1d1d;
+  color: #fca5a5;
+}
+
+html.dark-theme .error-message {
+  background: #7f1d1d;
+  color: #fca5a5;
+  border-left-color: #ef4444;
+}
+
+html.dark-theme .success-message {
+  background: #14532d;
+  color: #86efac;
+  border-left-color: #22c55e;
+}
+
+html.dark-theme .leaderboard-card,
+html.dark-theme .bet-card {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+html.dark-theme .navbar {
+  background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+  border-bottom-color: #374151;
+}
+
+html.dark-theme .nav-link {
+  color: #d1d5db;
+}
+
+html.dark-theme .nav-link:hover {
+  color: #4ade80;
+}
+
+html.dark-theme .modal-overlay {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+html.dark-theme .empty-state {
+  color: #9ca3af;
+}
+
+/* Group page elements */
+html.dark-theme .group-header {
+  background: #1f2937;
+  border-color: #374151;
+  color: #e5e7eb;
+}
+
+html.dark-theme .group-header h2,
+html.dark-theme .group-header h3 {
+  color: #f9fafb;
+}
+
+html.dark-theme .invite-code {
+  background: #111827;
+  border-color: #374151;
+  color: #e5e7eb;
+}
+
+html.dark-theme .invite-code-label {
+  color: #9ca3af;
+}
+
+html.dark-theme .invite-code-value {
+  color: #4ade80;
+}
+
+/* Leaderboard section */
+html.dark-theme .leaderboard-section {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+html.dark-theme .leaderboard-section h2,
+html.dark-theme .leaderboard-section h3 {
+  color: #f9fafb;
+}
+
+html.dark-theme .leaderboard-item {
+  background: #111827;
+  border-color: #374151;
+  color: #e5e7eb;
+}
+
+html.dark-theme .leaderboard-item:hover {
+  background: #1f2937;
+}
+
+html.dark-theme .leaderboard-rank {
+  color: #9ca3af;
+}
+
+html.dark-theme .leaderboard-name {
+  color: #f9fafb;
+}
+
+html.dark-theme .leaderboard-points {
+  color: #4ade80;
+}
+
+/* Matches section */
+html.dark-theme .matches-section {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+html.dark-theme .matches-section h2,
+html.dark-theme .matches-section h3 {
+  color: #f9fafb;
+}
+
+html.dark-theme .matches-grid {
+  color: #e5e7eb;
+}
+
+/* Form card */
+html.dark-theme .form-card {
+  background: #1f2937;
+  border-color: #374151;
+  color: #e5e7eb;
+}
+
+html.dark-theme .form-card h2,
+html.dark-theme .form-card h3 {
+  color: #f9fafb;
+}
+
+/* Manual match form */
+html.dark-theme .manual-match-form {
+  background: #111827;
+  border-color: #374151;
+}
+
+html.dark-theme .manual-match-form label {
+  color: #d1d5db;
+}
+
+html.dark-theme .form-row {
+  color: #e5e7eb;
+}
+
+/* Team select component */
+html.dark-theme .team-select-container {
+  background: #111827;
+  border-color: #374151;
+}
+
+html.dark-theme .team-select-input {
+  background: #111827;
+  border-color: #374151;
+  color: #e5e7eb;
+}
+
+html.dark-theme .team-select-input:hover {
+  border-color: #4b5563;
+}
+
+html.dark-theme .team-select-input .placeholder {
+  color: #6b7280;
+}
+
+html.dark-theme .team-select-dropdown {
+  background: #1f2937;
+  border-color: #374151;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+html.dark-theme .team-select-option {
+  color: #e5e7eb;
+}
+
+html.dark-theme .team-select-option:hover {
+  background: #374151;
+}
+
+html.dark-theme .team-select-search {
+  background: #111827;
+  border-color: #374151;
+  color: #e5e7eb;
+}
+
+/* Section overrides */
+html.dark-theme .section {
+  background: transparent;
+  color: #e5e7eb;
+}
+
+html.dark-theme .section h2 {
+  color: #f9fafb;
+}
+
+html.dark-theme .section p {
+  color: #d1d5db;
+}
+
+/* General text color fixes */
+html.dark-theme p,
+html.dark-theme span,
+html.dark-theme div,
+html.dark-theme label {
+  color: inherit;
+}
+
+html.dark-theme .text-muted,
+html.dark-theme .text-secondary {
+  color: #9ca3af;
+}
+
+/* Cards */
+html.dark-theme .card {
+  background: #1f2937;
+  border-color: #374151;
+  color: #e5e7eb;
+}
+
+html.dark-theme .card h2,
+html.dark-theme .card h3,
+html.dark-theme .card h4 {
+  color: #f9fafb;
+}
+
+/* Dropdown arrow fix */
+html.dark-theme .dropdown-arrow path {
+  stroke: #9ca3af;
+}
+
+/* Group info section */
+html.dark-theme .group-info {
+  background: #1f2937;
+  border-color: #374151;
+  color: #e5e7eb;
+}
+
+html.dark-theme .group-info h3 {
+  color: #f9fafb;
+}
+
+html.dark-theme .group-description {
+  color: #d1d5db;
+}
+
+/* Bet type badge */
+html.dark-theme .bet-type-badge {
+  background: #374151;
+  color: #e5e7eb;
+}
+
+/* Stats cards */
+html.dark-theme .stat-card {
+  background: #111827;
+  border-color: #374151;
+}
+
+html.dark-theme .stat-value {
+  color: #f9fafb;
+}
+
+html.dark-theme .stat-label {
+  color: #9ca3af;
+}
+
+/* Match card overrides */
+html.dark-theme .match-card {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+html.dark-theme .match-card .team-name {
+  color: #f9fafb;
+}
+
+html.dark-theme .match-card .match-time,
+html.dark-theme .match-card .match-date {
+  color: #9ca3af;
+}
+
+html.dark-theme .match-card .score {
+  color: #4ade80;
+}
+
+/* Modal overrides */
+html.dark-theme .modal-content {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+html.dark-theme .modal-header {
+  border-bottom-color: #374151;
+  color: #f9fafb;
+}
+
+html.dark-theme .modal-body {
+  color: #e5e7eb;
+}
+
+html.dark-theme .modal-footer {
+  border-top-color: #374151;
+}
+
+/* Table overrides */
+html.dark-theme table {
+  color: #e5e7eb;
+}
+
+html.dark-theme th {
+  background: #111827;
+  color: #f9fafb;
+  border-color: #374151;
+}
+
+html.dark-theme td {
+  border-color: #374151;
+}
+
+html.dark-theme tr:hover {
+  background: #1f2937;
+}
+
+/* Input overrides - ensure all inputs are styled */
+html.dark-theme input[type="text"],
+html.dark-theme input[type="email"],
+html.dark-theme input[type="password"],
+html.dark-theme input[type="number"],
+html.dark-theme input[type="date"],
+html.dark-theme input[type="time"],
+html.dark-theme input[type="search"] {
+  background: #111827;
+  border-color: #374151;
+  color: #e5e7eb;
+}
+
+html.dark-theme input::placeholder {
+  color: #6b7280;
+}
+
+/* Button overrides */
+html.dark-theme .btn-outline {
+  border-color: #4b5563;
+  color: #e5e7eb;
+}
+
+html.dark-theme .btn-outline:hover {
+  background: #374151;
+}
+
+/* Link colors */
+html.dark-theme a {
+  color: #60a5fa;
+}
+
+html.dark-theme a:hover {
+  color: #93c5fd;
+}
+
+/* List items */
+html.dark-theme li {
+  color: #e5e7eb;
+}
+
+/* Dividers */
+html.dark-theme hr {
+  border-color: #374151;
+}
+
+/* Tooltip */
+html.dark-theme .tooltip {
+  background: #374151;
+  color: #f9fafb;
+}
+
+/* Badge */
+html.dark-theme .badge {
+  background: #374151;
+  color: #e5e7eb;
+}
+
+/* Alert messages */
+html.dark-theme .alert-info {
+  background: #1e3a5f;
+  border-color: #3b82f6;
+  color: #93c5fd;
+}
+
+html.dark-theme .alert-warning {
+  background: #422006;
+  border-color: #f59e0b;
+  color: #fcd34d;
+}
+
+/* Code blocks */
+html.dark-theme code,
+html.dark-theme pre {
+  background: #111827;
+  color: #e5e7eb;
+}
+
+/* Filter section */
+html.dark-theme .filter-section {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+html.dark-theme .filter-label {
+  color: #d1d5db;
+}
+
+/* Chip/Tag */
+html.dark-theme .chip,
+html.dark-theme .tag {
+  background: #374151;
+  color: #e5e7eb;
+}
+
+/* Toggle switch */
+html.dark-theme .toggle-switch {
+  background: #374151;
+}
+
+html.dark-theme .toggle-switch.active {
+  background: #22c55e;
+}
+
+/* Progress bar */
+html.dark-theme .progress-bar {
+  background: #374151;
+}
+
+/* Pagination */
+html.dark-theme .pagination button {
+  background: #1f2937;
+  border-color: #374151;
+  color: #e5e7eb;
+}
+
+html.dark-theme .pagination button:hover {
+  background: #374151;
+}
+
+html.dark-theme .pagination button.active {
+  background: #4ade80;
+  color: #111827;
+}
+
+/* ========================================
+   COMPREHENSIVE DARK MODE OVERRIDES
+   ======================================== */
+
+/* Container text */
+html.dark-theme .container {
+  color: #e5e7eb;
+}
+
+/* Group header specific */
+html.dark-theme .group-header {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+html.dark-theme .group-header h1 {
+  color: #f9fafb;
+}
+
+html.dark-theme .group-header .description {
+  color: #9ca3af;
+}
+
+html.dark-theme .invite-info {
+  color: #9ca3af;
+}
+
+html.dark-theme .invite-code {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+}
+
+html.dark-theme .member-count {
+  color: #9ca3af;
+}
+
+/* Group header top actions */
+html.dark-theme .group-header-top h1 {
+  color: #f9fafb;
+}
+
+/* Edit group form */
+html.dark-theme .edit-group-form {
+  background: #111827;
+  border-color: #374151;
+}
+
+html.dark-theme .edit-group-form h3 {
+  color: #f9fafb;
+}
+
+/* Delete/Leave confirm */
+html.dark-theme .delete-confirm,
+html.dark-theme .leave-confirm,
+html.dark-theme .kick-confirm {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+html.dark-theme .delete-confirm p,
+html.dark-theme .leave-confirm p,
+html.dark-theme .kick-confirm p {
+  color: #e5e7eb;
+}
+
+/* Leaderboard section specific */
+html.dark-theme .leaderboard-section {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+html.dark-theme .leaderboard-section h2 {
+  color: #f9fafb;
+}
+
+html.dark-theme .leaderboard-item {
+  background: #111827;
+  border-color: #374151;
+}
+
+html.dark-theme .leaderboard-item:hover {
+  background: #1f2937;
+}
+
+html.dark-theme .leaderboard-item:first-child {
+  background: linear-gradient(135deg, rgba(74, 222, 128, 0.2) 0%, rgba(34, 197, 94, 0.1) 100%);
+}
+
+html.dark-theme .leaderboard-item .rank {
+  color: #9ca3af;
+}
+
+html.dark-theme .leaderboard-item:first-child .rank {
+  color: #4ade80;
+}
+
+html.dark-theme .leaderboard-item .username {
+  color: #f9fafb;
+}
+
+html.dark-theme .leaderboard-item .points {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+}
+
+html.dark-theme .leaderboard-item.winner {
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.2) 0%, rgba(202, 138, 4, 0.1) 100%);
+}
+
+html.dark-theme .leaderboard-item.eliminated {
+  opacity: 0.6;
+}
+
+html.dark-theme .status-label {
+  color: #9ca3af;
+}
+
+/* Pending members */
+html.dark-theme .leaderboard-item.pending {
+  background: #1f2937;
+  border: 1px dashed #4b5563;
+}
+
+html.dark-theme .pending-actions button {
+  background: #374151;
+}
+
+/* Matches section specific */
+html.dark-theme .matches-section {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+html.dark-theme .matches-section h2 {
+  color: #f9fafb;
+}
+
+html.dark-theme .section-header h2 {
+  color: #f9fafb;
+}
+
+html.dark-theme .match-count {
+  color: #9ca3af;
+}
+
+/* Filter button */
+html.dark-theme .btn-filter {
+  background: #374151;
+  color: #e5e7eb;
+  border-color: #4b5563;
+}
+
+html.dark-theme .btn-filter:hover {
+  background: #4b5563;
+}
+
+html.dark-theme .btn-filter.has-filters {
+  background: rgba(74, 222, 128, 0.2);
+  border-color: #4ade80;
+}
+
+
+/* Match cards */
+html.dark-theme .match-card {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+html.dark-theme .match-card .match-header {
+  border-bottom-color: #374151;
+}
+
+html.dark-theme .match-card .competition {
+  color: #9ca3af;
+}
+
+html.dark-theme .match-card .team {
+  color: #f9fafb;
+}
+
+html.dark-theme .match-card .team span {
+  color: #f9fafb;
+}
+
+html.dark-theme .match-card .vs {
+  color: #6b7280;
+}
+
+html.dark-theme .match-card .date {
+  color: #9ca3af;
+}
+
+html.dark-theme .match-card .status {
+  background: #374151;
+  color: #9ca3af;
+}
+
+html.dark-theme .match-card .status.finished {
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+}
+
+html.dark-theme .match-card .result {
+  color: #4ade80;
+}
+
+html.dark-theme .match-card .result.ongoing {
+  color: #fbbf24;
+}
+
+/* Bet badge */
+html.dark-theme .bet-badge {
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+}
+
+/* Match action buttons */
+html.dark-theme .btn-bet {
+  background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+  color: white;
+}
+
+html.dark-theme .btn-people {
+  background: #374151;
+  color: #9ca3af;
+}
+
+html.dark-theme .btn-people:hover,
+html.dark-theme .btn-people.active {
+  background: #4b5563;
+  color: #e5e7eb;
+}
+
+html.dark-theme .past-match-label {
+  color: #f59e0b;
+}
+
+/* Member bets panel */
+html.dark-theme .member-bets-panel {
+  background: #111827;
+  border-color: #374151;
+}
+
+html.dark-theme .member-bets-header {
+  border-bottom-color: #374151;
+}
+
+html.dark-theme .member-bets-header h4 {
+  color: #f9fafb;
+}
+
+html.dark-theme .member-bet-item {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+html.dark-theme .member-bet-item .member-name {
+  color: #f9fafb;
+}
+
+html.dark-theme .member-bet-item .bet-outcome {
+  color: #e5e7eb;
+}
+
+html.dark-theme .member-bet-item .no-bet {
+  color: #6b7280;
+}
+
+html.dark-theme .member-bet-item .bet-time {
+  color: #6b7280;
+}
+
+html.dark-theme .empty-bets {
+  color: #9ca3af;
+}
+
+/* Score update form */
+html.dark-theme .score-update-form {
+  background: #111827;
+  border-color: #374151;
+}
+
+html.dark-theme .score-update-form label {
+  color: #d1d5db;
+}
+
+/* Inline bet panel */
+html.dark-theme .inline-bet-panel {
+  background: #111827;
+  border-color: #374151;
+}
+
+html.dark-theme .inline-bet-header h4 {
+  color: #f9fafb;
+}
+
+html.dark-theme .inline-bet-label {
+  color: #d1d5db;
+}
+
+html.dark-theme .inline-bet-info-message {
+  background: rgba(59, 130, 246, 0.15);
+  color: #93c5fd;
+}
+
+html.dark-theme .inline-outcome-btn {
+  background: #1f2937;
+  border-color: #374151;
+  color: #e5e7eb;
+}
+
+html.dark-theme .inline-outcome-btn:hover {
+  background: #374151;
+  border-color: #4b5563;
+}
+
+html.dark-theme .inline-outcome-btn.selected {
+  background: rgba(74, 222, 128, 0.2);
+  border-color: #4ade80;
+  color: #4ade80;
+}
+
+html.dark-theme .inline-outcome-name {
+  color: inherit;
+}
+
+html.dark-theme .inline-points-info {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+html.dark-theme .inline-points-item {
+  color: #d1d5db;
+}
+
+html.dark-theme .inline-points-value {
+  color: #4ade80;
+}
+
+html.dark-theme .inline-wager-section {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+html.dark-theme .inline-credits-display {
+  color: #d1d5db;
+}
+
+html.dark-theme .inline-credits-value {
+  color: #4ade80;
+}
+
+html.dark-theme .inline-wager-input {
+  background: #111827;
+  border-color: #374151;
+  color: #e5e7eb;
+}
+
+html.dark-theme .inline-potential-win {
+  color: #d1d5db;
+}
+
+html.dark-theme .inline-potential-value {
+  color: #4ade80;
+}
+
+html.dark-theme .inline-error-message {
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+}
+
+html.dark-theme .inline-success-message {
+  background: rgba(34, 197, 94, 0.15);
+  color: #86efac;
+}
+
+/* Filter dialog */
+html.dark-theme .filter-overlay {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+html.dark-theme .filter-dialog {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+html.dark-theme .filter-header {
+  border-bottom-color: #374151;
+}
+
+html.dark-theme .filter-header h3 {
+  color: #f9fafb;
+}
+
+html.dark-theme .filter-body {
+  color: #e5e7eb;
+}
+
+html.dark-theme .filter-section {
+  border-bottom-color: #374151;
+}
+
+html.dark-theme .filter-label {
+  color: #d1d5db;
+}
+
+html.dark-theme .checkbox-item {
+  color: #e5e7eb;
+}
+
+html.dark-theme .checkbox-item span {
+  color: #e5e7eb;
+}
+
+html.dark-theme .date-range input {
+  background: #111827;
+  border-color: #374151;
+  color: #e5e7eb;
+}
+
+html.dark-theme .date-separator {
+  color: #6b7280;
+}
+
+html.dark-theme .multi-select-dropdown .selected-items {
+  background: #111827;
+  border-color: #374151;
+  color: #e5e7eb;
+}
+
+html.dark-theme .multi-select-dropdown .dropdown-options {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+html.dark-theme .dropdown-option {
+  color: #e5e7eb;
+}
+
+html.dark-theme .dropdown-option:hover {
+  background: #374151;
+}
+
+html.dark-theme .team-search {
+  background: #111827;
+  border-color: #374151;
+  color: #e5e7eb;
+}
+
+html.dark-theme .score-input-group label {
+  color: #d1d5db;
+}
+
+html.dark-theme .score-separator {
+  color: #6b7280;
+}
+
+html.dark-theme .filter-footer {
+  border-top-color: #374151;
+}
+
+/* Profile picture modal */
+html.dark-theme .profile-picture-modal {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+html.dark-theme .profile-picture-modal-content {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+html.dark-theme .modal-username {
+  color: #f9fafb;
+}
+
+html.dark-theme .modal-online-status {
+  color: #9ca3af;
+}
+
+html.dark-theme .modal-online-status.online {
+  color: #4ade80;
+}
+
+/* Manage matches page specific */
+html.dark-theme .section h2 {
+  color: #f9fafb;
+}
+
+html.dark-theme .form-row {
+  color: #e5e7eb;
+}
+
+html.dark-theme .form-group label {
+  color: #d1d5db;
+}
+
+html.dark-theme .manual-match-form {
+  color: #e5e7eb;
+}
+
+/* Team select component */
+html.dark-theme .team-select-container {
+  color: #e5e7eb;
+}
+
+html.dark-theme .team-select-input {
+  background: #111827;
+  border-color: #374151;
+  color: #e5e7eb;
+}
+
+html.dark-theme .team-select-input:hover {
+  border-color: #4b5563;
+}
+
+html.dark-theme .team-select-input .placeholder {
+  color: #6b7280;
+}
+
+html.dark-theme .team-select-dropdown {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+html.dark-theme .team-select-option {
+  color: #e5e7eb;
+}
+
+html.dark-theme .team-select-option:hover {
+  background: #374151;
+}
+
+html.dark-theme .selected-team {
+  color: #f9fafb;
+}
+
+/* Save filter checkbox */
+html.dark-theme .save-filter-checkbox {
+  color: #9ca3af;
+}
+
+html.dark-theme .save-filter-checkbox svg {
+  stroke: #9ca3af;
+}
+
+/* Kick button */
+html.dark-theme .btn-kick {
+  background: transparent;
+  color: #9ca3af;
+}
+
+html.dark-theme .btn-kick:hover {
+  color: #ef4444;
+}
+
+/* Online indicator */
+html.dark-theme .online-indicator {
+  background: #6b7280;
+}
+
+html.dark-theme .online-indicator.online {
+  background: #4ade80;
+}
+
+/* Profile picture wrapper */
+html.dark-theme .profile-picture-wrapper {
+  cursor: pointer;
+}
+
+/* Close buttons */
+html.dark-theme .btn-close-filter,
+html.dark-theme .btn-close-bets,
+html.dark-theme .btn-close-bet,
+html.dark-theme .close-modal-btn {
+  color: #9ca3af;
+}
+
+html.dark-theme .btn-close-filter:hover,
+html.dark-theme .btn-close-bets:hover,
+html.dark-theme .btn-close-bet:hover,
+html.dark-theme .close-modal-btn:hover {
+  color: #f9fafb;
+}
+
+/* Update score button */
+html.dark-theme .btn-update-score {
+  background: #374151;
+  color: #e5e7eb;
+}
+
+html.dark-theme .btn-update-score:hover {
+  background: #4b5563;
+}
+
+/* Mark as finished button */
+html.dark-theme .btn-mark-finished {
+  background: rgba(234, 179, 8, 0.2);
+  color: #fbbf24;
+}
+
+html.dark-theme .btn-mark-finished:hover {
+  background: rgba(234, 179, 8, 0.3);
+}
+
+/* Group list page specific */
+html.dark-theme .groups-grid {
+  color: #e5e7eb;
+}
+
+html.dark-theme .group-card {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+html.dark-theme .group-card h3 {
+  color: #f9fafb;
+}
+
+html.dark-theme .group-card .group-description {
+  color: #9ca3af;
+}
+
+html.dark-theme .group-card .group-stats {
+  color: #d1d5db;
+}
+
+html.dark-theme .join-request-badge {
+  background: rgba(234, 179, 8, 0.2);
+  color: #fbbf24;
+}
+
+/* Auth pages */
+html.dark-theme .auth-container {
+  color: #e5e7eb;
+}
+
+html.dark-theme .auth-card {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+html.dark-theme .auth-card h1 {
+  color: #f9fafb;
+}
+
+html.dark-theme .auth-card .auth-link {
+  color: #60a5fa;
+}
+
+html.dark-theme .auth-card .auth-link:hover {
+  color: #93c5fd;
+}
+
+/* Modal general */
+html.dark-theme .modal {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+html.dark-theme .modal-content {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+html.dark-theme .modal-content h2,
+html.dark-theme .modal-content h3 {
+  color: #f9fafb;
+}
+
+/* Create/Join group modals */
+html.dark-theme .modal-overlay {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+html.dark-theme .create-group-modal,
+html.dark-theme .join-group-modal {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+html.dark-theme .modal-header h2 {
+  color: #f9fafb;
+}
+
+html.dark-theme .modal-body {
+  color: #e5e7eb;
+}
+
+html.dark-theme .bet-type-option {
+  background: #111827;
+  border-color: #374151;
+}
+
+html.dark-theme .bet-type-option:hover {
+  border-color: #4b5563;
+}
+
+html.dark-theme .bet-type-option.selected {
+  border-color: #4ade80;
+  background: rgba(74, 222, 128, 0.1);
+}
+
+html.dark-theme .bet-type-option h4 {
+  color: #f9fafb;
+}
+
+html.dark-theme .bet-type-option p {
+  color: #9ca3af;
+}
+
+/* Wager related */
+html.dark-theme .bet-wager {
+  color: #fbbf24;
+}
+
 /* RTL Support for Hebrew */
 html[dir="rtl"] {
   direction: rtl;

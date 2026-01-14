@@ -205,6 +205,60 @@ import { TranslationService } from '../../services/translation.service';
       text-align: center;
       color: #94a3b8;
     }
+
+    /* Dark Mode Styles */
+    :host-context(.dark-theme) .team-select-input {
+      background: #111827;
+      border-color: #374151;
+      color: #e5e7eb;
+    }
+    :host-context(.dark-theme) .team-select-input:hover {
+      border-color: #4b5563;
+    }
+    :host-context(.dark-theme) .team-select-container.open .team-select-input {
+      background: #1f2937;
+      border-color: #4ade80;
+    }
+    :host-context(.dark-theme) .selected-team span {
+      color: #f9fafb;
+    }
+    :host-context(.dark-theme) .placeholder {
+      color: #6b7280;
+    }
+    :host-context(.dark-theme) .dropdown-arrow path {
+      stroke: #9ca3af;
+    }
+    :host-context(.dark-theme) .dropdown-panel {
+      background: #1f2937;
+      border-color: #374151;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    }
+    :host-context(.dark-theme) .search-box {
+      border-bottom-color: #374151;
+      color: #9ca3af;
+    }
+    :host-context(.dark-theme) .search-input {
+      color: #e5e7eb;
+    }
+    :host-context(.dark-theme) .search-input::placeholder {
+      color: #6b7280;
+    }
+    :host-context(.dark-theme) .league-header {
+      background: #111827;
+      color: #9ca3af;
+    }
+    :host-context(.dark-theme) .team-option:hover {
+      background: #374151;
+    }
+    :host-context(.dark-theme) .team-option.selected {
+      background: rgba(74, 222, 128, 0.15);
+    }
+    :host-context(.dark-theme) .team-option span {
+      color: #f9fafb;
+    }
+    :host-context(.dark-theme) .no-results {
+      color: #6b7280;
+    }
   `]
 })
 export class TeamSelectComponent implements ControlValueAccessor {

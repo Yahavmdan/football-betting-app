@@ -33,6 +33,7 @@ exports.getProfile = async (req, res) => {
         profilePicture: user.profilePicture,
         isAdmin: user.isAdmin,
         groups: user.groups,
+        settings: user.settings,
         createdAt: user.createdAt
       }
     });
@@ -242,6 +243,46 @@ exports.deleteProfilePicture = async (req, res) => {
     res.status(200).json({
       success: true,
       message: 'Profile picture deleted successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Update user settings
+exports.updateSettings = async (req, res) => {
+  try {
+    const { language, theme } = req.body;
+    const userId = req.user._id;
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Update settings
+    if (language !== undefined) {
+      user.settings.language = language;
+    }
+    if (theme !== undefined) {
+      user.settings.theme = theme;
+    }
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Settings updated successfully',
+      data: {
+        settings: user.settings
+      }
     });
   } catch (error) {
     res.status(500).json({

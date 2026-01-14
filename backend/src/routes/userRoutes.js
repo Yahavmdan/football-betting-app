@@ -6,6 +6,7 @@ const {
   changePassword,
   uploadProfilePicture,
   deleteProfilePicture,
+  updateSettings,
   deleteAccount
 } = require('../controllers/userController');
 const { protect } = require('../middleware/auth');
@@ -17,6 +18,7 @@ router.put('/profile', protect, updateProfile);
 router.put('/password', protect, changePassword);
 router.post('/profile-picture', protect, upload.single('profilePicture'), uploadProfilePicture);
 router.delete('/profile-picture', protect, deleteProfilePicture);
+router.put('/settings', protect, updateSettings);
 router.delete('/account', protect, deleteAccount);
 
 module.exports = router;

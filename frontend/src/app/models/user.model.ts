@@ -1,3 +1,8 @@
+export interface UserSettings {
+  language: 'en' | 'he';
+  theme: 'light' | 'dark' | 'system';
+}
+
 export interface User {
   id: string;
   username: string;
@@ -5,6 +10,7 @@ export interface User {
   profilePicture?: string | null;
   isAdmin?: boolean;
   groups?: string[];
+  settings?: UserSettings;
   lastActive?: Date;
   createdAt?: Date;
 }

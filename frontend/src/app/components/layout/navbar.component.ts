@@ -20,12 +20,48 @@ import {environment} from '../../../environments/environment';
                         </a>
                     </div>
 
-                    <!-- Hamburger button for mobile -->
-                    <button class="hamburger" (click)="toggleMobileMenu()" [class.open]="mobileMenuOpen">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                    </button>
+                    <!-- Mobile header controls -->
+                    <div class="mobile-header-controls">
+                        <button class="hamburger" (click)="toggleMobileMenu()" [class.open]="mobileMenuOpen">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </button>
+                        <div class="mobile-header-right">
+                            <div class="language-switcher mobile-lang">
+                                <button
+                                        (click)="switchLanguage('en')"
+                                        [class.active]="currentLang === 'en'"
+                                        class="lang-btn"
+                                >
+                                    EN
+                                </button>
+                                <button
+                                        (click)="switchLanguage('he')"
+                                        [class.active]="currentLang === 'he'"
+                                        class="lang-btn"
+                                >
+                                    עב
+                                </button>
+                            </div>
+                            <button class="theme-toggle mobile-theme" (click)="toggleTheme()">
+                                <svg *ngIf="!isDarkTheme" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                                </svg>
+                                <svg *ngIf="isDarkTheme" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="5"></circle>
+                                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
 
                     <!-- Desktop menu -->
                     <div class="nav-menu desktop-menu">
@@ -46,6 +82,22 @@ import {environment} from '../../../environments/environment';
                                 עב
                             </button>
                         </div>
+                        <button class="theme-toggle" (click)="toggleTheme()" [title]="isDarkTheme ? 'Switch to light mode' : 'Switch to dark mode'">
+                            <svg *ngIf="!isDarkTheme" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                            </svg>
+                            <svg *ngIf="isDarkTheme" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="5"></circle>
+                                <line x1="12" y1="1" x2="12" y2="3"></line>
+                                <line x1="12" y1="21" x2="12" y2="23"></line>
+                                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                                <line x1="1" y1="12" x2="3" y2="12"></line>
+                                <line x1="21" y1="12" x2="23" y2="12"></line>
+                                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                            </svg>
+                        </button>
                         <div class="user-menu">
                             <a routerLink="/profile" class="user-profile-link">
                                 <img
@@ -81,22 +133,6 @@ import {environment} from '../../../environments/environment';
                 </span>
                             <span class="username">{{ user.username }}</span>
                         </a>
-                        <div class="language-switcher">
-                            <button
-                                    (click)="switchLanguage('en')"
-                                    [class.active]="currentLang === 'en'"
-                                    class="lang-btn"
-                            >
-                                EN
-                            </button>
-                            <button
-                                    (click)="switchLanguage('he')"
-                                    [class.active]="currentLang === 'he'"
-                                    class="lang-btn"
-                            >
-                                עב
-                            </button>
-                        </div>
                         <button (click)="logout()" class="logout-btn mobile-logout">{{ 'nav.logout' | translate }}</button>
                     </div>
                 </div>
@@ -125,6 +161,8 @@ import {environment} from '../../../environments/environment';
             justify-content: space-between;
             align-items: center;
             height: 70px;
+            /* Keep navbar layout consistent regardless of RTL */
+            direction: ltr;
         }
 
         .nav-brand a {
@@ -297,6 +335,72 @@ import {environment} from '../../../environments/environment';
             box-shadow: 0 2px 8px rgba(74, 222, 128, 0.3);
         }
 
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.85);
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fbbf24;
+            transform: scale(1.05);
+        }
+
+        .theme-toggle svg {
+            transition: transform 0.3s ease;
+        }
+
+        .theme-toggle:hover svg {
+            transform: rotate(15deg);
+        }
+
+        /* Mobile header controls (visible on mobile) */
+        .mobile-header-controls {
+            display: none;
+        }
+
+        .mobile-header-right {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            /* Keep on same side regardless of RTL */
+            direction: ltr;
+        }
+
+        /* Smaller mobile language switcher */
+        .mobile-lang {
+            padding: 2px;
+            gap: 2px;
+            border-radius: 8px;
+        }
+
+        .mobile-lang .lang-btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.7rem;
+            border-radius: 6px;
+        }
+
+        /* Smaller mobile theme toggle */
+        .mobile-theme {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+        }
+
+        .mobile-theme svg {
+            width: 16px;
+            height: 16px;
+        }
+
         /* Hamburger button */
         .hamburger {
             display: none;
@@ -432,10 +536,15 @@ import {environment} from '../../../environments/environment';
                 display: none;
             }
 
+            .mobile-header-controls {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                width: 100%;
+            }
+
             .hamburger {
                 display: flex;
-                position: absolute;
-                left: 1rem;
             }
 
             .mobile-menu {
@@ -451,6 +560,7 @@ import {environment} from '../../../environments/environment';
 export class NavbarComponent {
     currentLang: string = 'en';
     mobileMenuOpen: boolean = false;
+    isDarkTheme: boolean = false;
     private apiBaseUrl = environment.apiUrl.replace('/api', '');
 
     constructor(
@@ -461,6 +571,39 @@ export class NavbarComponent {
         this.translationService.currentLang$.subscribe(lang => {
             this.currentLang = lang;
         });
+        this.initTheme();
+    }
+
+    private initTheme(): void {
+        const savedTheme = localStorage.getItem('theme') || 'system';
+        this.isDarkTheme = this.checkIsDarkTheme(savedTheme);
+
+        // Listen for system theme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+            const currentTheme = localStorage.getItem('theme') || 'system';
+            if (currentTheme === 'system') {
+                this.isDarkTheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            }
+        });
+    }
+
+    private checkIsDarkTheme(theme: string): boolean {
+        if (theme === 'dark') return true;
+        if (theme === 'light') return false;
+        return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+
+    toggleTheme(): void {
+        this.isDarkTheme = !this.isDarkTheme;
+        const newTheme = this.isDarkTheme ? 'dark' : 'light';
+        localStorage.setItem('theme', newTheme);
+        this.applyTheme(newTheme);
+    }
+
+    private applyTheme(theme: 'light' | 'dark'): void {
+        const htmlElement = document.documentElement;
+        htmlElement.classList.remove('light-theme', 'dark-theme');
+        htmlElement.classList.add(`${theme}-theme`);
     }
 
     getProfilePictureUrl(path: string): string {

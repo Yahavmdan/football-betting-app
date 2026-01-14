@@ -199,7 +199,15 @@
     "pictureUploadFailed": "העלאת תמונת הפרופיל נכשלה",
     "pictureDeleteFailed": "מחיקת תמונת הפרופיל נכשלה",
     "fileTooLarge": "הקובץ גדול מדי. גודל מקסימלי הוא 5MB",
-    "deleteFailed": "מחיקת החשבון נכשלה"
+    "deleteFailed": "מחיקת החשבון נכשלה",
+    "settings": "הגדרות",
+    "language": "שפה",
+    "theme": "ערכת נושא",
+    "themeSystem": "ברירת מחדל של המערכת",
+    "themeLight": "בהיר",
+    "themeDark": "כהה",
+    "settingsSaved": "ההגדרות נשמרו בהצלחה",
+    "settingsFailed": "שמירת ההגדרות נכשלה"
   },
   "filters": {
     "filter": "סינון",
