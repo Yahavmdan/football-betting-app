@@ -6,7 +6,7 @@ import { AuthService } from '../../services/auth.service';
 import { UserService } from '../../services/user.service';
 import { TranslatePipe } from '../../services/translate.pipe';
 import { TranslationService } from '../../services/translation.service';
-import { User } from '../../models/user.model';
+import { User, TelegramSettings } from '../../models/user.model';
 import { environment } from '../../../environments/environment';
 
 @Component({
@@ -220,6 +220,109 @@ import { environment } from '../../../environments/environment';
           </button>
         </div>
 
+        <!-- Telegram Reminders Section -->
+        <div class="section telegram-section">
+          <h2>{{ 'profile.telegramReminders' | translate }}</h2>
+          <p class="setting-description">{{ 'profile.telegramDescription' | translate }}</p>
+
+          <!-- Not Linked State -->
+          <div *ngIf="!telegramSettings?.isLinked" class="telegram-not-linked">
+            <div *ngIf="!linkCode" class="link-instructions">
+              <p>{{ 'profile.telegramInstructions' | translate }}</p>
+              <button
+                (click)="generateTelegramLinkCode()"
+                [disabled]="loadingTelegram"
+                class="btn-primary"
+              >
+                {{ loadingTelegram ? ('auth.loading' | translate) : ('profile.generateLinkCode' | translate) }}
+              </button>
+            </div>
+
+            <div *ngIf="linkCode" class="link-code-display">
+              <p>{{ 'profile.sendCodeToBot' | translate }}</p>
+              <div class="code-box">
+                <code>/start {{ linkCode }}</code>
+                <button (click)="copyCode()" class="btn-copy" [title]="'common.copy' | translate">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                </button>
+              </div>
+              <a
+                [href]="'https://t.me/' + botUsername + '?start=' + linkCode"
+                target="_blank"
+                class="btn-telegram"
+              >
+                {{ 'profile.openTelegram' | translate }}
+              </a>
+              <p class="code-expiry">{{ 'profile.codeExpires' | translate }}: {{ codeExpiresAt | date:'short' }}</p>
+            </div>
+          </div>
+
+          <!-- Linked State -->
+          <div *ngIf="telegramSettings?.isLinked" class="telegram-linked">
+            <div class="linked-status">
+              <span class="status-badge connected">{{ 'profile.telegramConnected' | translate }}</span>
+              <span class="linked-date">{{ 'profile.linkedOn' | translate }}: {{ telegramSettings?.linkedAt | date:'mediumDate' }}</span>
+            </div>
+
+            <div class="setting-group toggle-group">
+              <label>{{ 'profile.enableReminders' | translate }}</label>
+              <label class="toggle-switch">
+                <input
+                  type="checkbox"
+                  [(ngModel)]="telegramSettings!.reminderEnabled"
+                  (change)="onTelegramSettingChange()"
+                />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="setting-group" *ngIf="telegramSettings?.reminderEnabled">
+              <label>{{ 'profile.reminderTiming' | translate }}</label>
+              <div class="custom-select" [class.open]="isReminderDropdownOpen">
+                <div class="custom-select-input" (click)="toggleReminderDropdown()">
+                  <span>{{ getReminderLabel(telegramSettings?.reminderMinutes || 15) }}</span>
+                  <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+                <div class="custom-select-dropdown" *ngIf="isReminderDropdownOpen">
+                  <div
+                    *ngFor="let option of reminderOptions"
+                    class="custom-select-option"
+                    [class.selected]="telegramSettings?.reminderMinutes === option.value"
+                    (click)="selectReminderMinutes(option.value)">
+                    {{ option.label | translate }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="telegramError" class="error-message">{{ telegramError }}</div>
+            <div *ngIf="telegramSuccess" class="success-message">{{ telegramSuccess }}</div>
+
+            <div class="telegram-actions">
+              <button
+                *ngIf="telegramSettingsChanged"
+                (click)="saveTelegramSettings()"
+                [disabled]="loadingTelegram"
+                class="btn-primary"
+              >
+                {{ loadingTelegram ? ('auth.loading' | translate) : ('common.save' | translate) }}
+              </button>
+              <button
+                (click)="unlinkTelegram()"
+                [disabled]="loadingTelegram"
+                class="btn-unlink"
+              >
+                {{ 'profile.unlinkTelegram' | translate }}
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- Delete Account Section -->
         <div class="section danger-section">
           <h2>{{ 'profile.deleteAccount' | translate }}</h2>
@@ -287,6 +390,26 @@ export class ProfileComponent implements OnInit {
   settingsChanged = false;
   isLanguageDropdownOpen = false;
   isThemeDropdownOpen = false;
+  isReminderDropdownOpen = false;
+
+  // Telegram properties
+  telegramSettings: TelegramSettings | null = null;
+  originalTelegramSettings = '';
+  telegramSettingsChanged = false;
+  linkCode: string | null = null;
+  botUsername = '';
+  codeExpiresAt: Date | null = null;
+  loadingTelegram = false;
+  telegramError = '';
+  telegramSuccess = '';
+
+  reminderOptions = [
+    { value: 5 as const, label: 'profile.reminderOption5' },
+    { value: 10 as const, label: 'profile.reminderOption10' },
+    { value: 15 as const, label: 'profile.reminderOption15' },
+    { value: 30 as const, label: 'profile.reminderOption30' },
+    { value: 60 as const, label: 'profile.reminderOption60' }
+  ];
 
   deletePassword = '';
   showDeleteConfirm = false;
@@ -322,6 +445,7 @@ export class ProfileComponent implements OnInit {
     if (!this.elementRef.nativeElement.contains(event.target)) {
       this.isLanguageDropdownOpen = false;
       this.isThemeDropdownOpen = false;
+      this.isReminderDropdownOpen = false;
     }
   }
 
@@ -340,6 +464,19 @@ export class ProfileComponent implements OnInit {
           this.originalSettings = JSON.stringify(this.settingsData);
           this.settingsChanged = false;
         }
+      }
+    });
+    this.loadTelegramStatus();
+  }
+
+  loadTelegramStatus(): void {
+    this.userService.getTelegramStatus().subscribe({
+      next: (response) => {
+        this.telegramSettings = response.data.telegram;
+        this.originalTelegramSettings = JSON.stringify(this.telegramSettings);
+      },
+      error: (error) => {
+        console.error('Failed to load Telegram status:', error);
       }
     });
   }
@@ -569,5 +706,108 @@ export class ProfileComponent implements OnInit {
       htmlElement.classList.add(`${theme}-theme`);
     }
     localStorage.setItem('theme', theme);
+  }
+
+  // Telegram methods
+  generateTelegramLinkCode(): void {
+    this.loadingTelegram = true;
+    this.telegramError = '';
+
+    this.userService.generateTelegramLinkCode().subscribe({
+      next: (response) => {
+        this.linkCode = response.data.code;
+        this.botUsername = response.data.botUsername;
+        this.codeExpiresAt = new Date(response.data.expiresAt);
+        this.loadingTelegram = false;
+      },
+      error: (error) => {
+        this.telegramError = error.error?.message || 'Failed to generate link code';
+        this.loadingTelegram = false;
+      }
+    });
+  }
+
+  copyCode(): void {
+    if (this.linkCode) {
+      navigator.clipboard.writeText(`/start ${this.linkCode}`);
+      this.telegramSuccess = this.translationService.translate('profile.codeCopied');
+      setTimeout(() => this.telegramSuccess = '', 3000);
+    }
+  }
+
+  unlinkTelegram(): void {
+    if (!confirm(this.translationService.translate('profile.confirmUnlink'))) {
+      return;
+    }
+
+    this.loadingTelegram = true;
+    this.telegramError = '';
+
+    this.userService.unlinkTelegram().subscribe({
+      next: () => {
+        this.telegramSettings = {
+          isLinked: false,
+          reminderEnabled: true,
+          reminderMinutes: 15
+        };
+        this.linkCode = null;
+        this.telegramSuccess = this.translationService.translate('profile.telegramUnlinked');
+        this.loadingTelegram = false;
+      },
+      error: (error) => {
+        this.telegramError = error.error?.message || 'Failed to unlink Telegram';
+        this.loadingTelegram = false;
+      }
+    });
+  }
+
+  onTelegramSettingChange(): void {
+    this.telegramSettingsChanged = JSON.stringify(this.telegramSettings) !== this.originalTelegramSettings;
+    this.telegramSuccess = '';
+    this.telegramError = '';
+  }
+
+  toggleReminderDropdown(): void {
+    this.isReminderDropdownOpen = !this.isReminderDropdownOpen;
+    this.isLanguageDropdownOpen = false;
+    this.isThemeDropdownOpen = false;
+  }
+
+  selectReminderMinutes(minutes: 5 | 10 | 15 | 30 | 60): void {
+    if (this.telegramSettings) {
+      this.telegramSettings.reminderMinutes = minutes;
+      this.isReminderDropdownOpen = false;
+      this.onTelegramSettingChange();
+    }
+  }
+
+  getReminderLabel(minutes: number): string {
+    const option = this.reminderOptions.find(o => o.value === minutes);
+    return option ? this.translationService.translate(option.label) : `${minutes} minutes before`;
+  }
+
+  saveTelegramSettings(): void {
+    if (!this.telegramSettings) return;
+
+    this.loadingTelegram = true;
+    this.telegramError = '';
+    this.telegramSuccess = '';
+
+    this.userService.updateTelegramSettings({
+      reminderEnabled: this.telegramSettings.reminderEnabled,
+      reminderMinutes: this.telegramSettings.reminderMinutes
+    }).subscribe({
+      next: (response) => {
+        this.telegramSettings = response.data.telegram;
+        this.originalTelegramSettings = JSON.stringify(this.telegramSettings);
+        this.telegramSettingsChanged = false;
+        this.telegramSuccess = this.translationService.translate('profile.telegramSettingsSaved');
+        this.loadingTelegram = false;
+      },
+      error: (error) => {
+        this.telegramError = error.error?.message || 'Failed to save settings';
+        this.loadingTelegram = false;
+      }
+    });
   }
 }

@@ -50,6 +50,29 @@ const userSchema = new mongoose.Schema({
     autoBet: {
       type: Boolean,
       default: false
+    },
+    telegram: {
+      chatId: {
+        type: String,
+        default: null
+      },
+      isLinked: {
+        type: Boolean,
+        default: false
+      },
+      linkedAt: {
+        type: Date,
+        default: null
+      },
+      reminderEnabled: {
+        type: Boolean,
+        default: true
+      },
+      reminderMinutes: {
+        type: Number,
+        enum: [5, 10, 15, 30, 60],
+        default: 15
+      }
     }
   },
   lastActive: {

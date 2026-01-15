@@ -171,7 +171,8 @@
     "success": "Success",
     "edit": "Edit",
     "delete": "Delete",
-    "save": "Save"
+    "save": "Save",
+    "copy": "Copy"
   },
   "profile": {
     "title": "My Profile",
@@ -209,7 +210,28 @@
     "settingsSaved": "Settings saved successfully",
     "settingsFailed": "Failed to save settings",
     "autoBet": "Auto Bet",
-    "autoBetDescription": "If enabled, the system will automatically place a random bet for you if you haven't placed one before a match starts."
+    "autoBetDescription": "If enabled, the system will automatically place a random bet for you if you haven't placed one before a match starts.",
+    "telegramReminders": "Telegram Reminders",
+    "telegramDescription": "Get reminders on Telegram before matches start if you haven't placed a bet yet.",
+    "telegramInstructions": "Link your Telegram account to receive reminders before matches.",
+    "generateLinkCode": "Generate Link Code",
+    "sendCodeToBot": "Send this code to the bot on Telegram:",
+    "openTelegram": "Open in Telegram",
+    "codeExpires": "Code expires",
+    "telegramConnected": "Connected",
+    "linkedOn": "Linked on",
+    "enableReminders": "Enable Reminders",
+    "reminderTiming": "Remind me",
+    "unlinkTelegram": "Unlink Telegram",
+    "confirmUnlink": "Are you sure you want to unlink your Telegram account? You will stop receiving reminders.",
+    "telegramUnlinked": "Telegram unlinked successfully",
+    "telegramSettingsSaved": "Telegram settings saved",
+    "codeCopied": "Code copied to clipboard",
+    "reminderOption5": "5 minutes before",
+    "reminderOption10": "10 minutes before",
+    "reminderOption15": "15 minutes before",
+    "reminderOption30": "30 minutes before",
+    "reminderOption60": "1 hour before"
   },
   "filters": {
     "filter": "Filter",

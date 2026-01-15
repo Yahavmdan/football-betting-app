@@ -171,7 +171,8 @@
     "success": "הצלחה",
     "edit": "ערוך",
     "delete": "מחק",
-    "save": "שמור"
+    "save": "שמור",
+    "copy": "העתק"
   },
   "profile": {
     "title": "הפרופיל שלי",
@@ -209,7 +210,28 @@
     "settingsSaved": "ההגדרות נשמרו בהצלחה",
     "settingsFailed": "שמירת ההגדרות נכשלה",
     "autoBet": "הימור אוטומטי",
-    "autoBetDescription": "אם מופעל, המערכת תבצע עבורך הימור אקראי אם לא ביצעת הימור לפני תחילת המשחק."
+    "autoBetDescription": "אם מופעל, המערכת תבצע עבורך הימור אקראי אם לא ביצעת הימור לפני תחילת המשחק.",
+    "telegramReminders": "תזכורות בטלגרם",
+    "telegramDescription": "קבל תזכורות בטלגרם לפני משחקים אם עדיין לא שמת הימור.",
+    "telegramInstructions": "קשר את חשבון הטלגרם שלך כדי לקבל תזכורות לפני משחקים.",
+    "generateLinkCode": "צור קוד קישור",
+    "sendCodeToBot": "שלח את הקוד הזה לבוט בטלגרם:",
+    "openTelegram": "פתח בטלגרם",
+    "codeExpires": "הקוד יפוג בתוקף",
+    "telegramConnected": "מחובר",
+    "linkedOn": "מקושר ב",
+    "enableReminders": "הפעל תזכורות",
+    "reminderTiming": "הזכר לי",
+    "unlinkTelegram": "נתק טלגרם",
+    "confirmUnlink": "האם אתה בטוח שברצונך לנתק את חשבון הטלגרם? תפסיק לקבל תזכורות.",
+    "telegramUnlinked": "טלגרם נותק בהצלחה",
+    "telegramSettingsSaved": "הגדרות טלגרם נשמרו",
+    "codeCopied": "הקוד הועתק ללוח",
+    "reminderOption5": "5 דקות לפני",
+    "reminderOption10": "10 דקות לפני",
+    "reminderOption15": "15 דקות לפני",
+    "reminderOption30": "30 דקות לפני",
+    "reminderOption60": "שעה לפני"
   },
   "filters": {
     "filter": "סינון",

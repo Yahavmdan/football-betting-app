@@ -11,6 +11,8 @@ const betRoutes = require('./routes/betRoutes');
 const testRoutes = require('./routes/testRoutes');
 const userRoutes = require('./routes/userRoutes');
 const autoBetJob = require('./jobs/autoBetJob');
+const telegramService = require('./services/telegramService');
+const telegramReminderJob = require('./jobs/telegramReminderJob');
 
 const app = express();
 
@@ -75,4 +77,10 @@ app.listen(PORT, () => {
 
   // Start the auto-bet scheduler
   autoBetJob.start();
+
+  // Initialize Telegram bot
+  telegramService.init();
+
+  // Start Telegram reminder scheduler
+  telegramReminderJob.start();
 });

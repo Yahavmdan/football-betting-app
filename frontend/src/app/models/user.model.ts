@@ -1,7 +1,16 @@
+export interface TelegramSettings {
+  chatId?: string | null;
+  isLinked: boolean;
+  linkedAt?: Date | null;
+  reminderEnabled: boolean;
+  reminderMinutes: 5 | 10 | 15 | 30 | 60;
+}
+
 export interface UserSettings {
   language: 'en' | 'he';
   theme: 'light' | 'dark' | 'system';
   autoBet: boolean;
+  telegram?: TelegramSettings;
 }
 
 export interface User {

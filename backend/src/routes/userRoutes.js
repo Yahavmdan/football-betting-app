@@ -7,7 +7,11 @@ const {
   uploadProfilePicture,
   deleteProfilePicture,
   updateSettings,
-  deleteAccount
+  deleteAccount,
+  generateTelegramLinkCode,
+  unlinkTelegram,
+  updateTelegramSettings,
+  getTelegramStatus
 } = require('../controllers/userController');
 const { protect } = require('../middleware/auth');
 const upload = require('../middleware/upload');
@@ -20,5 +24,11 @@ router.post('/profile-picture', protect, upload.single('profilePicture'), upload
 router.delete('/profile-picture', protect, deleteProfilePicture);
 router.put('/settings', protect, updateSettings);
 router.delete('/account', protect, deleteAccount);
+
+// Telegram routes
+router.post('/telegram/generate-link-code', protect, generateTelegramLinkCode);
+router.delete('/telegram/unlink', protect, unlinkTelegram);
+router.put('/telegram/settings', protect, updateTelegramSettings);
+router.get('/telegram/status', protect, getTelegramStatus);
 
 module.exports = router;

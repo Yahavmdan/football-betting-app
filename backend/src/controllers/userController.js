@@ -2,7 +2,10 @@ const User = require('../models/User');
 const Group = require('../models/Group');
 const Bet = require('../models/Bet');
 const FilterPreference = require('../models/FilterPreference');
+const TelegramLinkCode = require('../models/TelegramLinkCode');
 const cloudinary = require('../config/cloudinary');
+const crypto = require('crypto');
+const telegramService = require('../services/telegramService');
 
 // Helper to extract Cloudinary public_id from URL
 const getPublicIdFromUrl = (url) => {
@@ -385,6 +388,168 @@ exports.deleteAccount = async (req, res) => {
     res.status(200).json({
       success: true,
       message: 'Account deleted successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Generate Telegram link code
+exports.generateTelegramLinkCode = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // Check if user already has Telegram linked
+    const user = await User.findById(userId);
+    if (user.settings?.telegram?.isLinked) {
+      return res.status(400).json({
+        success: false,
+        message: 'Telegram is already linked. Please unlink first to generate a new code.'
+      });
+    }
+
+    // Delete any existing codes for this user
+    await TelegramLinkCode.deleteMany({ user: userId });
+
+    // Generate a random 8-character code
+    const code = crypto.randomBytes(4).toString('hex').toUpperCase();
+
+    // Code expires in 10 minutes (configurable via env)
+    const expiryMinutes = parseInt(process.env.TELEGRAM_LINK_CODE_EXPIRY_MINUTES) || 10;
+    const expiresAt = new Date(Date.now() + expiryMinutes * 60 * 1000);
+
+    // Save the link code
+    await TelegramLinkCode.create({
+      user: userId,
+      code,
+      expiresAt
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        code,
+        expiresAt,
+        botUsername: process.env.TELEGRAM_BOT_USERNAME || 'YourBotName'
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Unlink Telegram account
+exports.unlinkTelegram = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const user = await User.findById(userId);
+
+    if (!user.settings?.telegram?.isLinked) {
+      return res.status(400).json({
+        success: false,
+        message: 'Telegram is not linked'
+      });
+    }
+
+    // Send notification to user via Telegram before unlinking
+    if (user.settings.telegram.chatId) {
+      await telegramService.sendMessage(
+        user.settings.telegram.chatId,
+        'Your Telegram account has been unlinked from Football Betting. You will no longer receive reminders.'
+      );
+    }
+
+    // Clear Telegram settings
+    user.settings.telegram = {
+      chatId: null,
+      isLinked: false,
+      linkedAt: null,
+      reminderEnabled: true,
+      reminderMinutes: 15
+    };
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Telegram unlinked successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Update Telegram reminder settings
+exports.updateTelegramSettings = async (req, res) => {
+  try {
+    const { reminderEnabled, reminderMinutes } = req.body;
+    const userId = req.user._id;
+
+    const user = await User.findById(userId);
+
+    if (!user.settings?.telegram?.isLinked) {
+      return res.status(400).json({
+        success: false,
+        message: 'Telegram is not linked'
+      });
+    }
+
+    // Validate reminderMinutes if provided
+    if (reminderMinutes !== undefined) {
+      const validMinutes = [5, 10, 15, 30, 60];
+      if (!validMinutes.includes(reminderMinutes)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid reminder timing. Valid options: 5, 10, 15, 30, 60 minutes'
+        });
+      }
+      user.settings.telegram.reminderMinutes = reminderMinutes;
+    }
+
+    if (reminderEnabled !== undefined) {
+      user.settings.telegram.reminderEnabled = reminderEnabled;
+    }
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Telegram settings updated',
+      data: {
+        telegram: user.settings.telegram
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Get Telegram status
+exports.getTelegramStatus = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const user = await User.findById(userId);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        telegram: user.settings?.telegram || {
+          isLinked: false,
+          reminderEnabled: true,
+          reminderMinutes: 15
+        }
+      }
     });
   } catch (error) {
     res.status(500).json({

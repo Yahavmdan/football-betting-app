@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { User, UserSettings } from '../models/user.model';
+import { User, UserSettings, TelegramSettings } from '../models/user.model';
 import { environment } from '../../environments/environment';
 
 export interface ProfileResponse {
@@ -23,6 +23,27 @@ export interface UpdateSettingsData {
   language?: 'en' | 'he';
   theme?: 'light' | 'dark' | 'system';
   autoBet?: boolean;
+}
+
+export interface TelegramLinkCodeResponse {
+  success: boolean;
+  data: {
+    code: string;
+    expiresAt: Date;
+    botUsername: string;
+  };
+}
+
+export interface TelegramStatusResponse {
+  success: boolean;
+  data: {
+    telegram: TelegramSettings;
+  };
+}
+
+export interface UpdateTelegramSettingsData {
+  reminderEnabled?: boolean;
+  reminderMinutes?: 5 | 10 | 15 | 30 | 60;
 }
 
 @Injectable({
@@ -66,5 +87,22 @@ export class UserService {
 
   updateSettings(data: UpdateSettingsData): Observable<{ success: boolean; message: string; data: { settings: UserSettings } }> {
     return this.http.put<{ success: boolean; message: string; data: { settings: UserSettings } }>(`${this.apiUrl}/settings`, data);
+  }
+
+  // Telegram methods
+  generateTelegramLinkCode(): Observable<TelegramLinkCodeResponse> {
+    return this.http.post<TelegramLinkCodeResponse>(`${this.apiUrl}/telegram/generate-link-code`, {});
+  }
+
+  unlinkTelegram(): Observable<{ success: boolean; message: string }> {
+    return this.http.delete<{ success: boolean; message: string }>(`${this.apiUrl}/telegram/unlink`);
+  }
+
+  updateTelegramSettings(data: UpdateTelegramSettingsData): Observable<TelegramStatusResponse> {
+    return this.http.put<TelegramStatusResponse>(`${this.apiUrl}/telegram/settings`, data);
+  }
+
+  getTelegramStatus(): Observable<TelegramStatusResponse> {
+    return this.http.get<TelegramStatusResponse>(`${this.apiUrl}/telegram/status`);
   }
 }
