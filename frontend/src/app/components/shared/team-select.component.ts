@@ -259,6 +259,35 @@ import { TranslationService } from '../../services/translation.service';
     :host-context(.dark-theme) .no-results {
       color: #6b7280;
     }
+
+    /* Mobile Styles */
+    @media (max-width: 768px) {
+      :host {
+        display: block;
+        width: 100%;
+      }
+      .team-select-container {
+        width: 100%;
+        min-width: 0;
+      }
+      .team-select-input {
+        width: 100%;
+        min-height: 48px;
+        padding: 0.75rem;
+      }
+      .selected-team {
+        flex: 1;
+        min-width: 0;
+      }
+      .selected-team span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .dropdown-panel {
+        max-height: 300px;
+      }
+    }
   `]
 })
 export class TeamSelectComponent implements ControlValueAccessor {

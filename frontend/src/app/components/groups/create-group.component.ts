@@ -290,6 +290,65 @@ import { TranslationService } from '../../services/translation.service';
         width: 100%;
       }
     }
+
+    /* Dark Mode Styles */
+    :host-context(.dark-theme) .form-card {
+      background: #1f2937;
+      border-color: #374151;
+    }
+    :host-context(.dark-theme) h2 {
+      color: #f9fafb;
+    }
+    :host-context(.dark-theme) label {
+      color: #d1d5db;
+    }
+    :host-context(.dark-theme) .form-control {
+      background: #111827;
+      border-color: #374151;
+      color: #e5e7eb;
+    }
+    :host-context(.dark-theme) .form-control:focus {
+      background: #1f2937;
+      border-color: #4ade80;
+    }
+    :host-context(.dark-theme) .form-control::placeholder {
+      color: #6b7280;
+    }
+    :host-context(.dark-theme) .bet-type-option {
+      background: #111827;
+      border-color: #374151;
+    }
+    :host-context(.dark-theme) .bet-type-option:hover {
+      background: #1f2937;
+      border-color: #4ade80;
+    }
+    :host-context(.dark-theme) .bet-type-option.selected {
+      background: rgba(74, 222, 128, 0.1);
+      border-color: #4ade80;
+    }
+    :host-context(.dark-theme) .option-header label {
+      color: #f9fafb;
+    }
+    :host-context(.dark-theme) .option-description {
+      color: #9ca3af;
+    }
+    :host-context(.dark-theme) .form-hint {
+      color: #9ca3af;
+    }
+    :host-context(.dark-theme) .btn-secondary {
+      background: #374151;
+      color: #e5e7eb;
+    }
+    :host-context(.dark-theme) .btn-secondary:hover {
+      background: #4b5563;
+    }
+    :host-context(.dark-theme) .error-message {
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+    }
+    :host-context(.dark-theme) input[type="number"] {
+      color-scheme: dark;
+    }
   `]
 })
 export class CreateGroupComponent {

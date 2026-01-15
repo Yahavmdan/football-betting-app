@@ -526,18 +526,27 @@ h2 {
     background: white;
     border-radius: 8px;
     border: 1px solid #e2e8f0;
+    gap: 0.75rem;
 }
 
 .member-name {
     font-weight: 500;
     color: #1a1a2e;
     font-size: 0.9rem;
+    flex: 1;
+}
+
+.bet-time {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    order: 3;
 }
 
 .bet-info {
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    order: 2;
 }
 
 .bet-outcome {
@@ -565,11 +574,6 @@ h2 {
 .no-bet {
     color: #94a3b8;
     font-weight: 500;
-}
-
-.bet-time {
-    font-size: 0.75rem;
-    color: #94a3b8;
 }
 
 .bet-wager {
@@ -949,6 +953,56 @@ h2 {
     .group-actions button {
         flex: 1;
         min-width: 120px;
+    }
+
+    /* Member bets mobile layout */
+    .member-bets-panel {
+        padding: 0.75rem;
+    }
+
+    .member-bets-list {
+        gap: 0.5rem;
+    }
+
+    .member-bet-item {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        grid-template-rows: auto auto;
+        gap: 0.4rem 0.5rem;
+        padding: 0.75rem;
+    }
+
+    .member-name {
+        font-size: 0.95rem;
+        font-weight: 600;
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    .bet-time {
+        grid-column: 2;
+        grid-row: 1;
+        font-size: 0.7rem;
+        color: #6b7280;
+        align-self: center;
+    }
+
+    .bet-info {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .bet-outcome {
+        font-size: 0.8rem;
+        padding: 0.35rem 0.6rem;
+    }
+
+    .bet-wager {
+        font-size: 0.75rem;
     }
 }
 
@@ -2132,38 +2186,56 @@ h2 {
     }
 
     .member-bets-panel {
-        padding: 0.75rem;
-    }
-
-    .member-bet-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.35rem;
         padding: 0.5rem;
     }
 
-    .bet-info {
-        width: 100%;
-        flex-wrap: wrap;
-        gap: 0.35rem;
+    .member-bets-list {
+        gap: 0.5rem;
     }
 
-    .bet-outcome {
-        font-size: 0.75rem;
-        padding: 0.2rem 0.45rem;
-    }
-
-    .bet-wager {
-        font-size: 0.7rem;
-        padding: 0.15rem 0.35rem;
-    }
-
-    .bet-time {
-        font-size: 0.65rem;
+    .member-bet-item {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        grid-template-rows: auto auto;
+        gap: 0.3rem 0.5rem;
+        padding: 0.6rem 0.7rem;
     }
 
     .member-name {
         font-size: 0.85rem;
+        font-weight: 600;
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    .bet-time {
+        grid-column: 2;
+        grid-row: 1;
+        font-size: 0.65rem;
+        order: unset;
+    }
+
+    .bet-info {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        order: unset;
+    }
+
+    .bet-outcome {
+        font-size: 0.75rem;
+        padding: 0.3rem 0.5rem;
+    }
+
+    .bet-wager {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.4rem;
+    }
+
+    .no-bet {
+        font-size: 0.8rem;
     }
 
     .group-actions {
@@ -2904,4 +2976,27 @@ h2 {
 :host-context(.dark-theme) .bet-wager {
     background: rgba(245, 158, 11, 0.15);
     color: #fbbf24;
+}
+
+/* Dark mode bet outcome colors - improved contrast */
+:host-context(.dark-theme) .bet-outcome.home {
+    background: rgba(59, 130, 246, 0.25);
+    color: #93c5fd;
+}
+
+:host-context(.dark-theme) .bet-outcome.draw {
+    background: rgba(107, 114, 128, 0.25);
+    color: #d1d5db;
+}
+
+:host-context(.dark-theme) .bet-outcome.away {
+    background: rgba(239, 68, 68, 0.25);
+    color: #fca5a5;
+}
+
+/* Dark mode number input arrows */
+:host-context(.dark-theme) input[type="number"],
+:host-context(.dark-theme) input[type="date"],
+:host-context(.dark-theme) input[type="time"] {
+    color-scheme: dark;
 }

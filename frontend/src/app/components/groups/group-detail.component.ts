@@ -415,6 +415,7 @@ import { environment } from '../../../environments/environment';
                 <div *ngIf="!loadingMemberBets && memberBets.length > 0" class="member-bets-list">
                   <div *ngFor="let memberBet of memberBets" class="member-bet-item">
                     <span class="member-name">{{ memberBet.user.username }}</span>
+                    <span *ngIf="memberBet.hasBet" class="bet-time">{{ memberBet.bet?.createdAt | date:'dd/MM/yy, HH:mm' }}</span>
                     <div class="bet-info">
                       <span *ngIf="memberBet.hasBet" class="bet-outcome" [class.home]="memberBet.bet?.outcome === '1'" [class.draw]="memberBet.bet?.outcome === 'X'" [class.away]="memberBet.bet?.outcome === '2'">
                         {{ memberBet.bet?.outcome === '1' ? (match.homeTeam | teamTranslate) : (memberBet.bet?.outcome === '2' ? (match.awayTeam | teamTranslate) : ('bets.draw' | translate)) }}
@@ -423,7 +424,6 @@ import { environment } from '../../../environments/environment';
                         {{ memberBet.bet?.wagerAmount }} {{ 'groups.credits' | translate }}
                       </span>
                       <span *ngIf="!memberBet.hasBet" class="no-bet">{{ 'bets.noBet' | translate }}</span>
-                      <span *ngIf="memberBet.hasBet" class="bet-time">{{ memberBet.bet?.createdAt | date:'dd/MM/yy, HH:mm' }}</span>
                     </div>
                   </div>
                 </div>

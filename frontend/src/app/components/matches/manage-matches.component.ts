@@ -768,11 +768,48 @@ import { getTeamByName } from '../../data/teams.data';
         flex-direction: column;
         align-items: flex-start;
       }
+      .manual-match-form {
+        max-width: 100%;
+        padding: 1.25rem;
+      }
       .form-row {
         flex-direction: column;
+        width: 100%;
+      }
+      .form-group {
+        max-width: 100%;
+        width: 100%;
+      }
+      .form-row.teams-row {
+        padding: 1rem;
+        gap: 2.5rem;
+      }
+      .form-row.teams-row .form-group {
+        width: 100%;
+      }
+      .form-row.teams-row::after {
+        top: 50%;
       }
       .matches-grid {
         grid-template-columns: 1fr;
+      }
+      .edit-match-form .form-row .form-group {
+        width: 100%;
+        max-width: 100%;
+      }
+      .form-row.score-row {
+        flex-direction: row;
+        justify-content: center;
+        gap: 1.5rem;
+      }
+      .form-row.score-row .form-group {
+        flex: 1;
+        max-width: 150px;
+      }
+      .score-input {
+        max-width: 100%;
+        width: 100%;
+        text-align: center;
       }
     }
     @media (max-width: 400px) {
@@ -791,7 +828,7 @@ import { getTeamByName } from '../../data/teams.data';
         margin-bottom: 1rem;
       }
       .section {
-        padding: 1rem;
+        padding: 0.85rem;
         border-radius: 14px;
         margin-bottom: 1.25rem;
       }
@@ -799,8 +836,16 @@ import { getTeamByName } from '../../data/teams.data';
         padding: 0.65rem 1rem;
         font-size: 0.85rem;
       }
+      .manual-match-form {
+        padding: 0.85rem;
+      }
       .form-group {
         max-width: 100%;
+        width: 100%;
+      }
+      .form-row.teams-row {
+        padding: 0.85rem;
+        gap: 2rem;
       }
       label {
         font-size: 0.85rem;
@@ -826,7 +871,12 @@ import { getTeamByName } from '../../data/teams.data';
         font-size: 0.8rem;
       }
       .score-input {
-        max-width: 80px;
+        max-width: 100%;
+        width: 100%;
+      }
+      .form-row.score-row .form-group {
+        flex: 1;
+        max-width: 120px;
       }
       .btn-primary {
         padding: 0.75rem 1rem;
@@ -1035,6 +1085,11 @@ import { getTeamByName } from '../../data/teams.data';
     :host-context(.dark-theme) .form-row.score-row {
       background: rgba(245, 158, 11, 0.1);
       border-color: rgba(245, 158, 11, 0.3);
+    }
+    :host-context(.dark-theme) input[type="date"],
+    :host-context(.dark-theme) input[type="time"],
+    :host-context(.dark-theme) input[type="number"] {
+      color-scheme: dark;
     }
   `]
 })

@@ -43,8 +43,8 @@ const processReminders = async () => {
     // Process each timing group
     for (const [minutes, users] of Object.entries(usersByTiming)) {
       const reminderTime = new Date(now.getTime() + parseInt(minutes) * 60 * 1000);
-      const windowStart = new Date(reminderTime.getTime() - 60 * 1000); // 1 minute window
-      const windowEnd = new Date(reminderTime.getTime() + 60 * 1000);
+      const windowStart = new Date(reminderTime.getTime() - 2 * 60 * 1000); // 2 minute window
+      const windowEnd = new Date(reminderTime.getTime() + 2 * 60 * 1000);
 
       // Find matches starting within the window
       const upcomingMatches = await Match.find({

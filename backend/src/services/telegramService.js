@@ -137,7 +137,7 @@ class TelegramService {
       for (const match of matches) {
         const matchTime = new Date(match.matchDate).toLocaleTimeString(
           language === 'he' ? 'he-IL' : 'en-US',
-          { hour: '2-digit', minute: '2-digit' }
+          { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jerusalem' }
         );
         text += `${match.homeTeam} vs ${match.awayTeam} - ${matchTime}\n`;
         text += `Groups: ${match.groupNames.join(', ')}\n\n`;

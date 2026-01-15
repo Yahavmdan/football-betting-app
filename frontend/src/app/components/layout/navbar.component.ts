@@ -449,7 +449,7 @@ import {environment} from '../../../environments/environment';
             gap: 0.75rem;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             z-index: 1000;
-            transform: translateY(-120%);
+            transform: translateY(-130%);
             transition: transform 0.2s ease-out;
             border-bottom-left-radius: 20px;
             border-bottom-right-radius: 20px;
