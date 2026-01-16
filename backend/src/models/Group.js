@@ -63,6 +63,10 @@ const groupSchema = new mongoose.Schema({
     default: 1000,
     min: 1
   },
+  showBets: {
+    type: Boolean,
+    default: true
+  },
   createdAt: {
     type: Date,
     default: Date.now

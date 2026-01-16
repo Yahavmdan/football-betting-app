@@ -620,7 +620,7 @@ export class NavbarComponent {
     logout(): void {
         this.closeMobileMenu();
         this.authService.logout();
-        this.router.navigate(['/login']);
+        void this.router.navigate(['/login']);
     }
 
     switchLanguage(lang: string): void {

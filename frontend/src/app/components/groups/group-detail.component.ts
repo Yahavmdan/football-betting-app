@@ -358,6 +358,7 @@ import { environment } from '../../../environments/environment';
                 <span class="date">{{ match.matchDate | date:'dd/MM/yy, HH:mm' }}</span>
                 <div class="match-actions">
                   <button
+                    *ngIf="group?.showBets === true"
                     (click)="toggleMemberBets(match._id)"
                     class="btn-people"
                     [class.active]="viewingBetsForMatch === match._id"
@@ -724,7 +725,7 @@ export class GroupDetailComponent implements OnInit {
       },
       error: (error) => {
         console.error('Failed to load group:', error);
-        this.router.navigate(['/groups']);
+        void this.router.navigate(['/groups']);
       }
     });
   }
@@ -935,7 +936,7 @@ export class GroupDetailComponent implements OnInit {
     this.groupService.deleteGroup(this.groupId).subscribe({
       next: () => {
         this.loadingDeleteGroup = false;
-        this.router.navigate(['/groups']);
+        void this.router.navigate(['/groups']);
       },
       error: (error) => {
         console.error('Failed to delete group:', error);
@@ -961,7 +962,7 @@ export class GroupDetailComponent implements OnInit {
     this.groupService.leaveGroup(this.groupId).subscribe({
       next: () => {
         this.loadingLeaveGroup = false;
-        this.router.navigate(['/groups']);
+        void this.router.navigate(['/groups']);
       },
       error: (error) => {
         console.error('Failed to leave group:', error);
@@ -1476,9 +1477,5 @@ export class GroupDetailComponent implements OnInit {
         this.inlineLoadingBet = false;
       }
     });
-  }
-
-  hasExistingBetOnMatch(matchId: string): boolean {
-    return !!this.inlineExistingBet && this.placingBetForMatch === matchId;
   }
 }

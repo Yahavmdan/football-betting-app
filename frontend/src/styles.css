@@ -811,8 +811,12 @@ html.dark-theme .leaderboard-item.pending {
   border: 1px dashed #4b5563;
 }
 
-html.dark-theme .pending-actions button {
-  background: #374151;
+html.dark-theme .pending-actions .btn-approve {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+}
+
+html.dark-theme .pending-actions .btn-reject {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
 }
 
 /* Matches section specific */

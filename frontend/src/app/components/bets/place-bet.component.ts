@@ -837,7 +837,7 @@ export class PlaceBetComponent implements OnInit {
       next: (response) => {
         this.successMessage = response.message || this.translationService.translate('bets.betPlacedSuccess');
         setTimeout(() => {
-          this.router.navigate(['/groups', this.betData.groupId]);
+          void this.router.navigate(['/groups', this.betData.groupId]);
         }, 1500);
       },
       error: (error) => {
@@ -848,7 +848,7 @@ export class PlaceBetComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/groups', this.betData.groupId]);
+    void this.router.navigate(['/groups', this.betData.groupId]);
   }
 
   // Team logo helpers

@@ -1172,7 +1172,7 @@ export class ManageMatchesComponent implements OnInit {
   ngOnInit(): void {
     this.groupId = this.route.snapshot.queryParams['groupId'];
     if (!this.groupId) {
-      this.router.navigate(['/groups']);
+      void this.router.navigate(['/groups']);
       return;
     }
 
@@ -1315,7 +1315,7 @@ export class ManageMatchesComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/groups', this.groupId]);
+    void this.router.navigate(['/groups', this.groupId]);
   }
 
   canUpdateScore(match: Match): boolean {

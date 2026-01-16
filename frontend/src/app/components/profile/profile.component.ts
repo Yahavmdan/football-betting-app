@@ -618,7 +618,7 @@ export class ProfileComponent implements OnInit {
     this.userService.deleteAccount(this.deletePassword).subscribe({
       next: () => {
         this.authService.logout();
-        this.router.navigate(['/login']);
+        void this.router.navigate(['/login']);
       },
       error: (error) => {
         this.deleteError = error.error?.message || this.translationService.translate('profile.deleteFailed');

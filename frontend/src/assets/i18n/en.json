@@ -79,7 +79,11 @@
     "kick": "Kick",
     "kickMember": "Kick Member",
     "confirmKick": "Are you sure you want to kick this member from the group?",
-    "joinRequestPending": "Your join request is pending approval"
+    "joinRequestPending": "Your join request is pending approval",
+    "showBets": "Show Bets",
+    "showBetsOn": "Visible - Members can see each other's bets after match ends",
+    "showBetsOff": "Hidden - Members can only see their own bets",
+    "showBetsHint": "Choose whether members can see each other's bets after a match finishes"
   },
   "matches": {
     "scheduled": "SCHEDULED",

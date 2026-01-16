@@ -5,6 +5,7 @@ export interface Group {
   betType: 'classic' | 'relative';
   startingCredits: number;
   creditsGoal: number;
+  showBets: boolean;
   creator: any;
   members: GroupMember[];
   pendingMembers: PendingMember[];
@@ -43,6 +44,7 @@ export interface CreateGroupData {
   betType?: 'classic' | 'relative';
   startingCredits?: number;
   creditsGoal?: number;
+  showBets?: boolean;
 }
 
 export interface JoinGroupData {

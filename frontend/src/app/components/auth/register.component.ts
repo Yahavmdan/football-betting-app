@@ -237,7 +237,7 @@ export class RegisterComponent {
 
     this.authService.register(this.credentials).subscribe({
       next: () => {
-        this.router.navigate(['/groups']);
+        void this.router.navigate(['/groups']);
       },
       error: (error) => {
         this.errorMessage = error.error?.message || this.translationService.translate('auth.registerFailed');

@@ -219,7 +219,7 @@ export class JoinGroupComponent {
         this.loading = false;
         // Navigate back to groups after a delay
         setTimeout(() => {
-          this.router.navigate(['/groups']);
+          void this.router.navigate(['/groups']);
         }, 2000);
       },
       error: (error) => {
@@ -230,6 +230,6 @@ export class JoinGroupComponent {
   }
 
   goBack(): void {
-    this.router.navigate(['/groups']);
+    void this.router.navigate(['/groups']);
   }
 }

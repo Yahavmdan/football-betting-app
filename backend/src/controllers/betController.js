@@ -293,6 +293,39 @@ exports.getGroupMembersBets = async (req, res) => {
       });
     }
 
+    // If match is not finished, or if showBets is false, only return user's own bet
+    if (match.status !== 'FINISHED' || !group.showBets) {
+      const userBet = await Bet.findOne({
+        user: req.user._id,
+        match: matchId,
+        group: groupId
+      });
+
+      const currentMember = group.members.find(
+        member => member.user._id.toString() === req.user._id.toString()
+      );
+
+      return res.status(200).json({
+        success: true,
+        data: [{
+          user: {
+            _id: currentMember.user._id,
+            username: currentMember.user.username
+          },
+          hasBet: !!userBet,
+          bet: userBet ? {
+            outcome: userBet.prediction.outcome,
+            createdAt: userBet.createdAt,
+            points: userBet.points,
+            wagerAmount: userBet.wagerAmount
+          } : null
+        }],
+        message: match.status !== 'FINISHED'
+          ? 'Bets are hidden until match is finished'
+          : 'Bets are hidden in this group'
+      });
+    }
+
     // Get all bets for this match in this group
     const bets = await Bet.find({
       match: matchId,
