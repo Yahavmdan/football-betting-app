@@ -72,14 +72,14 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`Server is running on port ${PORT}`);
 
   // Start the auto-bet scheduler
   autoBetJob.start();
 
   // Initialize Telegram bot
-  telegramService.init();
+  await telegramService.init();
 
   // Start Telegram reminder scheduler
   telegramReminderJob.start();

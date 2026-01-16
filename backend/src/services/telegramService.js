@@ -7,15 +7,57 @@ class TelegramService {
     this.bot = null;
   }
 
-  init() {
+  async init() {
     if (!process.env.TELEGRAM_BOT_TOKEN) {
       console.warn('[TelegramService] TELEGRAM_BOT_TOKEN not configured, Telegram features disabled');
       return;
     }
 
-    this.bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
-    this.setupHandlers();
-    console.log('[TelegramService] Telegram bot initialized');
+    try {
+      // Create bot with polling disabled first
+      this.bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: false });
+
+      // Clear any existing webhook to avoid conflicts
+      await this.bot.deleteWebHook();
+
+      // Now start polling
+      await this.bot.startPolling({ restart: true });
+
+      this.setupHandlers();
+      this.setupErrorHandlers();
+      this.setupGracefulShutdown();
+
+      console.log('[TelegramService] Telegram bot initialized');
+    } catch (error) {
+      console.error('[TelegramService] Failed to initialize bot:', error.message);
+    }
+  }
+
+  setupErrorHandlers() {
+    this.bot.on('polling_error', (error) => {
+      // Only log non-409 errors (409 is expected during restarts)
+      if (error.code !== 'ETELEGRAM' || !error.message.includes('409')) {
+        console.error('[TelegramService] Polling error:', error.message);
+      }
+    });
+
+    this.bot.on('error', (error) => {
+      console.error('[TelegramService] Bot error:', error.message);
+    });
+  }
+
+  setupGracefulShutdown() {
+    const shutdown = async () => {
+      if (this.bot) {
+        console.log('[TelegramService] Stopping bot polling...');
+        await this.bot.stopPolling();
+        console.log('[TelegramService] Bot stopped');
+      }
+    };
+
+    process.on('SIGINT', shutdown);
+    process.on('SIGTERM', shutdown);
+    process.on('beforeExit', shutdown);
   }
 
   setupHandlers() {
