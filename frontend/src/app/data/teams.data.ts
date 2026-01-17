@@ -211,8 +211,3 @@ export function getTranslatedTeamName(teamName: string, language: string): strin
     }
     return language === 'he' ? team.nameHe : team.nameEn;
 }
-
-// Helper function to get translated team name for a team object
-export function translateTeamName(team: Team, language: string): string {
-    return language === 'he' ? team.nameHe : team.nameEn;
-}

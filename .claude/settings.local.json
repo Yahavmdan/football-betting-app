@@ -2,7 +2,18 @@
   "permissions": {
     "allow": [
       "Bash(find:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(npx tsc:*)",
+      "Bash(ls:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm install)",
+      "Bash(npm view:*)",
+      "Bash(npx ng update:*)",
+      "Bash(./node_modules/.bin/ng update:*)",
+      "Bash(npm run ng:*)",
+      "Bash(cmd.exe /c 'rmdir /s /q node_modules')",
+      "Bash(npm install:*)",
+      "Bash(npm uninstall:*)"
     ]
   }
 }

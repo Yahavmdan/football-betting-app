@@ -22,6 +22,4 @@ build/
 Thumbs.db
 
 # Test files
-test-israeli-league.js
-test-israeli-fix.js
 DEPLOYMENT_CREDENTIALS.txt

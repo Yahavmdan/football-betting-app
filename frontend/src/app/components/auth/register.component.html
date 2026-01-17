@@ -1,0 +1,56 @@
+<div class="auth-container">
+  <div class="logo-container">
+    <img src="assets/utilities/app-logo.png" alt="Logo" class="auth-logo">
+  </div>
+  <div class="auth-card">
+    <h2>{{ 'auth.register' | translate }}</h2>
+    <form (ngSubmit)="onSubmit()" #registerForm="ngForm">
+      <div class="form-group">
+        <label for="username">{{ 'auth.username' | translate }}</label>
+        <input
+          type="text"
+          id="username"
+          name="username"
+          [(ngModel)]="credentials.username"
+          required
+          minlength="3"
+          maxlength="30"
+          class="form-control"
+        />
+      </div>
+      <div class="form-group">
+        <label for="email">{{ 'auth.email' | translate }}</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          [(ngModel)]="credentials.email"
+          required
+          email
+          class="form-control"
+        />
+      </div>
+      <div class="form-group">
+        <label for="password">{{ 'auth.password' | translate }}</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          [(ngModel)]="credentials.password"
+          required
+          minlength="6"
+          class="form-control"
+        />
+      </div>
+      <div *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+      <button type="submit" [disabled]="!registerForm.valid || loading" class="btn-primary">
+        {{ loading ? ('auth.loading' | translate) : ('auth.register' | translate) }}
+      </button>
+    </form>
+    <p class="auth-link">
+      {{ 'auth.alreadyHaveAccount' | translate }} <a routerLink="/login">{{ 'auth.loginHere' | translate }}</a>
+    </p>
+  </div>
+</div>

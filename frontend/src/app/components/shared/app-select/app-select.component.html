@@ -1,0 +1,78 @@
+<div class="select-container" [class.open]="isOpen" [class.disabled]="disabled">
+  <div class="select-input" (click)="toggleDropdown()">
+    <div class="selected-display">
+      <!-- Single select display -->
+      <ng-container *ngIf="!multiple && selectedOption">
+        <img *ngIf="selectedOption.image" [src]="selectedOption.image" class="option-image" (error)="onImageError($event)">
+        <span *ngIf="selectedOption.icon" class="option-icon">{{ selectedOption.icon }}</span>
+        <span class="selected-label">{{ getOptionLabel(selectedOption) }}</span>
+      </ng-container>
+
+      <!-- Multi select display -->
+      <ng-container *ngIf="multiple">
+        <span *ngIf="selectedValues.length === 0" class="placeholder">{{ getPlaceholder() }}</span>
+        <span *ngIf="selectedValues.length > 0" class="selected-count">
+          {{ selectedValues.length }} {{ getSelectedText() }}
+        </span>
+      </ng-container>
+
+      <!-- Empty state for single select -->
+      <span *ngIf="!multiple && !selectedOption" class="placeholder">{{ getPlaceholder() }}</span>
+    </div>
+    <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+
+  <div class="dropdown-panel" *ngIf="isOpen">
+    <!-- Search box -->
+    <div class="search-box" *ngIf="searchable">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="m21 21-4.3-4.3"></path>
+      </svg>
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        (input)="filterOptions()"
+        [placeholder]="getSearchPlaceholder()"
+        class="search-input"
+        #searchInput>
+    </div>
+
+    <div class="options-list">
+      <!-- Grouped options -->
+      <ng-container *ngIf="hasGroups">
+        <div *ngFor="let group of filteredGroups" class="option-group">
+          <div class="group-header" *ngIf="group.options.length > 0">{{ getGroupName(group) }}</div>
+          <div
+            *ngFor="let option of group.options"
+            class="option-item"
+            [class.selected]="isSelected(option)"
+            (click)="selectOption(option, $event)">
+            <input *ngIf="multiple" type="checkbox" [checked]="isSelected(option)" class="option-checkbox">
+            <img *ngIf="option.image" [src]="option.image" class="option-image" (error)="onImageError($event)">
+            <span *ngIf="option.icon" class="option-icon">{{ option.icon }}</span>
+            <span class="option-label">{{ getOptionLabel(option) }}</span>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Flat options -->
+      <ng-container *ngIf="!hasGroups">
+        <div
+          *ngFor="let option of filteredOptions"
+          class="option-item"
+          [class.selected]="isSelected(option)"
+          (click)="selectOption(option, $event)">
+          <input *ngIf="multiple" type="checkbox" [checked]="isSelected(option)" class="option-checkbox">
+          <img *ngIf="option.image" [src]="option.image" class="option-image" (error)="onImageError($event)">
+          <span *ngIf="option.icon" class="option-icon">{{ option.icon }}</span>
+          <span class="option-label">{{ getOptionLabel(option) }}</span>
+        </div>
+      </ng-container>
+
+      <div *ngIf="noResults" class="no-results">{{ getNoResultsText() }}</div>
+    </div>
+  </div>
+</div>

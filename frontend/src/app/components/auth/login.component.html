@@ -1,0 +1,43 @@
+<div class="auth-container">
+  <div class="logo-container">
+    <img src="assets/utilities/app-logo.png" alt="Logo" class="auth-logo">
+  </div>
+  <div class="auth-card">
+    <h2>{{ 'auth.login' | translate }}</h2>
+    <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
+      <div class="form-group">
+        <label for="email">{{ 'auth.email' | translate }}</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          [(ngModel)]="credentials.email"
+          required
+          email
+          class="form-control"
+        />
+      </div>
+      <div class="form-group">
+        <label for="password">{{ 'auth.password' | translate }}</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          [(ngModel)]="credentials.password"
+          required
+          minlength="6"
+          class="form-control"
+        />
+      </div>
+      <div *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+      <button type="submit" [disabled]="!loginForm.valid || loading" class="btn-primary">
+        {{ loading ? ('auth.loading' | translate) : ('auth.login' | translate) }}
+      </button>
+    </form>
+    <p class="auth-link">
+      {{ 'auth.dontHaveAccount' | translate }} <a routerLink="/register">{{ 'auth.registerHere' | translate }}</a>
+    </p>
+  </div>
+</div>

@@ -21,19 +21,19 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        loadComponent: () => import('./components/groups/groups-list.component').then(m => m.GroupsListComponent)
+        loadComponent: () => import('./components/groups/groups-list/groups-list.component').then(m => m.GroupsListComponent)
       },
       {
         path: 'create',
-        loadComponent: () => import('./components/groups/create-group.component').then(m => m.CreateGroupComponent)
+        loadComponent: () => import('./components/groups/create-group/create-group.component').then(m => m.CreateGroupComponent)
       },
       {
         path: 'join',
-        loadComponent: () => import('./components/groups/join-group.component').then(m => m.JoinGroupComponent)
+        loadComponent: () => import('./components/groups/join-group/join-group.component').then(m => m.JoinGroupComponent)
       },
       {
         path: ':id',
-        loadComponent: () => import('./components/groups/group-detail.component').then(m => m.GroupDetailComponent)
+        loadComponent: () => import('./components/groups/group-detail/group-detail.component').then(m => m.GroupDetailComponent)
       }
     ]
   },

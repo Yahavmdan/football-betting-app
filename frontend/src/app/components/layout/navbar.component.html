@@ -1,0 +1,130 @@
+<ng-container *ngIf="authService.currentUser$ | async as user">
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <a routerLink="/groups">
+                    <img src="assets/utilities/app-logo.png" alt="Football Betting" class="app-logo">
+                </a>
+            </div>
+
+            <!-- Mobile header controls -->
+            <div class="mobile-header-controls">
+                <button class="hamburger" (click)="toggleMobileMenu()" [class.open]="mobileMenuOpen">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <div class="mobile-header-right">
+                    <div class="language-switcher mobile-lang">
+                        <button
+                                (click)="switchLanguage('en')"
+                                [class.active]="currentLang === 'en'"
+                                class="lang-btn"
+                        >
+                            EN
+                        </button>
+                        <button
+                                (click)="switchLanguage('he')"
+                                [class.active]="currentLang === 'he'"
+                                class="lang-btn"
+                        >
+                            עב
+                        </button>
+                    </div>
+                    <button class="theme-toggle mobile-theme" (click)="toggleTheme()">
+                        <svg *ngIf="!isDarkTheme" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                        <svg *ngIf="isDarkTheme" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="5"></circle>
+                            <line x1="12" y1="1" x2="12" y2="3"></line>
+                            <line x1="12" y1="21" x2="12" y2="23"></line>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                            <line x1="1" y1="12" x2="3" y2="12"></line>
+                            <line x1="21" y1="12" x2="23" y2="12"></line>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Desktop menu -->
+            <div class="nav-menu desktop-menu">
+                <a routerLink="/groups" routerLinkActive="active">{{ 'nav.myGroups' | translate }}</a>
+                <div class="language-switcher">
+                    <button
+                            (click)="switchLanguage('en')"
+                            [class.active]="currentLang === 'en'"
+                            class="lang-btn"
+                    >
+                        EN
+                    </button>
+                    <button
+                            (click)="switchLanguage('he')"
+                            [class.active]="currentLang === 'he'"
+                            class="lang-btn"
+                    >
+                        עב
+                    </button>
+                </div>
+                <button class="theme-toggle" (click)="toggleTheme()" [title]="isDarkTheme ? 'Switch to light mode' : 'Switch to dark mode'">
+                    <svg *ngIf="!isDarkTheme" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg *ngIf="isDarkTheme" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+                <div class="user-menu">
+                    <a routerLink="/profile" class="user-profile-link">
+                        <img
+                                *ngIf="user.profilePicture"
+                                [src]="getProfilePictureUrl(user.profilePicture)"
+                                alt="Profile"
+                                class="nav-profile-picture"
+                                (error)="onImageError($event)"
+                        />
+                        <span *ngIf="!user.profilePicture" class="nav-profile-placeholder">
+            {{ user.username.charAt(0).toUpperCase() }}
+          </span>
+                        <span class="username">{{ user.username }}</span>
+                    </a>
+                    <button (click)="logout()" class="logout-btn">{{ 'nav.logout' | translate }}</button>
+                </div>
+            </div>
+
+            <!-- Mobile dropdown menu -->
+            <div class="mobile-menu" [class.open]="mobileMenuOpen">
+                <a routerLink="/groups" routerLinkActive="active"
+                   (click)="closeMobileMenu()">{{ 'nav.myGroups' | translate }}</a>
+                <a routerLink="/profile" class="mobile-user-info" (click)="closeMobileMenu()">
+                    <img
+                            *ngIf="user.profilePicture"
+                            [src]="getProfilePictureUrl(user.profilePicture)"
+                            alt="Profile"
+                            class="nav-profile-picture mobile"
+                            (error)="onImageError($event)"
+                    />
+                    <span *ngIf="!user.profilePicture" class="nav-profile-placeholder mobile">
+          {{ user.username.charAt(0).toUpperCase() }}
+        </span>
+                    <span class="username">{{ user.username }}</span>
+                </a>
+                <button (click)="logout()" class="logout-btn mobile-logout">{{ 'nav.logout' | translate }}</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Overlay OUTSIDE navbar to avoid stacking context issues -->
+    <div class="mobile-overlay" [class.open]="mobileMenuOpen" (click)="closeMobileMenu()"></div>
+</ng-container>

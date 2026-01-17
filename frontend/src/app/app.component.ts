@@ -1,23 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { NavbarComponent } from './components/layout/navbar.component';
-import { LoadingSpinnerComponent } from './components/shared/loading-spinner.component';
+import { LoadingSpinnerComponent } from './components/shared/loading-spinner/loading-spinner.component';
 import { TranslationService } from './services/translation.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [RouterOutlet, NavbarComponent, LoadingSpinnerComponent],
-  template: `
-    <app-loading-spinner></app-loading-spinner>
-    <app-navbar></app-navbar>
-    <router-outlet></router-outlet>
-  `,
+  templateUrl: './app.component.html',
   styles: []
 })
 export class AppComponent implements OnInit {
-  title = 'football-betting-frontend';
-
   constructor(private translationService: TranslationService) {}
 
   ngOnInit(): void {
@@ -33,7 +27,7 @@ export class AppComponent implements OnInit {
     this.applyTheme(savedTheme as 'light' | 'dark' | 'system');
 
     // Listen for system theme changes
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
       const currentTheme = localStorage.getItem('theme') || 'system';
       if (currentTheme === 'system') {
         this.applyTheme('system');

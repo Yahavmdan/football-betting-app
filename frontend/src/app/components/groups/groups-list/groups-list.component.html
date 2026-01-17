@@ -1,0 +1,34 @@
+<div class="container">
+  <div class="header">
+    <h1>{{ 'groups.myGroups' | translate }}</h1>
+    <div class="actions">
+      <button routerLink="/groups/create" class="btn-primary">{{ 'groups.createGroup' | translate }}</button>
+      <button routerLink="/groups/join" class="btn-secondary">{{ 'groups.joinGroup' | translate }}</button>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="loading">{{ 'auth.loading' | translate }}</div>
+
+  <div *ngIf="!loading && groups.length === 0" class="empty-state">
+    <p>{{ 'groups.noGroups' | translate }}</p>
+    <p>{{ 'groups.getStarted' | translate }}</p>
+  </div>
+
+  <div class="groups-grid">
+    <div *ngFor="let group of groups"
+         class="group-card"
+         [class.pending]="group.isPending"
+         [routerLink]="group.isPending ? null : ['/groups', group._id]"
+         [style.cursor]="group.isPending ? 'default' : 'pointer'">
+      <div *ngIf="group.isPending" class="pending-badge">
+        {{ 'groups.joinRequestPending' | translate }}
+      </div>
+      <h3>{{ group.name }}</h3>
+      <p class="description">{{ group.description || ('groups.noDescription' | translate) }}</p>
+      <div class="group-info">
+        <span class="member-count">{{ group.members.length }} {{ 'groups.members' | translate }}</span>
+        <span class="invite-code">{{ 'groups.code' | translate }}: {{ group.inviteCode }}</span>
+      </div>
+    </div>
+  </div>
+</div>

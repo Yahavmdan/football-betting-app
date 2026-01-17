@@ -1,0 +1,112 @@
+<div class="container">
+    <div class="form-card">
+        <h2>{{ 'groups.createNewGroup' | translate }}</h2>
+        <form (ngSubmit)="onSubmit()" #createGroupForm="ngForm">
+            <div class="form-group">
+                <label for="name">{{ 'groups.groupName' | translate }} *</label>
+                <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        [(ngModel)]="groupData.name"
+                        required
+                        maxlength="50"
+                        class="form-control"
+                        [placeholder]="'groups.enterGroupName' | translate"
+                />
+            </div>
+            <div class="form-group">
+                <label for="description">{{ 'groups.description' | translate }}</label>
+                <textarea
+                        id="description"
+                        name="description"
+                        [(ngModel)]="groupData.description"
+                        maxlength="200"
+                        class="form-control"
+                        rows="4"
+                        [placeholder]="'groups.enterDescription' | translate"
+                ></textarea>
+            </div>
+            <div class="form-group">
+                <label for="betType">{{ 'groups.betType' | translate }} *</label>
+                <div class="bet-type-selection">
+                    <div class="bet-type-option"
+                         [class.selected]="groupData.betType === 'classic'"
+                         (click)="selectBetType('classic')">
+                        <div class="option-header">
+                            <input type="radio"
+                                   id="betTypeClassic"
+                                   name="betType"
+                                   value="classic"
+                                   [(ngModel)]="groupData.betType"
+                                   required/>
+                            <label for="betTypeClassic">{{ 'groups.betTypeClassic' | translate }}</label>
+                        </div>
+                        <p class="option-description">{{ 'groups.betTypeClassicDesc' | translate }}</p>
+                    </div>
+                    <div class="bet-type-option"
+                         [class.selected]="groupData.betType === 'relative'"
+                         (click)="selectBetType('relative')">
+                        <div class="option-header">
+                            <input type="radio"
+                                   id="betTypeRelative"
+                                   name="betType"
+                                   value="relative"
+                                   [(ngModel)]="groupData.betType"
+                                   required/>
+                            <label for="betTypeRelative">{{ 'groups.betTypeRelative' | translate }}</label>
+                        </div>
+                        <p class="option-description">{{ 'groups.betTypeRelativeDesc' | translate }}</p>
+                    </div>
+                </div>
+            </div>
+            <div *ngIf="groupData.betType === 'relative'" class="form-group">
+                <label for="startingCredits">{{ 'groups.startingCredits' | translate }} *</label>
+                <input
+                        type="number"
+                        id="startingCredits"
+                        name="startingCredits"
+                        [(ngModel)]="groupData.startingCredits"
+                        min="1"
+                        step="1"
+                        class="form-control"
+                        [placeholder]="'groups.creditsPerPlayer' | translate"
+                        required>
+                <small class="form-hint">{{ 'groups.enterStartingCredits' | translate }}</small>
+            </div>
+            <div *ngIf="groupData.betType === 'relative'" class="form-group">
+                <label for="creditsGoal">{{ 'groups.creditsGoal' | translate }} *</label>
+                <input
+                        type="number"
+                        id="creditsGoal"
+                        name="creditsGoal"
+                        [(ngModel)]="groupData.creditsGoal"
+                        min="1"
+                        step="1"
+                        class="form-control"
+                        [placeholder]="'groups.goalToWin' | translate"
+                        required>
+                <small class="form-hint">{{ 'groups.enterCreditsGoal' | translate }}</small>
+            </div>
+            <div class="form-group">
+                <label>{{ 'groups.showBets' | translate }}</label>
+                <div class="toggle-container">
+                    <app-toggle [(ngModel)]="groupData.showBets" name="showBets"></app-toggle>
+                    <span class="toggle-label">{{ groupData.showBets ? ('groups.showBetsOn' | translate) : ('groups.showBetsOff' | translate) }}</span>
+                </div>
+                <small class="form-hint">{{ 'groups.showBetsHint' | translate }}</small>
+            </div>
+            <div *ngIf="errorMessage" class="error-message">
+                {{ errorMessage }}
+            </div>
+            <div class="button-group">
+                <button type="button" (click)="goBack()"
+                        class="btn-secondary">{{ 'groups.cancel' | translate }}
+                </button>
+                <button type="submit" [disabled]="!createGroupForm.valid || loading" class="btn-primary">
+                    {{ loading ? ('groups.creating' | translate) : ('groups.createGroup' | translate) }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

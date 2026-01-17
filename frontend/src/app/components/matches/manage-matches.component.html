@@ -1,0 +1,348 @@
+<div class="container">
+  <div class="header">
+    <h1>{{ 'matches.manageMatches' | translate }} - {{ group?.name }}</h1>
+    <button (click)="goBack()" class="btn-secondary">{{ 'bets.back' | translate }}</button>
+  </div>
+
+  <div class="section" *ngIf="canManageGroup()">
+    <h2>{{ 'matches.addManually' | translate }}</h2>
+    <form (ngSubmit)="createManualMatch()" class="manual-match-form">
+      <div class="form-row teams-row">
+        <div class="form-group">
+          <label for="homeTeam">{{ 'matches.homeTeam' | translate }}</label>
+          <app-select
+            [groups]="teamGroups"
+            [(ngModel)]="manualMatch.homeTeam"
+            name="homeTeam"
+            [searchable]="true"
+            placeholder="Select team"
+            placeholderHe="בחר קבוצה"
+            searchPlaceholder="Search team..."
+            searchPlaceholderHe="חיפוש קבוצה...">
+          </app-select>
+        </div>
+        <div class="form-group">
+          <label for="awayTeam">{{ 'matches.awayTeam' | translate }}</label>
+          <app-select
+            [groups]="teamGroups"
+            [(ngModel)]="manualMatch.awayTeam"
+            name="awayTeam"
+            [searchable]="true"
+            placeholder="Select team"
+            placeholderHe="בחר קבוצה"
+            searchPlaceholder="Search team..."
+            searchPlaceholderHe="חיפוש קבוצה...">
+          </app-select>
+        </div>
+      </div>
+      <div class="form-row datetime-row">
+        <div class="form-group">
+          <label for="matchDate">{{ 'matches.matchDate' | translate }}</label>
+          <input
+            type="date"
+            id="matchDate"
+            [(ngModel)]="manualMatch.matchDate"
+            name="matchDate"
+            class="form-control"
+            required>
+        </div>
+        <div class="form-group">
+          <label for="matchHour">{{ 'matches.matchTime' | translate }}</label>
+          <input
+            type="time"
+            id="matchHour"
+            [(ngModel)]="manualMatch.matchHour"
+            name="matchHour"
+            class="form-control"
+            required>
+        </div>
+      </div>
+      <div *ngIf="isPastMatch()" class="past-match-notice">
+        {{ 'matches.pastMatchNotice' | translate }}
+      </div>
+      <div *ngIf="isPastMatch()" class="form-row score-row">
+        <div class="form-group">
+          <label for="homeScore">{{ 'matches.homeScore' | translate }}</label>
+          <input
+            type="number"
+            id="homeScore"
+            [(ngModel)]="manualMatch.homeScore"
+            name="homeScore"
+            class="form-control score-input"
+            min="0"
+            required>
+        </div>
+        <div class="form-group">
+          <label for="awayScore">{{ 'matches.awayScore' | translate }}</label>
+          <input
+            type="number"
+            id="awayScore"
+            [(ngModel)]="manualMatch.awayScore"
+            name="awayScore"
+            class="form-control score-input"
+            min="0"
+            required>
+        </div>
+      </div>
+      <div *ngIf="group?.betType === 'relative'" class="relative-points-section">
+        <h3>{{ 'matches.relativePoints' | translate }}</h3>
+        <p class="points-description">{{ 'groups.betTypeRelativeDesc' | translate }}</p>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="homeWinPoints">{{ 'matches.homeWinPoints' | translate }}</label>
+            <input
+              type="number"
+              id="homeWinPoints"
+              [(ngModel)]="manualMatch.relativePoints.homeWin"
+              name="homeWinPoints"
+              class="form-control score-input"
+              min="0.1"
+              step="0.1"
+              [placeholder]="'matches.pointsForHomeWin' | translate"
+              required>
+          </div>
+          <div class="form-group">
+            <label for="drawPoints">{{ 'matches.drawPoints' | translate }}</label>
+            <input
+              type="number"
+              id="drawPoints"
+              [(ngModel)]="manualMatch.relativePoints.draw"
+              name="drawPoints"
+              class="form-control score-input"
+              min="0.1"
+              step="0.1"
+              [placeholder]="'matches.pointsForDraw' | translate"
+              required>
+          </div>
+          <div class="form-group">
+            <label for="awayWinPoints">{{ 'matches.awayWinPoints' | translate }}</label>
+            <input
+              type="number"
+              id="awayWinPoints"
+              [(ngModel)]="manualMatch.relativePoints.awayWin"
+              name="awayWinPoints"
+              class="form-control score-input"
+              min="0.1"
+              step="0.1"
+              [placeholder]="'matches.pointsForAwayWin' | translate"
+              required>
+          </div>
+        </div>
+      </div>
+      <button
+        type="submit"
+        class="btn-primary"
+        [disabled]="loadingManual || !isFormValid()">
+        {{ loadingManual ? ('matches.creatingMatch' | translate) : ('matches.createMatch' | translate) }}
+      </button>
+      <div *ngIf="manualMatchMessage" class="info-message" style="margin-top: 1rem;">{{ manualMatchMessage }}</div>
+      <div *ngIf="manualMatchError" class="error-message" style="margin-top: 1rem;">{{ manualMatchError }}</div>
+    </form>
+  </div>
+
+  <div class="section">
+    <h2>{{ 'matches.matchesInGroup' | translate }}</h2>
+    <div *ngIf="loadingGroupMatches" class="loading">{{ 'auth.loading' | translate }}</div>
+    <div *ngIf="!loadingGroupMatches && groupMatches.length === 0" class="empty-state">
+      {{ 'matches.noMatchesInGroup' | translate }}
+    </div>
+    <div class="matches-grid">
+      <div *ngFor="let match of groupMatches" class="match-card active">
+        <div class="match-header">
+          <span class="competition">{{ match.competition }}</span>
+          <span class="status" [class.finished]="match.status === 'FINISHED'">
+            {{ 'matches.' + match.status.toLowerCase() | translate }}
+          </span>
+        </div>
+        <div class="match-teams">
+          <div class="team team-home">
+            <span>{{ match.homeTeam | teamTranslate }}</span>
+            <img *ngIf="getTeamLogo(match.homeTeam)" [src]="getTeamLogo(match.homeTeam)" [alt]="match.homeTeam | teamTranslate" class="team-logo" (error)="onImageError($event)">
+          </div>
+          <span class="vs">{{ 'matches.vs' | translate }}</span>
+          <div class="team team-away">
+            <img *ngIf="getTeamLogo(match.awayTeam)" [src]="getTeamLogo(match.awayTeam)" [alt]="match.awayTeam | teamTranslate" class="team-logo" (error)="onImageError($event)">
+            <span>{{ match.awayTeam | teamTranslate }}</span>
+          </div>
+        </div>
+        <div class="match-footer">
+          <span class="date">{{ match.matchDate | date:'dd/MM/yy, HH:mm' }}</span>
+          <span *ngIf="match.status === 'FINISHED'" class="result">
+            {{ match.result.homeScore }} - {{ match.result.awayScore }}
+          </span>
+          <span *ngIf="match.status === 'SCHEDULED' && match.result && match.result.homeScore !== null" class="result ongoing">
+            {{ 'matches.ongoingScore' | translate }}: {{ match.result.homeScore }} - {{ match.result.awayScore }}
+          </span>
+          <div class="match-actions" *ngIf="canManageGroup()">
+            <button
+              *ngIf="canUpdateScore(match)"
+              (click)="openScoreUpdate(match)"
+              class="btn-update-score">
+              {{ 'matches.updateScore' | translate }}
+            </button>
+            <button
+              *ngIf="match.status === 'SCHEDULED' && match.result && match.result.homeScore !== null"
+              (click)="markAsFinished(match._id)"
+              class="btn-mark-finished">
+              {{ 'matches.markAsFinished' | translate }}
+            </button>
+            <button
+              (click)="openEditMatch(match)"
+              class="btn-edit">
+              {{ 'common.edit' | translate }}
+            </button>
+            <button
+              (click)="confirmDeleteMatch(match)"
+              class="btn-delete">
+              {{ 'common.delete' | translate }}
+            </button>
+          </div>
+        </div>
+        <!-- Score update form -->
+        <div *ngIf="editingMatchId === match._id && !editingMatchDetails" class="score-update-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label>{{ match.homeTeam | teamTranslate }}</label>
+              <input
+                type="number"
+                [(ngModel)]="updateScoreData.homeScore"
+                [name]="'homeScore_' + match._id"
+                class="form-control score-input"
+                min="0">
+            </div>
+            <div class="form-group">
+              <label>{{ match.awayTeam | teamTranslate }}</label>
+              <input
+                type="number"
+                [(ngModel)]="updateScoreData.awayScore"
+                [name]="'awayScore_' + match._id"
+                class="form-control score-input"
+                min="0">
+            </div>
+          </div>
+          <div class="button-row">
+            <button
+              (click)="submitScoreUpdate(match._id)"
+              [disabled]="loadingScoreUpdate || updateScoreData.homeScore === null || updateScoreData.awayScore === null"
+              class="btn-primary btn-small">
+              {{ loadingScoreUpdate ? ('auth.loading' | translate) : ('matches.saveScore' | translate) }}
+            </button>
+            <button (click)="cancelScoreUpdate()" class="btn-secondary btn-small">
+              {{ 'groups.cancel' | translate }}
+            </button>
+          </div>
+          <div *ngIf="scoreUpdateError" class="error-message" style="margin-top: 0.5rem;">{{ scoreUpdateError }}</div>
+        </div>
+        <!-- Edit match form -->
+        <div *ngIf="editingMatchId === match._id && editingMatchDetails" class="edit-match-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label>{{ 'matches.homeTeam' | translate }}</label>
+              <app-select
+                [groups]="teamGroups"
+                [(ngModel)]="editMatchData.homeTeam"
+                [ngModelOptions]="{standalone: true}"
+                [searchable]="true"
+                placeholder="Select team"
+                placeholderHe="בחר קבוצה"
+                searchPlaceholder="Search team..."
+                searchPlaceholderHe="חיפוש קבוצה...">
+              </app-select>
+            </div>
+            <div class="form-group">
+              <label>{{ 'matches.awayTeam' | translate }}</label>
+              <app-select
+                [groups]="teamGroups"
+                [(ngModel)]="editMatchData.awayTeam"
+                [ngModelOptions]="{standalone: true}"
+                [searchable]="true"
+                placeholder="Select team"
+                placeholderHe="בחר קבוצה"
+                searchPlaceholder="Search team..."
+                searchPlaceholderHe="חיפוש קבוצה...">
+              </app-select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>{{ 'matches.matchDate' | translate }}</label>
+              <input
+                type="date"
+                [(ngModel)]="editMatchData.matchDate"
+                class="form-control">
+            </div>
+            <div class="form-group">
+              <label>{{ 'matches.matchTime' | translate }}</label>
+              <input
+                type="time"
+                [(ngModel)]="editMatchData.matchHour"
+                class="form-control">
+            </div>
+          </div>
+          <div *ngIf="group?.betType === 'relative'" class="relative-points-section">
+            <h3>{{ 'matches.relativePoints' | translate }}</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label>{{ 'matches.homeWinPoints' | translate }}</label>
+                <input
+                  type="number"
+                  [(ngModel)]="editMatchData.relativePoints.homeWin"
+                  class="form-control score-input"
+                  min="0.1"
+                  step="0.1"
+                  required>
+              </div>
+              <div class="form-group">
+                <label>{{ 'matches.drawPoints' | translate }}</label>
+                <input
+                  type="number"
+                  [(ngModel)]="editMatchData.relativePoints.draw"
+                  class="form-control score-input"
+                  min="0.1"
+                  step="0.1"
+                  required>
+              </div>
+              <div class="form-group">
+                <label>{{ 'matches.awayWinPoints' | translate }}</label>
+                <input
+                  type="number"
+                  [(ngModel)]="editMatchData.relativePoints.awayWin"
+                  class="form-control score-input"
+                  min="0.1"
+                  step="0.1"
+                  required>
+              </div>
+            </div>
+          </div>
+          <div class="button-row">
+            <button
+              (click)="submitEditMatch(match._id)"
+              [disabled]="loadingEditMatch"
+              class="btn-primary btn-small">
+              {{ loadingEditMatch ? ('auth.loading' | translate) : ('common.save' | translate) }}
+            </button>
+            <button (click)="cancelEditMatch()" class="btn-secondary btn-small">
+              {{ 'groups.cancel' | translate }}
+            </button>
+          </div>
+          <div *ngIf="editMatchError" class="error-message" style="margin-top: 0.5rem;">{{ editMatchError }}</div>
+        </div>
+        <!-- Delete confirmation -->
+        <div *ngIf="deletingMatchId === match._id" class="delete-confirm">
+          <p>{{ 'matches.confirmDelete' | translate }}</p>
+          <div class="button-row">
+            <button
+              (click)="deleteMatch(match._id)"
+              [disabled]="loadingDeleteMatch"
+              class="btn-delete btn-small">
+              {{ loadingDeleteMatch ? ('auth.loading' | translate) : ('common.delete' | translate) }}
+            </button>
+            <button (click)="cancelDeleteMatch()" class="btn-secondary btn-small">
+              {{ 'groups.cancel' | translate }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

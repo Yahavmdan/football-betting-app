@@ -1,0 +1,513 @@
+    .container {
+      max-width: 720px;
+      margin: 2rem auto;
+      padding: 2rem;
+      animation: fadeIn 0.5s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .back-btn {
+      background: rgba(74, 222, 128, 0.1);
+      border: none;
+      color: #22c55e;
+      cursor: pointer;
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      padding: 0.75rem 1.25rem;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .back-btn:hover {
+      background: rgba(74, 222, 128, 0.2);
+      transform: translateX(-4px);
+    }
+    .bet-card {
+      background: white;
+      padding: 2.5rem;
+      border-radius: 24px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(0, 0, 0, 0.04);
+    }
+    h2 {
+      margin: 0 0 2rem 0;
+      color: #1a1a2e;
+      text-align: center;
+      font-size: 1.75rem;
+      font-weight: 700;
+      font-family: 'Poppins', sans-serif;
+    }
+    .match-info {
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      padding: 2rem;
+      border-radius: 16px;
+      margin-bottom: 2rem;
+      text-align: center;
+      border: 2px solid #e2e8f0;
+    }
+    .competition {
+      color: #64748b;
+      font-size: 0.9rem;
+      margin-bottom: 0.75rem;
+      font-weight: 500;
+    }
+    .teams {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 1.25rem 0;
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+    .team {
+      color: #1a1a2e;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .team-home {
+      justify-content: flex-end;
+    }
+    .team-away {
+      justify-content: flex-start;
+    }
+    .team-logo {
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+      border-radius: 4px;
+    }
+    .outcome-logo {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+      border-radius: 6px;
+    }
+    .vs {
+      color: #94a3b8;
+      margin: 0 1.25rem;
+      font-weight: 400;
+    }
+    .date {
+      color: #64748b;
+      font-size: 0.9rem;
+    }
+    .form-section {
+      margin-bottom: 2rem;
+    }
+    h3 {
+      margin: 0 0 1.25rem 0;
+      color: #1a1a2e;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+    .outcome-buttons {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+    .outcome-btn {
+      padding: 1.5rem 1rem;
+      border: 3px solid #e2e8f0;
+      border-radius: 16px;
+      background: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .outcome-btn:hover:not(:disabled) {
+      border-color: #4ade80;
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(74, 222, 128, 0.2);
+    }
+    .outcome-btn.selected {
+      border-color: #22c55e;
+      background: linear-gradient(135deg, rgba(74, 222, 128, 0.1) 0%, rgba(34, 197, 94, 0.05) 100%);
+      box-shadow: 0 4px 15px rgba(74, 222, 128, 0.25);
+    }
+    .outcome-btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+      transform: none;
+    }
+    .outcome-btn .label {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      font-family: 'Poppins', sans-serif;
+    }
+    .outcome-btn.selected .label {
+      color: #16a34a;
+    }
+    .outcome-btn .team-name {
+      font-size: 0.85rem;
+      color: #64748b;
+      text-align: center;
+      font-weight: 500;
+    }
+    .points-info {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(29, 78, 216, 0.05) 100%);
+      padding: 1.25rem;
+      border-radius: 12px;
+      margin-bottom: 1.75rem;
+      border-left: 4px solid #3b82f6;
+    }
+    .points-info h4 {
+      margin: 0 0 0.5rem 0;
+      color: #1e40af;
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+    .points-info p {
+      margin: 0;
+      color: #3b82f6;
+      font-size: 0.9rem;
+    }
+    .relative-points-display {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .points-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem;
+      background: white;
+      border-radius: 8px;
+      border: 1px solid #bfdbfe;
+    }
+    .points-row .label {
+      color: #475569;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    .points-row .points {
+      color: #1e40af;
+      font-weight: 700;
+      font-size: 1rem;
+    }
+    .wager-section {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%);
+      padding: 1.5rem;
+      border-radius: 12px;
+      margin-bottom: 1.75rem;
+      border-left: 4px solid #10b981;
+    }
+    .wager-section h4 {
+      margin: 0 0 1rem 0;
+      color: #047857;
+      font-size: 1rem;
+      font-weight: 700;
+    }
+    .credits-display {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      background: white;
+      border-radius: 8px;
+      border: 2px solid #a7f3d0;
+    }
+    .credits-display .label {
+      color: #475569;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    .credits-display .value {
+      color: #047857;
+      font-weight: 700;
+      font-size: 1.25rem;
+    }
+    .form-group {
+      margin-bottom: 0;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 0.6rem;
+      color: #047857;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    .form-control {
+      width: 100%;
+      padding: 1rem 1.25rem;
+      border: 2px solid #a7f3d0;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-family: inherit;
+      transition: all 0.3s ease;
+      background: white;
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: #10b981;
+      background: white;
+      box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+    }
+    .form-control::placeholder {
+      color: #94a3b8;
+    }
+    .form-control:disabled {
+      background: #f1f5f9;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    .potential-win {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      background: #dcfce7;
+      border-radius: 8px;
+      border: 2px solid #10b981;
+      margin-top: 1rem;
+    }
+    .potential-win .label {
+      color: #047857;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    .potential-win .value {
+      color: #047857;
+      font-weight: 700;
+      font-size: 1.25rem;
+    }
+    .button-group {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+    }
+    .btn-primary, .btn-secondary {
+      padding: 0.9rem 1.75rem;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+      color: white;
+      box-shadow: 0 4px 15px rgba(74, 222, 128, 0.3);
+    }
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(74, 222, 128, 0.4);
+    }
+    .btn-primary:disabled {
+      background: linear-gradient(135deg, #cbd5e0 0%, #94a3b8 100%);
+      box-shadow: none;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .btn-secondary {
+      background: #f1f5f9;
+      color: #475569;
+    }
+    .btn-secondary:hover {
+      background: #e2e8f0;
+    }
+    .error-message {
+      color: #dc2626;
+      margin-bottom: 1.25rem;
+      padding: 1rem;
+      background: #fee2e2;
+      border-radius: 12px;
+      border-left: 4px solid #ef4444;
+      font-weight: 500;
+    }
+    .success-message {
+      color: #16a34a;
+      margin-bottom: 1.25rem;
+      padding: 1rem;
+      background: #dcfce7;
+      border-radius: 12px;
+      border-left: 4px solid #22c55e;
+      font-weight: 500;
+    }
+    .warning-message {
+      color: #d97706;
+      margin-bottom: 1.25rem;
+      padding: 1rem;
+      background: #fef3c7;
+      border-radius: 12px;
+      border-left: 4px solid #f59e0b;
+      font-weight: 500;
+    }
+    .info-message {
+      color: #1d4ed8;
+      margin-bottom: 1.25rem;
+      padding: 1rem;
+      background: #dbeafe;
+      border-radius: 12px;
+      border-left: 4px solid #3b82f6;
+      font-weight: 500;
+    }
+    @media (max-width: 640px) {
+      .container {
+        padding: 1rem;
+      }
+      .bet-card {
+        padding: 1.5rem;
+      }
+      .outcome-buttons {
+        grid-template-columns: 1fr;
+      }
+      .outcome-btn {
+        flex-direction: row;
+        justify-content: center;
+        gap: 1rem;
+      }
+    }
+    @media (max-width: 400px) {
+      .container {
+        padding: 0.75rem;
+        margin: 1rem auto;
+      }
+      .back-btn {
+        font-size: 0.85rem;
+        padding: 0.6rem 1rem;
+        margin-bottom: 1rem;
+      }
+      .bet-card {
+        padding: 1rem;
+        border-radius: 16px;
+      }
+      h2 {
+        font-size: 1.25rem;
+        margin-bottom: 1.25rem;
+      }
+      .match-info {
+        padding: 1rem;
+        margin-bottom: 1.25rem;
+        border-radius: 12px;
+      }
+      .competition {
+        font-size: 0.8rem;
+      }
+      .teams {
+        flex-direction: column;
+        gap: 0.5rem;
+        font-size: 1rem;
+        margin: 0.75rem 0;
+      }
+      .team {
+        justify-content: center !important;
+      }
+      .team-logo {
+        width: 26px;
+        height: 26px;
+      }
+      .vs {
+        margin: 0.25rem 0;
+      }
+      .date {
+        font-size: 0.85rem;
+      }
+      h3 {
+        font-size: 1rem;
+        margin-bottom: 1rem;
+      }
+      .outcome-buttons {
+        gap: 0.75rem;
+      }
+      .outcome-btn {
+        padding: 1rem 0.75rem;
+        border-radius: 12px;
+        gap: 0.75rem;
+      }
+      .outcome-btn .label {
+        font-size: 1.5rem;
+      }
+      .outcome-btn .team-name {
+        font-size: 0.8rem;
+      }
+      .outcome-logo {
+        width: 32px;
+        height: 32px;
+      }
+      .points-info {
+        padding: 1rem;
+        margin-bottom: 1.25rem;
+      }
+      .points-info h4 {
+        font-size: 0.9rem;
+      }
+      .points-info p {
+        font-size: 0.85rem;
+      }
+      .points-row {
+        padding: 0.6rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+      }
+      .points-row .label {
+        font-size: 0.85rem;
+      }
+      .points-row .points {
+        font-size: 0.9rem;
+      }
+      .wager-section {
+        padding: 1rem;
+        margin-bottom: 1.25rem;
+      }
+      .wager-section h4 {
+        font-size: 0.9rem;
+      }
+      .credits-display {
+        padding: 0.75rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+      }
+      .credits-display .label {
+        font-size: 0.85rem;
+      }
+      .credits-display .value {
+        font-size: 1.1rem;
+      }
+      .form-group label {
+        font-size: 0.85rem;
+      }
+      .form-control {
+        padding: 0.85rem 1rem;
+        font-size: 0.95rem;
+      }
+      .potential-win {
+        padding: 0.75rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+      }
+      .potential-win .label {
+        font-size: 0.85rem;
+      }
+      .potential-win .value {
+        font-size: 1.1rem;
+      }
+      .button-group {
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+      .btn-primary, .btn-secondary {
+        width: 100%;
+        padding: 0.85rem 1rem;
+        font-size: 0.95rem;
+      }
+      .error-message, .success-message, .warning-message, .info-message {
+        padding: 0.85rem;
+        font-size: 0.85rem;
+        margin-bottom: 1rem;
+      }
+    }

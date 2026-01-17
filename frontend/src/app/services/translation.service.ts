@@ -50,10 +50,6 @@ export class TranslationService {
     return result || key;
   }
 
-  instant(key: string): string {
-    return this.translate(key);
-  }
-
   private updateDirection(lang: string): void {
     const htmlElement = document.documentElement;
     if (lang === 'he') {
@@ -63,9 +59,5 @@ export class TranslationService {
       htmlElement.setAttribute('dir', 'ltr');
       htmlElement.setAttribute('lang', 'en');
     }
-  }
-
-  isRTL(): boolean {
-    return this.currentLangSubject.value === 'he';
   }
 }

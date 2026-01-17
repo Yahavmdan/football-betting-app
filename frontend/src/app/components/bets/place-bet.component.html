@@ -1,0 +1,141 @@
+<div class="container">
+  <button class="back-btn" (click)="goBack()">← {{ 'bets.back' | translate }}</button>
+
+  <div class="bet-card" *ngIf="match">
+    <h2>{{ hasExistingBet ? ('bets.yourBet' | translate) : ('bets.placeYourBet' | translate) }}</h2>
+
+    <div class="match-info">
+      <div class="competition">{{ match.competition }}</div>
+      <div class="teams">
+        <div class="team team-home">
+          <span>{{ match.homeTeam | teamTranslate }}</span>
+          <img *ngIf="getTeamLogo(match.homeTeam)" [src]="getTeamLogo(match.homeTeam)" [alt]="match.homeTeam | teamTranslate" class="team-logo" (error)="onImageError($event)">
+        </div>
+        <span class="vs">{{ 'matches.vs' | translate }}</span>
+        <div class="team team-away">
+          <img *ngIf="getTeamLogo(match.awayTeam)" [src]="getTeamLogo(match.awayTeam)" [alt]="match.awayTeam | teamTranslate" class="team-logo" (error)="onImageError($event)">
+          <span>{{ match.awayTeam | teamTranslate }}</span>
+        </div>
+      </div>
+      <div class="date">{{ match.matchDate | date:'dd/MM/yy, HH:mm' }}</div>
+    </div>
+
+    <!-- Warning messages -->
+    <div *ngIf="isMatchInPast" class="warning-message">
+      ⚠️ {{ 'bets.matchStarted' | translate }}
+    </div>
+
+    <div *ngIf="hasExistingBet && !isMatchInPast" class="info-message">
+      ℹ️ {{ 'bets.canUpdateBet' | translate }}
+    </div>
+
+    <form (ngSubmit)="onSubmit()" #betForm="ngForm">
+      <div class="form-section">
+        <h3>{{ 'bets.matchResult' | translate }}</h3>
+        <div class="outcome-buttons">
+          <button
+            type="button"
+            class="outcome-btn"
+            [class.selected]="betData.outcome === '1'"
+            (click)="selectOutcome('1')"
+            [disabled]="isMatchInPast"
+          >
+            <img *ngIf="getTeamLogo(match.homeTeam)" [src]="getTeamLogo(match.homeTeam)" [alt]="match.homeTeam | teamTranslate" class="outcome-logo" (error)="onImageError($event)">
+            <span class="label">1</span>
+            <span class="team-name">{{ match.homeTeam | teamTranslate }}</span>
+          </button>
+          <button
+            type="button"
+            class="outcome-btn"
+            [class.selected]="betData.outcome === 'X'"
+            (click)="selectOutcome('X')"
+            [disabled]="isMatchInPast"
+          >
+            <span class="label">X</span>
+            <span class="team-name">{{ 'bets.draw' | translate }}</span>
+          </button>
+          <button
+            type="button"
+            class="outcome-btn"
+            [class.selected]="betData.outcome === '2'"
+            (click)="selectOutcome('2')"
+            [disabled]="isMatchInPast"
+          >
+            <img *ngIf="getTeamLogo(match.awayTeam)" [src]="getTeamLogo(match.awayTeam)" [alt]="match.awayTeam | teamTranslate" class="outcome-logo" (error)="onImageError($event)">
+            <span class="label">2</span>
+            <span class="team-name">{{ match.awayTeam | teamTranslate }}</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="points-info">
+        <h4>{{ 'bets.pointsSystem' | translate }}</h4>
+        <p *ngIf="!getMatchRelativePoints()">{{ 'bets.correctResultReward' | translate }}</p>
+        <div *ngIf="getMatchRelativePoints()" class="relative-points-display">
+          <div class="points-row">
+            <span class="label">{{ match.homeTeam | teamTranslate }} (1):</span>
+            <span class="points">{{ getMatchRelativePoints()?.homeWin }} {{ getMatchRelativePoints()?.homeWin === 1 ? ('bets.point' | translate) : ('bets.points' | translate) }}</span>
+          </div>
+          <div class="points-row">
+            <span class="label">{{ 'bets.draw' | translate }} (X):</span>
+            <span class="points">{{ getMatchRelativePoints()?.draw }} {{ getMatchRelativePoints()?.draw === 1 ? ('bets.point' | translate) : ('bets.points' | translate) }}</span>
+          </div>
+          <div class="points-row">
+            <span class="label">{{ match.awayTeam | teamTranslate }} (2):</span>
+            <span class="points">{{ getMatchRelativePoints()?.awayWin }} {{ getMatchRelativePoints()?.awayWin === 1 ? ('bets.point' | translate) : ('bets.points' | translate) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="group?.betType === 'relative' && !isMatchInPast" class="wager-section">
+        <h4>{{ 'bets.wager' | translate }}</h4>
+        <div class="credits-display">
+          <span class="label">{{ 'bets.availableCredits' | translate }}:</span>
+          <span class="value">{{ effectiveCredits }}</span>
+        </div>
+        <div class="form-group" style="margin-top: 1rem;">
+          <label for="wagerAmount">{{ 'bets.wagerAmount' | translate }} *</label>
+          <input
+            type="number"
+            id="wagerAmount"
+            name="wagerAmount"
+            [(ngModel)]="wagerAmount"
+            min="1"
+            [max]="effectiveCredits"
+            step="1"
+            class="form-control"
+            [placeholder]="'bets.enterWagerAmount' | translate"
+            [disabled]="isMatchInPast || effectiveCredits <= 0"
+            required>
+        </div>
+        <div *ngIf="wagerAmount && betData.outcome && getMatchRelativePoints()" class="potential-win">
+          <span class="label">{{ 'bets.potentialWin' | translate }}:</span>
+          <span class="value">{{ calculatePotentialWin() }} {{ 'groups.credits' | translate }}</span>
+        </div>
+        <div *ngIf="effectiveCredits <= 0" class="error-message" style="margin-top: 1rem;">
+          {{ 'groups.eliminated' | translate }} - {{ 'bets.insufficientCredits' | translate }}
+        </div>
+      </div>
+
+      <div *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+
+      <div *ngIf="successMessage" class="success-message">
+        {{ successMessage }}
+      </div>
+
+      <div class="button-group">
+        <button type="button" (click)="goBack()" class="btn-secondary">{{ 'groups.cancel' | translate }}</button>
+        <button
+          type="submit"
+          *ngIf="!isMatchInPast"
+          [disabled]="!betData.outcome || loading || (group?.betType === 'relative' && (!wagerAmount || effectiveCredits <= 0))"
+          class="btn-primary"
+        >
+          {{ loading ? ('bets.placingBet' | translate) : (hasExistingBet ? ('bets.updateBet' | translate) : ('matches.placeBet' | translate)) }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

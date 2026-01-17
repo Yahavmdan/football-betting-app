@@ -1,0 +1,33 @@
+<div class="container">
+  <div class="form-card">
+    <h2>{{ 'groups.joinGroup' | translate }}</h2>
+    <p class="info-text">{{ 'groups.enterInviteCode' | translate }}</p>
+    <form (ngSubmit)="onSubmit()" #joinGroupForm="ngForm">
+      <div class="form-group">
+        <label for="inviteCode">{{ 'groups.inviteCode' | translate }} *</label>
+        <input
+          type="text"
+          id="inviteCode"
+          name="inviteCode"
+          [(ngModel)]="joinData.inviteCode"
+          required
+          class="form-control invite-code-input"
+          [placeholder]="'groups.enterCode' | translate"
+          maxlength="8"
+        />
+      </div>
+      <div *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+      <div *ngIf="successMessage" class="success-message">
+        {{ successMessage }}
+      </div>
+      <div class="button-group">
+        <button type="button" (click)="goBack()" class="btn-secondary">{{ 'groups.cancel' | translate }}</button>
+        <button type="submit" [disabled]="!joinGroupForm.valid || loading" class="btn-primary">
+          {{ loading ? ('groups.joining' | translate) : ('groups.joinGroup' | translate) }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

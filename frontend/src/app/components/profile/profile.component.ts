@@ -1,4 +1,4 @@
-import { Component, OnInit, HostListener, ElementRef } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -7,364 +7,14 @@ import { UserService } from '../../services/user.service';
 import { TranslatePipe } from '../../services/translate.pipe';
 import { TranslationService } from '../../services/translation.service';
 import { User, TelegramSettings } from '../../models/user.model';
-import { environment } from '../../../environments/environment';
+import { AppSelectComponent, SelectOption } from '../shared/app-select/app-select.component';
+import { AppToggleComponent } from '../shared/app-toggle/app-toggle.component';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslatePipe],
-  template: `
-    <div class="container">
-      <button class="back-btn" routerLink="/groups">{{ 'groups.backToGroups' | translate }}</button>
-
-      <div class="profile-card">
-        <h1>{{ 'profile.title' | translate }}</h1>
-
-        <!-- Profile Picture Section -->
-        <div class="profile-picture-section">
-          <div class="profile-picture-container">
-            <img
-              *ngIf="currentUser?.profilePicture"
-              [src]="getProfilePictureUrl(currentUser?.profilePicture || '')"
-              alt="Profile"
-              class="profile-picture"
-              (error)="onImageError($event)"
-            />
-            <div *ngIf="!currentUser?.profilePicture" class="profile-picture-placeholder">
-              {{ getInitial() }}
-            </div>
-          </div>
-          <div class="profile-picture-actions">
-            <label class="btn-upload">
-              <input
-                type="file"
-                accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
-                (change)="onFileSelected($event)"
-                hidden
-              />
-              {{ 'profile.uploadPicture' | translate }}
-            </label>
-            <button
-              *ngIf="currentUser?.profilePicture"
-              (click)="deleteProfilePicture()"
-              class="btn-remove-picture"
-              [disabled]="loadingPicture"
-            >
-              {{ 'profile.removePicture' | translate }}
-            </button>
-          </div>
-          <div *ngIf="pictureError" class="error-message small">{{ pictureError }}</div>
-          <div *ngIf="pictureSuccess" class="success-message small">{{ pictureSuccess }}</div>
-        </div>
-
-        <!-- Profile Info Section -->
-        <div class="section">
-          <h2>{{ 'profile.accountInfo' | translate }}</h2>
-          <form (ngSubmit)="updateProfile()">
-            <div class="form-group">
-              <label>{{ 'auth.username' | translate }}</label>
-              <input
-                type="text"
-                [(ngModel)]="profileData.username"
-                name="username"
-                class="form-control"
-                [placeholder]="'auth.username' | translate"
-                minlength="3"
-                maxlength="30"
-              />
-            </div>
-            <div class="form-group">
-              <label>{{ 'auth.email' | translate }}</label>
-              <input
-                type="email"
-                [(ngModel)]="profileData.email"
-                name="email"
-                class="form-control"
-                [placeholder]="'auth.email' | translate"
-              />
-            </div>
-            <div *ngIf="profileError" class="error-message">{{ profileError }}</div>
-            <div *ngIf="profileSuccess" class="success-message">{{ profileSuccess }}</div>
-            <button type="submit" [disabled]="loadingProfile" class="btn-primary">
-              {{ loadingProfile ? ('auth.loading' | translate) : ('common.save' | translate) }}
-            </button>
-          </form>
-        </div>
-
-        <!-- Change Password Section -->
-        <div class="section">
-          <h2>{{ 'profile.changePassword' | translate }}</h2>
-          <form (ngSubmit)="changePassword()">
-            <div class="form-group">
-              <label>{{ 'profile.currentPassword' | translate }}</label>
-              <input
-                type="password"
-                [(ngModel)]="passwordData.currentPassword"
-                name="currentPassword"
-                class="form-control"
-                [placeholder]="'profile.currentPassword' | translate"
-              />
-            </div>
-            <div class="form-group">
-              <label>{{ 'profile.newPassword' | translate }}</label>
-              <input
-                type="password"
-                [(ngModel)]="passwordData.newPassword"
-                name="newPassword"
-                class="form-control"
-                [placeholder]="'profile.newPassword' | translate"
-                minlength="6"
-              />
-            </div>
-            <div class="form-group">
-              <label>{{ 'profile.confirmPassword' | translate }}</label>
-              <input
-                type="password"
-                [(ngModel)]="passwordData.confirmPassword"
-                name="confirmPassword"
-                class="form-control"
-                [placeholder]="'profile.confirmPassword' | translate"
-              />
-            </div>
-            <div *ngIf="passwordError" class="error-message">{{ passwordError }}</div>
-            <div *ngIf="passwordSuccess" class="success-message">{{ passwordSuccess }}</div>
-            <button type="submit" [disabled]="loadingPassword" class="btn-primary">
-              {{ loadingPassword ? ('auth.loading' | translate) : ('profile.changePassword' | translate) }}
-            </button>
-          </form>
-        </div>
-
-        <!-- Settings Section -->
-        <div class="section">
-          <h2>{{ 'profile.settings' | translate }}</h2>
-
-          <div class="setting-group">
-            <label>{{ 'profile.language' | translate }}</label>
-            <div class="custom-select" [class.open]="isLanguageDropdownOpen">
-              <div class="custom-select-input" (click)="toggleLanguageDropdown()">
-                <span>{{ getLanguageLabel(settingsData.language) }}</span>
-                <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </div>
-              <div class="custom-select-dropdown" *ngIf="isLanguageDropdownOpen">
-                <div
-                  class="custom-select-option"
-                  [class.selected]="settingsData.language === 'en'"
-                  (click)="selectLanguage('en')">
-                  English
-                </div>
-                <div
-                  class="custom-select-option"
-                  [class.selected]="settingsData.language === 'he'"
-                  (click)="selectLanguage('he')">
-                  עברית
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="setting-group">
-            <label>{{ 'profile.theme' | translate }}</label>
-            <div class="custom-select" [class.open]="isThemeDropdownOpen">
-              <div class="custom-select-input" (click)="toggleThemeDropdown()">
-                <span>{{ getThemeLabel(settingsData.theme) }}</span>
-                <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </div>
-              <div class="custom-select-dropdown" *ngIf="isThemeDropdownOpen">
-                <div
-                  class="custom-select-option"
-                  [class.selected]="settingsData.theme === 'system'"
-                  (click)="selectTheme('system')">
-                  {{ 'profile.themeSystem' | translate }}
-                </div>
-                <div
-                  class="custom-select-option"
-                  [class.selected]="settingsData.theme === 'light'"
-                  (click)="selectTheme('light')">
-                  {{ 'profile.themeLight' | translate }}
-                </div>
-                <div
-                  class="custom-select-option"
-                  [class.selected]="settingsData.theme === 'dark'"
-                  (click)="selectTheme('dark')">
-                  {{ 'profile.themeDark' | translate }}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="setting-group toggle-group">
-            <label>{{ 'profile.autoBet' | translate }}</label>
-            <p class="setting-description">{{ 'profile.autoBetDescription' | translate }}</p>
-            <label class="toggle-switch">
-              <input
-                type="checkbox"
-                [(ngModel)]="settingsData.autoBet"
-                (change)="onSettingChange()"
-              />
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-
-          <div *ngIf="settingsError" class="error-message">{{ settingsError }}</div>
-          <div *ngIf="settingsSuccess" class="success-message">{{ settingsSuccess }}</div>
-          <button
-            (click)="saveSettings()"
-            [disabled]="loadingSettings || !settingsChanged"
-            class="btn-primary"
-          >
-            {{ loadingSettings ? ('auth.loading' | translate) : ('common.save' | translate) }}
-          </button>
-        </div>
-
-        <!-- Telegram Reminders Section -->
-        <div class="section telegram-section">
-          <h2>{{ 'profile.telegramReminders' | translate }}</h2>
-          <p class="setting-description">{{ 'profile.telegramDescription' | translate }}</p>
-
-          <!-- Not Linked State -->
-          <div *ngIf="!telegramSettings?.isLinked" class="telegram-not-linked">
-            <div *ngIf="!linkCode" class="link-instructions">
-              <p>{{ 'profile.telegramInstructions' | translate }}</p>
-              <button
-                (click)="generateTelegramLinkCode()"
-                [disabled]="loadingTelegram"
-                class="btn-primary"
-              >
-                {{ loadingTelegram ? ('auth.loading' | translate) : ('profile.generateLinkCode' | translate) }}
-              </button>
-            </div>
-
-            <div *ngIf="linkCode" class="link-code-display">
-              <p>{{ 'profile.sendCodeToBot' | translate }}</p>
-              <div class="code-box">
-                <code>/start {{ linkCode }}</code>
-                <button (click)="copyCode()" class="btn-copy" [title]="'common.copy' | translate">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                  </svg>
-                </button>
-              </div>
-              <a
-                [href]="'https://t.me/' + botUsername + '?start=' + linkCode"
-                target="_blank"
-                class="btn-telegram"
-              >
-                {{ 'profile.openTelegram' | translate }}
-              </a>
-              <p class="code-expiry">{{ 'profile.codeExpires' | translate }}: {{ codeExpiresAt | date:'short' }}</p>
-            </div>
-          </div>
-
-          <!-- Linked State -->
-          <div *ngIf="telegramSettings?.isLinked" class="telegram-linked">
-            <div class="linked-status">
-              <span class="status-badge connected">{{ 'profile.telegramConnected' | translate }}</span>
-              <span class="linked-date">{{ 'profile.linkedOn' | translate }}: {{ telegramSettings?.linkedAt | date:'mediumDate' }}</span>
-            </div>
-
-            <div class="setting-group toggle-group">
-              <label>{{ 'profile.enableReminders' | translate }}</label>
-              <label class="toggle-switch">
-                <input
-                  type="checkbox"
-                  [(ngModel)]="telegramSettings!.reminderEnabled"
-                  (change)="onTelegramSettingChange()"
-                />
-                <span class="toggle-slider"></span>
-              </label>
-            </div>
-
-            <div class="setting-group" *ngIf="telegramSettings?.reminderEnabled">
-              <label>{{ 'profile.reminderTiming' | translate }}</label>
-              <div class="custom-select" [class.open]="isReminderDropdownOpen">
-                <div class="custom-select-input" (click)="toggleReminderDropdown()">
-                  <span>{{ getReminderLabel(telegramSettings?.reminderMinutes || 15) }}</span>
-                  <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </div>
-                <div class="custom-select-dropdown" *ngIf="isReminderDropdownOpen">
-                  <div
-                    *ngFor="let option of reminderOptions"
-                    class="custom-select-option"
-                    [class.selected]="telegramSettings?.reminderMinutes === option.value"
-                    (click)="selectReminderMinutes(option.value)">
-                    {{ option.label | translate }}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div *ngIf="telegramError" class="error-message">{{ telegramError }}</div>
-            <div *ngIf="telegramSuccess" class="success-message">{{ telegramSuccess }}</div>
-
-            <div class="telegram-actions">
-              <button
-                *ngIf="telegramSettingsChanged"
-                (click)="saveTelegramSettings()"
-                [disabled]="loadingTelegram"
-                class="btn-primary"
-              >
-                {{ loadingTelegram ? ('auth.loading' | translate) : ('common.save' | translate) }}
-              </button>
-              <button
-                (click)="unlinkTelegram()"
-                [disabled]="loadingTelegram"
-                class="btn-unlink"
-              >
-                {{ 'profile.unlinkTelegram' | translate }}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Delete Account Section -->
-        <div class="section danger-section">
-          <h2>{{ 'profile.deleteAccount' | translate }}</h2>
-          <p class="warning-text">{{ 'profile.deleteWarning' | translate }}</p>
-
-          <button
-            *ngIf="!showDeleteConfirm"
-            (click)="showDeleteConfirm = true"
-            class="btn-danger"
-          >
-            {{ 'profile.deleteAccount' | translate }}
-          </button>
-
-          <div *ngIf="showDeleteConfirm" class="delete-confirm">
-            <p>{{ 'profile.confirmDeleteMessage' | translate }}</p>
-            <div class="form-group">
-              <label>{{ 'profile.enterPassword' | translate }}</label>
-              <input
-                type="password"
-                [(ngModel)]="deletePassword"
-                class="form-control"
-                [placeholder]="'auth.password' | translate"
-              />
-            </div>
-            <div *ngIf="deleteError" class="error-message">{{ deleteError }}</div>
-            <div class="button-row">
-              <button
-                (click)="deleteAccount()"
-                [disabled]="loadingDelete || !deletePassword"
-                class="btn-danger"
-              >
-                {{ loadingDelete ? ('auth.loading' | translate) : ('profile.confirmDelete' | translate) }}
-              </button>
-              <button (click)="cancelDelete()" class="btn-secondary">
-                {{ 'groups.cancel' | translate }}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  `,
+  imports: [CommonModule, FormsModule, RouterModule, TranslatePipe, AppSelectComponent, AppToggleComponent],
+  templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.css']
 })
 export class ProfileComponent implements OnInit {
@@ -388,9 +38,26 @@ export class ProfileComponent implements OnInit {
   };
   originalSettings = JSON.stringify(this.settingsData);
   settingsChanged = false;
-  isLanguageDropdownOpen = false;
-  isThemeDropdownOpen = false;
-  isReminderDropdownOpen = false;
+
+  // Select options
+  languageOptions: SelectOption[] = [
+    { value: 'en', label: 'English' },
+    { value: 'he', label: 'עברית' }
+  ];
+
+  themeOptions: SelectOption[] = [
+    { value: 'system', label: 'System', labelHe: 'מערכת' },
+    { value: 'light', label: 'Light', labelHe: 'בהיר' },
+    { value: 'dark', label: 'Dark', labelHe: 'כהה' }
+  ];
+
+  reminderSelectOptions: SelectOption[] = [
+    { value: 5, label: '5 minutes before', labelHe: '5 דקות לפני' },
+    { value: 10, label: '10 minutes before', labelHe: '10 דקות לפני' },
+    { value: 15, label: '15 minutes before', labelHe: '15 דקות לפני' },
+    { value: 30, label: '30 minutes before', labelHe: '30 דקות לפני' },
+    { value: 60, label: '1 hour before', labelHe: 'שעה לפני' }
+  ];
 
   // Telegram properties
   telegramSettings: TelegramSettings | null = null;
@@ -403,13 +70,6 @@ export class ProfileComponent implements OnInit {
   telegramError = '';
   telegramSuccess = '';
 
-  reminderOptions = [
-    { value: 5 as const, label: 'profile.reminderOption5' },
-    { value: 10 as const, label: 'profile.reminderOption10' },
-    { value: 15 as const, label: 'profile.reminderOption15' },
-    { value: 30 as const, label: 'profile.reminderOption30' },
-    { value: 60 as const, label: 'profile.reminderOption60' }
-  ];
 
   deletePassword = '';
   showDeleteConfirm = false;
@@ -430,24 +90,12 @@ export class ProfileComponent implements OnInit {
   settingsSuccess = '';
   deleteError = '';
 
-  private apiBaseUrl = environment.apiUrl.replace('/api', '');
-
   constructor(
     private authService: AuthService,
     private userService: UserService,
     private router: Router,
-    private translationService: TranslationService,
-    private elementRef: ElementRef
+    private translationService: TranslationService
   ) {}
-
-  @HostListener('document:click', ['$event'])
-  onClickOutside(event: Event): void {
-    if (!this.elementRef.nativeElement.contains(event.target)) {
-      this.isLanguageDropdownOpen = false;
-      this.isThemeDropdownOpen = false;
-      this.isReminderDropdownOpen = false;
-    }
-  }
 
   ngOnInit(): void {
     this.authService.currentUser$.subscribe(user => {
@@ -627,39 +275,6 @@ export class ProfileComponent implements OnInit {
     });
   }
 
-  toggleLanguageDropdown(): void {
-    this.isLanguageDropdownOpen = !this.isLanguageDropdownOpen;
-    this.isThemeDropdownOpen = false;
-  }
-
-  toggleThemeDropdown(): void {
-    this.isThemeDropdownOpen = !this.isThemeDropdownOpen;
-    this.isLanguageDropdownOpen = false;
-  }
-
-  selectLanguage(lang: 'en' | 'he'): void {
-    this.settingsData.language = lang;
-    this.isLanguageDropdownOpen = false;
-    this.onSettingChange();
-  }
-
-  selectTheme(theme: 'light' | 'dark' | 'system'): void {
-    this.settingsData.theme = theme;
-    this.isThemeDropdownOpen = false;
-    this.onSettingChange();
-  }
-
-  getLanguageLabel(lang: string): string {
-    return lang === 'en' ? 'English' : 'עברית';
-  }
-
-  getThemeLabel(theme: string): string {
-    switch (theme) {
-      case 'light': return this.translationService.translate('profile.themeLight');
-      case 'dark': return this.translationService.translate('profile.themeDark');
-      default: return this.translationService.translate('profile.themeSystem');
-    }
-  }
 
   onSettingChange(): void {
     this.settingsChanged = JSON.stringify(this.settingsData) !== this.originalSettings;
@@ -729,7 +344,7 @@ export class ProfileComponent implements OnInit {
 
   copyCode(): void {
     if (this.linkCode) {
-      navigator.clipboard.writeText(`/start ${this.linkCode}`);
+      void navigator.clipboard.writeText(`/start ${this.linkCode}`);
       this.telegramSuccess = this.translationService.translate('profile.codeCopied');
       setTimeout(() => this.telegramSuccess = '', 3000);
     }
@@ -767,24 +382,6 @@ export class ProfileComponent implements OnInit {
     this.telegramError = '';
   }
 
-  toggleReminderDropdown(): void {
-    this.isReminderDropdownOpen = !this.isReminderDropdownOpen;
-    this.isLanguageDropdownOpen = false;
-    this.isThemeDropdownOpen = false;
-  }
-
-  selectReminderMinutes(minutes: 5 | 10 | 15 | 30 | 60): void {
-    if (this.telegramSettings) {
-      this.telegramSettings.reminderMinutes = minutes;
-      this.isReminderDropdownOpen = false;
-      this.onTelegramSettingChange();
-    }
-  }
-
-  getReminderLabel(minutes: number): string {
-    const option = this.reminderOptions.find(o => o.value === minutes);
-    return option ? this.translationService.translate(option.label) : `${minutes} minutes before`;
-  }
 
   saveTelegramSettings(): void {
     if (!this.telegramSettings) return;
