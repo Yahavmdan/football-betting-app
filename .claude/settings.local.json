@@ -13,7 +13,8 @@
       "Bash(npm run ng:*)",
       "Bash(cmd.exe /c 'rmdir /s /q node_modules')",
       "Bash(npm install:*)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(git ls-tree:*)"
     ]
   }
 }
