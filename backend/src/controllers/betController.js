@@ -293,8 +293,9 @@ exports.getGroupMembersBets = async (req, res) => {
       });
     }
 
-    // If match is not finished, or if showBets is false, only return user's own bet
-    if (match.status !== 'FINISHED' || !group.showBets) {
+    // If showBets is false and match is not finished, only return user's own bet
+    // If showBets is true, always show all bets
+    if (group.showBets !== true && match.status !== 'FINISHED') {
       const userBet = await Bet.findOne({
         user: req.user._id,
         match: matchId,

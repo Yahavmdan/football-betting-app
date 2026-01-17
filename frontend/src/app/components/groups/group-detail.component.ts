@@ -358,7 +358,7 @@ import { environment } from '../../../environments/environment';
                 <span class="date">{{ match.matchDate | date:'dd/MM/yy, HH:mm' }}</span>
                 <div class="match-actions">
                   <button
-                    *ngIf="group?.showBets === true"
+                    *ngIf="group?.showBets || match.status === 'FINISHED'"
                     (click)="toggleMemberBets(match._id)"
                     class="btn-people"
                     [class.active]="viewingBetsForMatch === match._id"
