@@ -87,6 +87,7 @@
   },
   "matches": {
     "scheduled": "מתוכנן",
+    "started": "התחיל",
     "live": "בשידור חי",
     "finished": "הסתיים",
     "postponed": "נדחה",

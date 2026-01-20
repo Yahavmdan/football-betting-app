@@ -305,8 +305,8 @@
             <span class="competition">{{ match.competition }}</span>
             <div class="status-badges">
               <span *ngIf="hasBetOnMatch(match._id)" class="bet-badge">✓ {{ 'bets.betPlaced' | translate }}</span>
-              <span class="status" [class.finished]="match.status === 'FINISHED'">
-                {{ 'matches.' + match.status.toLowerCase() | translate }}
+              <span class="status" [class.finished]="match.status === 'FINISHED'" [class.started]="match.status === 'SCHEDULED' && isMatchInPast(match.matchDate)">
+                {{ (match.status === 'SCHEDULED' && isMatchInPast(match.matchDate)) ? ('matches.started' | translate) : ('matches.' + match.status.toLowerCase() | translate) }}
               </span>
             </div>
           </div>
@@ -325,7 +325,7 @@
             <span class="date">{{ match.matchDate | date:'dd/MM/yy, HH:mm' }}</span>
             <div class="match-actions">
               <button
-                *ngIf="group?.showBets || match.status !== 'SCHEDULED'"
+                *ngIf="group?.showBets || isMatchInPast(match.matchDate)"
                 (click)="toggleMemberBets(match._id)"
                 class="btn-people"
                 [class.active]="viewingBetsForMatch === match._id"

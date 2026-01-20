@@ -87,6 +87,7 @@
   },
   "matches": {
     "scheduled": "SCHEDULED",
+    "started": "STARTED",
     "live": "LIVE",
     "finished": "FINISHED",
     "postponed": "POSTPONED",
