@@ -293,9 +293,9 @@ exports.getGroupMembersBets = async (req, res) => {
       });
     }
 
-    // If showBets is false and match is not finished, only return user's own bet
+    // If showBets is false and match hasn't started yet, only return user's own bet
     // If showBets is true, always show all bets
-    if (group.showBets !== true && match.status !== 'FINISHED') {
+    if (group.showBets !== true && match.status === 'SCHEDULED') {
       const userBet = await Bet.findOne({
         user: req.user._id,
         match: matchId,
@@ -321,8 +321,8 @@ exports.getGroupMembersBets = async (req, res) => {
             wagerAmount: userBet.wagerAmount
           } : null
         }],
-        message: match.status !== 'FINISHED'
-          ? 'Bets are hidden until match is finished'
+        message: match.status === 'SCHEDULED'
+          ? 'Bets are hidden until match starts'
           : 'Bets are hidden in this group'
       });
     }

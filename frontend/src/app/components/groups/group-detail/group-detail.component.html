@@ -325,7 +325,7 @@
             <span class="date">{{ match.matchDate | date:'dd/MM/yy, HH:mm' }}</span>
             <div class="match-actions">
               <button
-                *ngIf="group?.showBets || match.status === 'FINISHED'"
+                *ngIf="group?.showBets || match.status !== 'SCHEDULED'"
                 (click)="toggleMemberBets(match._id)"
                 class="btn-people"
                 [class.active]="viewingBetsForMatch === match._id"
