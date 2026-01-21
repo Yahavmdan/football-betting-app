@@ -11,12 +11,16 @@ const {
   updateMatchScore,
   markMatchAsFinished,
   deleteMatch,
-  editMatch
+  editMatch,
+  getHeadToHead,
+  getTeamRecentMatches
 } = require('../controllers/matchController');
 const { protect } = require('../middleware/auth');
 
 router.get('/', protect, getMatches);
 router.get('/leagues/available', protect, getAvailableLeagues);
+router.get('/head-to-head', protect, getHeadToHead);
+router.get('/team-recent', protect, getTeamRecentMatches);
 router.get('/:id', protect, getMatchById);
 router.post('/add-to-group', protect, addMatchToGroup);
 router.post('/fetch', protect, fetchAndSaveMatches);

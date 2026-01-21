@@ -135,7 +135,11 @@
     "enterPoints": "Enter points",
     "pointsForHomeWin": "Points for home win",
     "pointsForDraw": "Points for draw",
-    "pointsForAwayWin": "Points for away win"
+    "pointsForAwayWin": "Points for away win",
+    "headToHead": "Head to Head",
+    "noHeadToHead": "No previous matches found",
+    "teamForm": "Recent Matches",
+    "noRecentMatches": "No recent matches"
   },
   "bets": {
     "placeYourBet": "Place Your Bet",

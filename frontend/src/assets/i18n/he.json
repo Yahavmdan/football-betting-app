@@ -135,7 +135,11 @@
     "enterPoints": "הזן נקודות",
     "pointsForHomeWin": "נקודות עבור ניצחון בית",
     "pointsForDraw": "נקודות עבור תיקו",
-    "pointsForAwayWin": "נקודות עבור ניצחון חוץ"
+    "pointsForAwayWin": "נקודות עבור ניצחון חוץ",
+    "headToHead": "מפגשים קודמים",
+    "noHeadToHead": "לא נמצאו משחקים קודמים",
+    "teamForm": "משחקים אחרונים",
+    "noRecentMatches": "אין משחקים אחרונים"
   },
   "bets": {
     "placeYourBet": "בצע את ההימור שלך",

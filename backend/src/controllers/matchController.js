@@ -849,3 +849,80 @@ exports.editMatch = async (req, res) => {
     });
   }
 };
+
+// Get head-to-head history between two teams
+exports.getHeadToHead = async (req, res) => {
+  try {
+    const { homeTeam, awayTeam } = req.query;
+
+    if (!homeTeam || !awayTeam) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide both homeTeam and awayTeam'
+      });
+    }
+
+    // Find matches where these two teams played against each other (in any order)
+    // Only return finished matches with results
+    const matches = await Match.find({
+      status: 'FINISHED',
+      'result.homeScore': { $ne: null },
+      'result.awayScore': { $ne: null },
+      $or: [
+        { homeTeam: homeTeam, awayTeam: awayTeam },
+        { homeTeam: awayTeam, awayTeam: homeTeam }
+      ]
+    })
+    .sort({ matchDate: -1 })
+    .limit(5)
+    .select('homeTeam awayTeam matchDate result competition');
+
+    res.status(200).json({
+      success: true,
+      data: matches
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Get recent matches for a team (last 5 matches)
+exports.getTeamRecentMatches = async (req, res) => {
+  try {
+    const { team } = req.query;
+
+    if (!team) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide team name'
+      });
+    }
+
+    // Find last 5 finished matches where this team played (home or away)
+    const matches = await Match.find({
+      status: 'FINISHED',
+      'result.homeScore': { $ne: null },
+      'result.awayScore': { $ne: null },
+      $or: [
+        { homeTeam: team },
+        { awayTeam: team }
+      ]
+    })
+    .sort({ matchDate: -1 })
+    .limit(5)
+    .select('homeTeam awayTeam matchDate result competition');
+
+    res.status(200).json({
+      success: true,
+      data: matches
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};

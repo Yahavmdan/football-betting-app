@@ -87,4 +87,16 @@ export class MatchService {
   }): Observable<{ success: boolean; message: string; data: Match }> {
     return this.http.put<{ success: boolean; message: string; data: Match }>(`${this.apiUrl}/${data.matchId}`, data);
   }
+
+  getHeadToHead(homeTeam: string, awayTeam: string): Observable<{ success: boolean; data: Match[] }> {
+    return this.http.get<{ success: boolean; data: Match[] }>(`${this.apiUrl}/head-to-head`, {
+      params: { homeTeam, awayTeam }
+    });
+  }
+
+  getTeamRecentMatches(team: string): Observable<{ success: boolean; data: Match[] }> {
+    return this.http.get<{ success: boolean; data: Match[] }>(`${this.apiUrl}/team-recent`, {
+      params: { team }
+    });
+  }
 }

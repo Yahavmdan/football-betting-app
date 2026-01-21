@@ -61,6 +61,14 @@ export class GroupDetailComponent implements OnInit {
   kickingMemberId: string | null = null;
   loadingKickMember = false;
 
+  // Match card expand/collapse
+  expandedMatchId: string | null = null;
+  headToHeadMatches: Match[] = [];
+  homeTeamRecentMatches: Match[] = [];
+  awayTeamRecentMatches: Match[] = [];
+  loadingHeadToHead = false;
+  loadingTeamForm = false;
+
   // Member bets viewer
   viewingBetsForMatch: string | null = null;
   memberBets: MemberBet[] = [];
@@ -222,6 +230,88 @@ export class GroupDetailComponent implements OnInit {
 
   isMatchInPast(matchDate: Date | string): boolean {
     return new Date(matchDate) <= new Date();
+  }
+
+  toggleMatchExpand(matchId: string): void {
+    if (this.expandedMatchId === matchId) {
+      this.expandedMatchId = null;
+      // Close any open panels when collapsing
+      this.viewingBetsForMatch = null;
+      this.placingBetForMatch = null;
+      this.editingMatchId = null;
+      this.headToHeadMatches = [];
+      this.homeTeamRecentMatches = [];
+      this.awayTeamRecentMatches = [];
+    } else {
+      this.expandedMatchId = matchId;
+      // Fetch head-to-head history and team form
+      this.loadHeadToHead(matchId);
+      this.loadTeamForm(matchId);
+    }
+  }
+
+  loadHeadToHead(matchId: string): void {
+    const match = this.matches.find(m => m._id === matchId);
+    if (!match) return;
+
+    this.loadingHeadToHead = true;
+    this.headToHeadMatches = [];
+
+    this.matchService.getHeadToHead(match.homeTeam, match.awayTeam).subscribe({
+      next: (response) => {
+        this.headToHeadMatches = response.data;
+        this.loadingHeadToHead = false;
+      },
+      error: (error) => {
+        console.error('Failed to load head-to-head:', error);
+        this.loadingHeadToHead = false;
+      }
+    });
+  }
+
+  loadTeamForm(matchId: string): void {
+    const match = this.matches.find(m => m._id === matchId);
+    if (!match) return;
+
+    this.loadingTeamForm = true;
+    this.homeTeamRecentMatches = [];
+    this.awayTeamRecentMatches = [];
+
+    // Load home team recent matches
+    this.matchService.getTeamRecentMatches(match.homeTeam).subscribe({
+      next: (response) => {
+        this.homeTeamRecentMatches = response.data;
+      },
+      error: (error) => {
+        console.error('Failed to load home team form:', error);
+      }
+    });
+
+    // Load away team recent matches
+    this.matchService.getTeamRecentMatches(match.awayTeam).subscribe({
+      next: (response) => {
+        this.awayTeamRecentMatches = response.data;
+        this.loadingTeamForm = false;
+      },
+      error: (error) => {
+        console.error('Failed to load away team form:', error);
+        this.loadingTeamForm = false;
+      }
+    });
+  }
+
+  getTeamResult(match: Match, team: string): 'W' | 'D' | 'L' {
+    if (!match.result) return 'D';
+    const isHome = match.homeTeam === team;
+    const homeScore = match.result.homeScore ?? 0;
+    const awayScore = match.result.awayScore ?? 0;
+
+    if (homeScore === awayScore) return 'D';
+    if (isHome) {
+      return homeScore > awayScore ? 'W' : 'L';
+    } else {
+      return awayScore > homeScore ? 'W' : 'L';
+    }
   }
 
   loadMyBets(): void {
