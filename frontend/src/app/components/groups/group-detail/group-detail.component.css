@@ -390,7 +390,8 @@
 .trash-talk-bubble {
     position: absolute;
     bottom: 100%;
-    left: 0;
+    left: 50%;
+    transform: translateX(-50%);
     margin-bottom: 8px;
     padding: 6px 12px;
     background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
@@ -398,18 +399,22 @@
     font-size: 12px;
     font-weight: 500;
     border-radius: 12px;
-    max-width: min(400px, 80vw);
+    max-width: min(350px, calc(100vw - 32px));
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    animation: bubbleAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
-               floatWobble 3s ease-in-out infinite 0.6s,
-               bubbleDisappear 0.5s ease-in 3.5s forwards;
+    overflow: visible;
+    animation: bubbleAppearCentered 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
+               floatWobbleCentered 3s ease-in-out infinite 0.6s,
+               bubbleDisappearCentered 0.5s ease-in 3.5s forwards;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     z-index: 100;
     display: inline-flex;
     align-items: center;
     gap: 6px;
+}
+
+.trash-talk-bubble > span:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .bubble-team-logo {
@@ -426,7 +431,8 @@
     content: '';
     position: absolute;
     bottom: -5px;
-    left: 16px;
+    left: 50%;
+    transform: translateX(-50%);
     width: 0;
     height: 0;
     border-left: 6px solid transparent;
@@ -468,6 +474,44 @@
     }
     75% {
         transform: translateY(-3px) rotate(1.5deg);
+    }
+}
+
+/* Centered versions of bubble animations (include translateX(-50%) to maintain centering) */
+@keyframes bubbleAppearCentered {
+    0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(15px) scale(0.5);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0) scale(1);
+    }
+}
+
+@keyframes bubbleDisappearCentered {
+    0% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-10px) scale(0.8);
+    }
+}
+
+@keyframes floatWobbleCentered {
+    0%, 100% {
+        transform: translateX(-50%) translateY(0) rotate(0deg);
+    }
+    25% {
+        transform: translateX(-50%) translateY(-3px) rotate(-1.5deg);
+    }
+    50% {
+        transform: translateX(-50%) translateY(0) rotate(0deg);
+    }
+    75% {
+        transform: translateX(-50%) translateY(-3px) rotate(1.5deg);
     }
 }
 
@@ -3264,7 +3308,6 @@ h2 {
     .trash-talk-bubble {
         font-size: 11px;
         padding: 5px 10px;
-        left: -10px;
     }
 
     .bubble-team-logo {
