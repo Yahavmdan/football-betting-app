@@ -1094,13 +1094,7 @@ h2 {
     flex-direction: row-reverse;
 }
 
-:host-context([dir="rtl"]) .match-compact-teams {
-    flex-direction: row-reverse;
-}
-
-:host-context([dir="rtl"]) .match-compact-info {
-    flex-direction: row-reverse;
-}
+/* RTL: Natural flex-direction: row puts Home on right, Away on left (correct for betting convention) */
 
 /* Dark mode for compact match cards */
 :host-context(.dark-theme) .match-compact-row:hover {
@@ -1402,10 +1396,6 @@ h2 {
     /* RTL support for mobile */
     :host-context([dir="rtl"]) .match-compact-row {
         flex-direction: column;
-    }
-
-    :host-context([dir="rtl"]) .match-compact-teams {
-        flex-direction: row-reverse;
     }
 
     :host-context([dir="rtl"]) .btn-expand {
