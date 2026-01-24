@@ -109,7 +109,7 @@
           type="text"
           [(ngModel)]="trashTalkMessage"
           [placeholder]="'groups.trashTalkPlaceholder' | translate"
-          maxlength="100"
+          maxlength="30"
           class="trash-talk-input"
           [disabled]="loadingTrashTalk">
 
@@ -163,7 +163,7 @@
         </div>
 
         <div class="trash-talk-footer">
-          <span class="char-count">{{ trashTalkMessage.length }}/100</span>
+          <span class="char-count">{{ trashTalkMessage.length }}/30</span>
           <div class="trash-talk-actions">
             <button class="btn-secondary btn-small" (click)="closeTrashTalkInput()">{{ 'groups.cancel' | translate }}</button>
             <button class="btn-primary btn-small" (click)="submitTrashTalk()" [disabled]="loadingTrashTalk">

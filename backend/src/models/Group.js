@@ -34,7 +34,7 @@ const groupSchema = new mongoose.Schema({
     trashTalk: {
       message: {
         type: String,
-        maxlength: [100, 'Trash talk cannot exceed 100 characters'],
+        maxlength: [30, 'Trash talk cannot exceed 30 characters'],
         default: null
       },
       teamLogo: {
