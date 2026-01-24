@@ -73,7 +73,105 @@
 
   <div class="content-grid">
     <div class="leaderboard-section">
-      <h2>{{ 'groups.leaderboard' | translate }}</h2>
+      <div class="leaderboard-header">
+        <h2>{{ 'groups.leaderboard' | translate }}</h2>
+        <button class="btn-trash-talk" (click)="openTrashTalkInput()" [title]="'groups.trashTalk' | translate">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+          <span *ngIf="getCurrentUserTrashTalk()" class="has-message-dot"></span>
+        </button>
+      </div>
+
+      <!-- Trash Talk Input Dialog -->
+      <div *ngIf="showTrashTalkInput" class="trash-talk-dialog">
+        <div class="trash-talk-header">
+          <h4>{{ 'groups.trashTalkTitle' | translate }}</h4>
+          <button class="btn-close-trash" (click)="closeTrashTalkInput()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <p class="trash-talk-desc">{{ 'groups.trashTalkDesc' | translate }}</p>
+
+        <!-- Preview bubble -->
+        <div class="trash-talk-preview" *ngIf="trashTalkMessage">
+          <span class="preview-label">{{ 'groups.preview' | translate }}:</span>
+          <div class="trash-talk-bubble-preview" [style.background]="trashTalkBgColor || 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'">
+            <img *ngIf="trashTalkTeamLogo" [src]="trashTalkTeamLogo" class="bubble-team-logo" alt="">
+            <span>{{ trashTalkMessage }}</span>
+          </div>
+        </div>
+
+        <input
+          type="text"
+          [(ngModel)]="trashTalkMessage"
+          [placeholder]="'groups.trashTalkPlaceholder' | translate"
+          maxlength="100"
+          class="trash-talk-input"
+          [disabled]="loadingTrashTalk">
+
+        <!-- Team logo selector -->
+        <div class="team-selector">
+          <span class="team-selector-label">{{ 'groups.selectTeam' | translate }}:</span>
+          <div class="team-grid">
+            <button
+              *ngFor="let team of teamLogos"
+              class="team-option"
+              [class.selected]="trashTalkTeamLogo === team.logo"
+              (click)="selectTrashTalkTeam(team)"
+              [title]="team.name">
+              <img [src]="team.logo" [alt]="team.name" class="team-option-logo">
+            </button>
+            <button
+              class="team-option team-option-none"
+              [class.selected]="!trashTalkTeamLogo"
+              (click)="clearTrashTalkTeam()"
+              [title]="'groups.noTeam' | translate">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Color selector -->
+        <div class="color-selector">
+          <span class="color-selector-label">{{ 'groups.selectColor' | translate }}:</span>
+          <div class="color-grid">
+            <button
+              *ngFor="let color of colorPalette"
+              class="color-option"
+              [class.selected]="trashTalkBgColor === color"
+              [style.backgroundColor]="color"
+              (click)="selectTrashTalkColor(color)">
+            </button>
+            <button
+              class="color-option color-option-none"
+              [class.selected]="!trashTalkBgColor"
+              (click)="clearTrashTalkColor()"
+              [title]="'groups.noColor' | translate">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="trash-talk-footer">
+          <span class="char-count">{{ trashTalkMessage.length }}/100</span>
+          <div class="trash-talk-actions">
+            <button class="btn-secondary btn-small" (click)="closeTrashTalkInput()">{{ 'groups.cancel' | translate }}</button>
+            <button class="btn-primary btn-small" (click)="submitTrashTalk()" [disabled]="loadingTrashTalk">
+              {{ loadingTrashTalk ? ('auth.loading' | translate) : ('common.save' | translate) }}
+            </button>
+          </div>
+        </div>
+      </div>
       <div *ngIf="loadingLeaderboard" class="loading">{{ 'auth.loading' | translate }}</div>
       <div *ngIf="!loadingLeaderboard && leaderboard.length > 0" class="leaderboard">
         <div *ngFor="let member of leaderboard; let i = index" class="leaderboard-item"
@@ -93,10 +191,19 @@
             </span>
             <span class="online-indicator" [class.online]="isUserOnline(member.user.lastActive)"></span>
           </div>
-          <span class="username">
-            {{ member.user.username }}
-            <span *ngIf="isWinner(member)" class="trophy">🏆</span>
-            <span *ngIf="isEliminated(member)" class="status-label">({{ 'groups.eliminated' | translate }})</span>
+          <span class="username-wrapper">
+            <span class="trash-talk-bubble"
+                  *ngIf="member.trashTalk?.message && isTrashTalkVisible(member.user._id)"
+                  [style.background]="member.trashTalk?.bgColor || null"
+                  [style.--bubble-color]="member.trashTalk?.bgColor || '#d97706'">
+              <img *ngIf="member.trashTalk?.teamLogo" [src]="member.trashTalk?.teamLogo" class="bubble-team-logo" alt="">
+              {{ member.trashTalk?.message }}
+            </span>
+            <span class="username">
+              {{ member.user.username }}
+              <span *ngIf="isWinner(member)" class="trophy">🏆</span>
+              <span *ngIf="isEliminated(member)" class="status-label">({{ 'groups.eliminated' | translate }})</span>
+            </span>
           </span>
           <span class="points">
             {{ member.points }}
@@ -334,7 +441,6 @@
             </div>
             <div class="match-actions-row">
               <button
-                *ngIf="group?.showBets || isMatchInPast(match.matchDate)"
                 (click)="toggleMemberBets(match._id); $event.stopPropagation()"
                 class="btn-action"
                 [class.active]="viewingBetsForMatch === match._id">
@@ -344,7 +450,7 @@
                   <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
                   <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                 </svg>
-                {{ 'bets.viewGroupBets' | translate }}
+                {{ (group?.showBets || isMatchInPast(match.matchDate)) ? ('bets.viewGroupBets' | translate) : ('bets.viewMyBet' | translate) }}
               </button>
               <button
                 (click)="openInlineBetForm(match); $event.stopPropagation()"
@@ -645,6 +751,81 @@
         <span class="modal-online-status" [class.online]="isUserOnline(viewingProfilePicture.lastActive)">
           {{ isUserOnline(viewingProfilePicture.lastActive) ? 'Online' : 'Offline' }}
         </span>
+      </div>
+
+      <!-- User Statistics -->
+      <div class="user-statistics">
+        <div *ngIf="loadingStatistics" class="stats-loading">
+          {{ 'auth.loading' | translate }}
+        </div>
+
+        <div *ngIf="!loadingStatistics && userStatistics" class="stats-content">
+          <!-- Group Stats -->
+          <div class="stats-section">
+            <h4 class="stats-title">{{ 'stats.groupStats' | translate }}</h4>
+            <div class="stats-grid">
+              <div class="stat-item">
+                <span class="stat-value">{{ userStatistics.groupStats.totalBets }}</span>
+                <span class="stat-label">{{ 'stats.totalBets' | translate }}</span>
+              </div>
+              <div class="stat-item highlight">
+                <span class="stat-value">{{ userStatistics.groupStats.successRate }}%</span>
+                <span class="stat-label">{{ 'stats.successRate' | translate }}</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-value">{{ userStatistics.groupStats.correctPredictions }}/{{ userStatistics.groupStats.calculatedBets }}</span>
+                <span class="stat-label">{{ 'stats.correct' | translate }}</span>
+              </div>
+            </div>
+            <div class="stats-breakdown">
+              <div class="breakdown-item">
+                <span class="breakdown-label">1</span>
+                <span class="breakdown-value">{{ userStatistics.groupStats.correctByType.homeWins }}/{{ userStatistics.groupStats.predictions.homeWins }}</span>
+              </div>
+              <div class="breakdown-item">
+                <span class="breakdown-label">X</span>
+                <span class="breakdown-value">{{ userStatistics.groupStats.correctByType.draws }}/{{ userStatistics.groupStats.predictions.draws }}</span>
+              </div>
+              <div class="breakdown-item">
+                <span class="breakdown-label">2</span>
+                <span class="breakdown-value">{{ userStatistics.groupStats.correctByType.awayWins }}/{{ userStatistics.groupStats.predictions.awayWins }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Global Stats -->
+          <div class="stats-section global">
+            <h4 class="stats-title">{{ 'stats.globalStats' | translate }}</h4>
+            <div class="stats-grid">
+              <div class="stat-item">
+                <span class="stat-value">{{ userStatistics.globalStats.totalBets }}</span>
+                <span class="stat-label">{{ 'stats.totalBets' | translate }}</span>
+              </div>
+              <div class="stat-item highlight">
+                <span class="stat-value">{{ userStatistics.globalStats.successRate }}%</span>
+                <span class="stat-label">{{ 'stats.successRate' | translate }}</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-value">{{ userStatistics.groupsCount }}</span>
+                <span class="stat-label">{{ 'stats.groups' | translate }}</span>
+              </div>
+            </div>
+            <div class="stats-breakdown">
+              <div class="breakdown-item">
+                <span class="breakdown-label">1</span>
+                <span class="breakdown-value">{{ userStatistics.globalStats.correctByType.homeWins }}/{{ userStatistics.globalStats.predictions.homeWins }}</span>
+              </div>
+              <div class="breakdown-item">
+                <span class="breakdown-label">X</span>
+                <span class="breakdown-value">{{ userStatistics.globalStats.correctByType.draws }}/{{ userStatistics.globalStats.predictions.draws }}</span>
+              </div>
+              <div class="breakdown-item">
+                <span class="breakdown-label">2</span>
+                <span class="breakdown-value">{{ userStatistics.globalStats.correctByType.awayWins }}/{{ userStatistics.globalStats.predictions.awayWins }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

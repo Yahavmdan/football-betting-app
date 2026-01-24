@@ -73,4 +73,9 @@ export class GroupService {
   kickMember(groupId: string, userId: string): Observable<{ success: boolean; message: string }> {
     return this.http.post<{ success: boolean; message: string }>(`${this.apiUrl}/${groupId}/kick/${userId}`, {});
   }
+
+  // Trash talk
+  updateTrashTalk(groupId: string, message: string | null, teamLogo?: string | null, bgColor?: string | null): Observable<{ success: boolean; message: string; data: any }> {
+    return this.http.post<{ success: boolean; message: string; data: any }>(`${this.apiUrl}/${groupId}/trash-talk`, { message, teamLogo, bgColor });
+  }
 }

@@ -10,6 +10,7 @@ const matchRoutes = require('./routes/matchRoutes');
 const betRoutes = require('./routes/betRoutes');
 const testRoutes = require('./routes/testRoutes');
 const userRoutes = require('./routes/userRoutes');
+const feedbackRoutes = require('./routes/feedbackRoutes');
 const autoBetJob = require('./jobs/autoBetJob');
 const telegramService = require('./services/telegramService');
 const telegramReminderJob = require('./jobs/telegramReminderJob');
@@ -57,6 +58,7 @@ app.use('/api/matches', matchRoutes);
 app.use('/api/bets', betRoutes);
 app.use('/api/test', testRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/feedback', feedbackRoutes);
 
 app.get('/api/health', (req, res) => {
   res.status(200).json({ success: true, message: 'Server is running' });

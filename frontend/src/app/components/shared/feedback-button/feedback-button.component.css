@@ -1,0 +1,499 @@
+/* Floating button (main) */
+.feedback-floating-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-700) 100%);
+  color: white;
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  box-shadow: var(--shadow-lg), 0 0 20px rgba(76, 175, 80, 0.3);
+  transition: all var(--transition-base);
+  z-index: 1000;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.feedback-floating-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-xl), 0 0 30px rgba(76, 175, 80, 0.4);
+}
+
+.feedback-floating-btn:active {
+  transform: translateY(0);
+}
+
+.feedback-floating-btn svg {
+  flex-shrink: 0;
+}
+
+.btn-label {
+  white-space: nowrap;
+}
+
+/* Minimized button (fixed to side) */
+.feedback-minimized-btn {
+  position: fixed;
+  bottom: 50%;
+  right: 0;
+  transform: translateY(50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-700) 100%);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-base);
+  z-index: 1000;
+}
+
+.feedback-minimized-btn:hover {
+  width: 48px;
+  box-shadow: var(--shadow-lg);
+}
+
+/* RTL support */
+:host-context(html[dir="rtl"]) .feedback-floating-btn {
+  right: auto;
+  left: 24px;
+}
+
+:host-context(html[dir="rtl"]) .feedback-minimized-btn {
+  right: auto;
+  left: 0;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+/* Overlay */
+.feedback-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1001;
+  animation: fadeIn var(--transition-fast);
+}
+
+/* Dialog */
+.feedback-dialog {
+  position: fixed;
+  bottom: 90px;
+  right: 24px;
+  width: 360px;
+  max-width: calc(100vw - 48px);
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-2xl);
+  z-index: 1002;
+  animation: slideUp var(--transition-slow);
+  overflow: hidden;
+}
+
+:host-context(html[dir="rtl"]) .feedback-dialog {
+  right: auto;
+  left: 24px;
+}
+
+/* Dialog header */
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-700) 100%);
+  color: white;
+}
+
+.dialog-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-minimize,
+.btn-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: white;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.btn-minimize:hover,
+.btn-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Dialog body */
+.dialog-body {
+  padding: 20px;
+}
+
+.dialog-description {
+  margin: 0 0 16px;
+  color: var(--gray-600);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--gray-700);
+}
+
+.feedback-textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  resize: vertical;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.feedback-textarea:focus {
+  outline: none;
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+}
+
+.feedback-textarea::placeholder {
+  color: var(--gray-400);
+}
+
+.feedback-textarea:disabled {
+  background: var(--gray-100);
+  cursor: not-allowed;
+}
+
+/* Image upload section */
+.image-upload-section {
+  margin-bottom: 12px;
+}
+
+.hidden-file-input {
+  display: none;
+}
+
+.image-upload-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 2px dashed var(--gray-300);
+  border-radius: var(--radius-md);
+  background: var(--gray-50);
+  color: var(--gray-600);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.image-upload-btn:hover {
+  border-color: var(--primary-500);
+  background: rgba(76, 175, 80, 0.05);
+  color: var(--primary-600);
+}
+
+.image-upload-btn svg {
+  flex-shrink: 0;
+}
+
+.image-preview-container {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+}
+
+.image-preview {
+  max-width: 100%;
+  max-height: 150px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--gray-200);
+  object-fit: contain;
+}
+
+.btn-remove-image {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  background: #ef4444;
+  border: 2px solid white;
+  border-radius: 50%;
+  color: white;
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.btn-remove-image:hover {
+  transform: scale(1.1);
+}
+
+/* Dark theme for image upload */
+:host-context(html.dark-theme) .image-upload-btn {
+  border-color: #4b5563;
+  background: #111827;
+  color: #9ca3af;
+}
+
+:host-context(html.dark-theme) .image-upload-btn:hover {
+  border-color: #4ade80;
+  background: rgba(74, 222, 128, 0.1);
+  color: #4ade80;
+}
+
+:host-context(html.dark-theme) .image-preview {
+  border-color: #374151;
+}
+
+:host-context(html.dark-theme) .btn-remove-image {
+  border-color: #1f2937;
+}
+
+/* Messages */
+.success-message,
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  margin-top: 12px;
+}
+
+.success-message {
+  background: var(--success-light);
+  color: #059669;
+  border-left: 3px solid var(--success);
+}
+
+.error-message {
+  background: var(--error-light);
+  color: #dc2626;
+  border-left: 3px solid var(--error);
+}
+
+/* Dialog footer */
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 20px;
+  background: var(--gray-50);
+  border-top: 1px solid var(--gray-200);
+}
+
+.btn-cancel,
+.btn-submit {
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-cancel {
+  background: white;
+  color: var(--gray-700);
+  border: 1px solid var(--gray-300);
+}
+
+.btn-cancel:hover:not(:disabled) {
+  background: var(--gray-100);
+}
+
+.btn-submit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-700) 100%);
+  color: white;
+  border: none;
+}
+
+.btn-submit:hover:not(:disabled) {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.btn-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Spinner */
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Dark theme support */
+:host-context(html.dark-theme) .feedback-dialog {
+  background: #1f2937;
+}
+
+:host-context(html.dark-theme) .dialog-description {
+  color: #9ca3af;
+}
+
+:host-context(html.dark-theme) .form-group label {
+  color: #d1d5db;
+}
+
+:host-context(html.dark-theme) .feedback-textarea {
+  background: #111827;
+  border-color: #374151;
+  color: #e5e7eb;
+}
+
+:host-context(html.dark-theme) .feedback-textarea:focus {
+  border-color: #4ade80;
+  background: #1f2937;
+}
+
+:host-context(html.dark-theme) .feedback-textarea::placeholder {
+  color: #6b7280;
+}
+
+:host-context(html.dark-theme) .dialog-footer {
+  background: #111827;
+  border-top-color: #374151;
+}
+
+:host-context(html.dark-theme) .btn-cancel {
+  background: #374151;
+  color: #e5e7eb;
+  border-color: #4b5563;
+}
+
+:host-context(html.dark-theme) .btn-cancel:hover:not(:disabled) {
+  background: #4b5563;
+}
+
+:host-context(html.dark-theme) .success-message {
+  background: #14532d;
+  color: #86efac;
+  border-left-color: #22c55e;
+}
+
+:host-context(html.dark-theme) .error-message {
+  background: #7f1d1d;
+  color: #fca5a5;
+  border-left-color: #ef4444;
+}
+
+:host-context(html.dark-theme) .feedback-overlay {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 480px) {
+  .feedback-floating-btn {
+    bottom: 16px;
+    right: 16px;
+    padding: 10px 16px;
+  }
+
+  .feedback-floating-btn .btn-label {
+    display: none;
+  }
+
+  .feedback-dialog {
+    bottom: 70px;
+    right: 16px;
+    left: 16px;
+    width: auto;
+    max-width: none;
+  }
+
+  :host-context(html[dir="rtl"]) .feedback-floating-btn {
+    right: auto;
+    left: 16px;
+  }
+
+  :host-context(html[dir="rtl"]) .feedback-dialog {
+    right: 16px;
+    left: 16px;
+  }
+}

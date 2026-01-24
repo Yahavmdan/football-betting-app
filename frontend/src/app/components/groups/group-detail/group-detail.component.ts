@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -10,6 +10,7 @@ import { TranslationService } from '../../../services/translation.service';
 import { Group, GroupMember, PendingMember } from '../../../models/group.model';
 import { Match } from '../../../models/match.model';
 import { MemberBet, Bet } from '../../../models/bet.model';
+import { UserStatistics } from '../../../services/bet.service';
 import { TranslatePipe } from '../../../services/translate.pipe';
 import { TeamTranslatePipe } from '../../../pipes/team-translate.pipe';
 import { getTeamByName, getAllTeams, Team } from '../../../data/teams.data';
@@ -23,7 +24,7 @@ import { AppSelectComponent, SelectOption } from '../../shared/app-select/app-se
   templateUrl: './group-detail.component.html',
   styleUrls: ['./group-detail.component.css']
 })
-export class GroupDetailComponent implements OnInit {
+export class GroupDetailComponent implements OnInit, OnDestroy {
   groupId: string = '';
   group: Group | null = null;
   leaderboard: GroupMember[] = [];
@@ -75,7 +76,29 @@ export class GroupDetailComponent implements OnInit {
   loadingMemberBets = false;
 
   // Profile picture modal
-  viewingProfilePicture: { username: string; profilePicture?: string | null; lastActive?: Date } | null = null;
+  viewingProfilePicture: { _id: string; username: string; profilePicture?: string | null; lastActive?: Date } | null = null;
+  userStatistics: UserStatistics | null = null;
+  loadingStatistics = false;
+
+  // Trash talk
+  showTrashTalkInput = false;
+  trashTalkMessage = '';
+  trashTalkTeamLogo: string | null = null;
+  trashTalkBgColor: string | null = null;
+  loadingTrashTalk = false;
+  visibleTrashTalks: Map<string, boolean> = new Map();
+  private trashTalkInterval: any;
+
+  // Team logos for trash talk
+  teamLogos: { name: string; logo: string }[] = [];
+
+  // Color palette for trash talk
+  colorPalette: string[] = [
+    '#FFD700', '#FFA500', '#FF6600', '#DC143C', '#8B0000',
+    '#FF1493', '#9400D3', '#800080', '#0000FF', '#1E90FF',
+    '#00BFFF', '#00CED1', '#008000', '#00FF00', '#32CD32',
+    '#808080', '#000000', '#FFFFFF'
+  ];
 
   // Inline bet form state
   placingBetForMatch: string | null = null;
@@ -130,6 +153,15 @@ export class GroupDetailComponent implements OnInit {
     this.loadMyBets();
     this.loadAllBets();
     this.initTeamSelectOptions();
+    this.initTeamLogos();
+  }
+
+  private initTeamLogos(): void {
+    // Get team logos for selection
+    this.teamLogos = this.allTeams.slice(0, 20).map(team => ({
+      name: team.name,
+      logo: team.logo || ''
+    })).filter(team => team.logo);
   }
 
   private initTeamSelectOptions(): void {
@@ -160,6 +192,7 @@ export class GroupDetailComponent implements OnInit {
         this.leaderboard = response.data;
         this.loadingLeaderboard = false;
         this.updateMemberSelectOptions();
+        this.startTrashTalkRotation();
       },
       error: (error) => {
         console.error('Failed to load leaderboard:', error);
@@ -796,12 +829,147 @@ export class GroupDetailComponent implements OnInit {
   }
 
   // Profile picture modal methods
-  openProfilePicture(user: { username: string; profilePicture?: string | null; lastActive?: Date }): void {
+  openProfilePicture(user: { _id: string; username: string; profilePicture?: string | null; lastActive?: Date }): void {
     this.viewingProfilePicture = user;
+    this.userStatistics = null;
+    this.loadingStatistics = true;
+
+    this.betService.getUserStatistics(user._id, this.groupId).subscribe({
+      next: (response) => {
+        this.userStatistics = response.data;
+        this.loadingStatistics = false;
+      },
+      error: (error) => {
+        console.error('Failed to load user statistics:', error);
+        this.loadingStatistics = false;
+      }
+    });
   }
 
   closeProfilePicture(): void {
     this.viewingProfilePicture = null;
+    this.userStatistics = null;
+  }
+
+  // Trash talk methods
+  startTrashTalkRotation(): void {
+    // Clear any existing interval
+    if (this.trashTalkInterval) {
+      clearTimeout(this.trashTalkInterval);
+    }
+
+    // Schedule first trash talk after a random delay
+    this.scheduleNextTrashTalk();
+  }
+
+  scheduleNextTrashTalk(): void {
+    // Random delay between 5-10 seconds
+    const delay = 5000 + Math.random() * 5000;
+
+    this.trashTalkInterval = setTimeout(() => {
+      this.showRandomTrashTalk();
+      // Schedule next one after this one finishes
+      this.scheduleNextTrashTalk();
+    }, delay);
+  }
+
+  showRandomTrashTalk(): void {
+    // Get members with trash talk messages
+    const membersWithTrashTalk = this.leaderboard.filter(m => m.trashTalk?.message);
+    if (membersWithTrashTalk.length === 0) return;
+
+    // Pick one random member to show
+    const randomIndex = Math.floor(Math.random() * membersWithTrashTalk.length);
+    const member = membersWithTrashTalk[randomIndex];
+
+    // Show the trash talk
+    this.visibleTrashTalks.set(member.user._id, true);
+
+    // Hide after 4 seconds with fade out
+    setTimeout(() => {
+      this.visibleTrashTalks.set(member.user._id, false);
+    }, 4000);
+  }
+
+  isTrashTalkVisible(userId: string): boolean {
+    return this.visibleTrashTalks.get(userId) === true;
+  }
+
+  openTrashTalkInput(): void {
+    // Find current user's trash talk
+    const currentUserId = this.authService.getCurrentUser()?.id;
+    const member = this.leaderboard.find(m => m.user._id === currentUserId);
+    this.trashTalkMessage = member?.trashTalk?.message || '';
+    this.trashTalkTeamLogo = member?.trashTalk?.teamLogo || null;
+    this.trashTalkBgColor = member?.trashTalk?.bgColor || null;
+    this.showTrashTalkInput = true;
+  }
+
+  closeTrashTalkInput(): void {
+    this.showTrashTalkInput = false;
+    this.trashTalkMessage = '';
+    this.trashTalkTeamLogo = null;
+    this.trashTalkBgColor = null;
+  }
+
+  selectTrashTalkTeam(team: { name: string; logo: string }): void {
+    this.trashTalkTeamLogo = team.logo;
+  }
+
+  clearTrashTalkTeam(): void {
+    this.trashTalkTeamLogo = null;
+  }
+
+  selectTrashTalkColor(color: string): void {
+    this.trashTalkBgColor = color;
+  }
+
+  clearTrashTalkColor(): void {
+    this.trashTalkBgColor = null;
+  }
+
+  submitTrashTalk(): void {
+    this.loadingTrashTalk = true;
+    const message = this.trashTalkMessage.trim() || null;
+    const currentUserId = this.authService.getCurrentUser()?.id;
+
+    this.groupService.updateTrashTalk(this.groupId, message, this.trashTalkTeamLogo, this.trashTalkBgColor).subscribe({
+      next: () => {
+        this.loadingTrashTalk = false;
+        this.showTrashTalkInput = false;
+
+        // Update the leaderboard and show the message immediately
+        this.groupService.getLeaderboard(this.groupId).subscribe({
+          next: (response) => {
+            this.leaderboard = response.data;
+
+            // Show the user's message immediately if they set one
+            if (message && currentUserId) {
+              this.visibleTrashTalks.set(currentUserId, true);
+              setTimeout(() => {
+                this.visibleTrashTalks.set(currentUserId, false);
+              }, 4000);
+            }
+          }
+        });
+      },
+      error: (error) => {
+        console.error('Failed to update trash talk:', error);
+        this.loadingTrashTalk = false;
+      }
+    });
+  }
+
+  getCurrentUserTrashTalk(): string | null {
+    const currentUserId = this.authService.getCurrentUser()?.id;
+    const member = this.leaderboard.find(m => m.user._id === currentUserId);
+    return member?.trashTalk?.message || null;
+  }
+
+  ngOnDestroy(): void {
+    if (this.trashTalkInterval) {
+      clearTimeout(this.trashTalkInterval);
+    }
   }
 
   // Inline bet form methods

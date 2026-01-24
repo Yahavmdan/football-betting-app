@@ -237,7 +237,8 @@ exports.getLeaderboard = async (req, res) => {
         joinedAt: member.joinedAt,
         // For relative mode, show total credits including at-risk amount
         points: member.points + atRiskCredits,
-        hasOngoingBets: membersWithOngoingBets.has(userId)
+        hasOngoingBets: membersWithOngoingBets.has(userId),
+        trashTalk: member.trashTalk || null
       };
     });
 
@@ -647,6 +648,56 @@ exports.rejectMember = async (req, res) => {
     res.status(200).json({
       success: true,
       message: 'Member request rejected'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Update trash talk message
+exports.updateTrashTalk = async (req, res) => {
+  try {
+    const groupId = req.params.id;
+    const { message, teamLogo, bgColor } = req.body;
+
+    const group = await Group.findById(groupId);
+
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        message: 'Group not found'
+      });
+    }
+
+    // Check if user is a member
+    const memberIndex = group.members.findIndex(
+      m => m.user.toString() === req.user._id.toString()
+    );
+
+    if (memberIndex === -1) {
+      return res.status(403).json({
+        success: false,
+        message: 'You are not a member of this group'
+      });
+    }
+
+    // Update trash talk (replaces previous message)
+    group.members[memberIndex].trashTalk = {
+      message: message ? message.trim().substring(0, 100) : null,
+      teamLogo: teamLogo || null,
+      bgColor: bgColor || null,
+      updatedAt: message ? new Date() : null
+    };
+
+    await group.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Trash talk updated',
+      data: group.members[memberIndex].trashTalk
     });
   } catch (error) {
     res.status(500).json({

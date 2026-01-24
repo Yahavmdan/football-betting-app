@@ -30,6 +30,25 @@ const groupSchema = new mongoose.Schema({
     points: {
       type: Number,
       default: 0
+    },
+    trashTalk: {
+      message: {
+        type: String,
+        maxlength: [100, 'Trash talk cannot exceed 100 characters'],
+        default: null
+      },
+      teamLogo: {
+        type: String,
+        default: null
+      },
+      bgColor: {
+        type: String,
+        default: null
+      },
+      updatedAt: {
+        type: Date,
+        default: null
+      }
     }
   }],
   pendingMembers: [{

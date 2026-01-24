@@ -7,7 +7,8 @@ const {
   calculateBetPoints,
   checkExistingBet,
   getGroupMembersBets,
-  getAllBetsForGroup
+  getAllBetsForGroup,
+  getUserStatistics
 } = require('../controllers/betController');
 const { protect } = require('../middleware/auth');
 
@@ -17,6 +18,7 @@ router.get('/check', protect, checkExistingBet);
 router.get('/match/:matchId', protect, getBetsByMatch);
 router.get('/match/:matchId/group/:groupId/members', protect, getGroupMembersBets);
 router.get('/group/:groupId/all', protect, getAllBetsForGroup);
+router.get('/user/:userId/group/:groupId/stats', protect, getUserStatistics);
 router.post('/calculate-points', protect, calculateBetPoints);
 
 module.exports = router;

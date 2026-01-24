@@ -458,3 +458,110 @@ exports.getAllBetsForGroup = async (req, res) => {
     });
   }
 };
+
+// Get user statistics (both group-specific and global)
+exports.getUserStatistics = async (req, res) => {
+  try {
+    const { userId, groupId } = req.params;
+
+    // Helper function to calculate stats from bets
+    const calculateStats = (bets, matches) => {
+      const matchMap = {};
+      matches.forEach(m => {
+        matchMap[m._id.toString()] = m;
+      });
+
+      let totalBets = 0;
+      let calculatedBets = 0;
+      let correctPredictions = 0;
+      let homeWins = 0;
+      let draws = 0;
+      let awayWins = 0;
+      let correctHomeWins = 0;
+      let correctDraws = 0;
+      let correctAwayWins = 0;
+
+      bets.forEach(bet => {
+        totalBets++;
+        const match = matchMap[bet.match.toString()];
+
+        // Count predictions by type
+        if (bet.prediction.outcome === '1') homeWins++;
+        else if (bet.prediction.outcome === 'X') draws++;
+        else if (bet.prediction.outcome === '2') awayWins++;
+
+        // Only count calculated bets for success rate
+        if (bet.calculated && match && match.result) {
+          calculatedBets++;
+
+          // Determine actual result
+          const homeScore = match.result.homeScore;
+          const awayScore = match.result.awayScore;
+          let actualOutcome;
+          if (homeScore > awayScore) actualOutcome = '1';
+          else if (homeScore < awayScore) actualOutcome = '2';
+          else actualOutcome = 'X';
+
+          if (bet.prediction.outcome === actualOutcome) {
+            correctPredictions++;
+            if (actualOutcome === '1') correctHomeWins++;
+            else if (actualOutcome === 'X') correctDraws++;
+            else if (actualOutcome === '2') correctAwayWins++;
+          }
+        }
+      });
+
+      const successRate = calculatedBets > 0
+        ? Math.round((correctPredictions / calculatedBets) * 100)
+        : 0;
+
+      return {
+        totalBets,
+        calculatedBets,
+        correctPredictions,
+        successRate,
+        predictions: {
+          homeWins,
+          draws,
+          awayWins
+        },
+        correctByType: {
+          homeWins: correctHomeWins,
+          draws: correctDraws,
+          awayWins: correctAwayWins
+        }
+      };
+    };
+
+    // Get group-specific stats
+    const groupBets = await Bet.find({ user: userId, group: groupId });
+    const groupMatchIds = groupBets.map(b => b.match);
+    const groupMatches = await Match.find({ _id: { $in: groupMatchIds } });
+    const groupStats = calculateStats(groupBets, groupMatches);
+
+    // Get global stats (all groups)
+    const globalBets = await Bet.find({ user: userId });
+    const globalMatchIds = globalBets.map(b => b.match);
+    const globalMatches = await Match.find({ _id: { $in: globalMatchIds } });
+    const globalStats = calculateStats(globalBets, globalMatches);
+
+    // Get groups count
+    const groupsCount = await Group.countDocuments({
+      'members.user': userId
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        groupStats,
+        globalStats,
+        groupsCount
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};

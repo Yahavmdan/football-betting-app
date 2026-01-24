@@ -1,0 +1,99 @@
+<div class="admin-feedback-container">
+  <div class="page-header">
+    <a routerLink="/groups" class="back-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      {{ t('groups.backToGroups') }}
+    </a>
+    <h1>{{ t('admin.feedbackTitle') }}</h1>
+    <p class="subtitle">{{ t('admin.feedbackSubtitle') }}</p>
+  </div>
+
+  <!-- Loading state -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>{{ t('auth.loading') }}</p>
+  </div>
+
+  <!-- Error state -->
+  <div *ngIf="error && !isLoading" class="error-state">
+    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="8" x2="12" y2="12"></line>
+      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+    </svg>
+    <p>{{ error }}</p>
+    <button class="btn-retry" (click)="loadFeedback()">{{ t('admin.retry') }}</button>
+  </div>
+
+  <!-- Empty state -->
+  <div *ngIf="!isLoading && !error && feedbackList.length === 0" class="empty-state">
+    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+    </svg>
+    <h3>{{ t('admin.noFeedback') }}</h3>
+    <p>{{ t('admin.noFeedbackDesc') }}</p>
+  </div>
+
+  <!-- Feedback list -->
+  <div *ngIf="!isLoading && !error && feedbackList.length > 0" class="feedback-list">
+    <div *ngFor="let feedback of feedbackList" class="feedback-card" [class]="getStatusClass(feedback.status)">
+      <div class="feedback-header">
+        <div class="user-info">
+          <span class="user-avatar" *ngIf="feedback.user">
+            {{ feedback.user.username.charAt(0).toUpperCase() }}
+          </span>
+          <span class="user-avatar anonymous" *ngIf="!feedback.user">?</span>
+          <div class="user-details">
+            <span class="username">{{ feedback.user ? feedback.user.username : t('admin.anonymous') }}</span>
+            <span class="email" *ngIf="feedback.user">{{ feedback.user.email }}</span>
+          </div>
+        </div>
+        <div class="feedback-meta">
+          <span class="status-badge" [class]="getStatusClass(feedback.status)">
+            {{ t('admin.status' + feedback.status.charAt(0).toUpperCase() + feedback.status.slice(1)) }}
+          </span>
+          <span class="date">{{ formatDate(feedback.createdAt) }}</span>
+        </div>
+      </div>
+
+      <div class="feedback-message">
+        {{ feedback.message }}
+      </div>
+
+      <div *ngIf="feedback.image" class="feedback-image">
+        <img [src]="feedback.image" alt="Feedback screenshot" (click)="openImage(feedback.image)">
+      </div>
+
+      <div class="feedback-actions">
+        <div class="status-buttons">
+          <button
+            *ngIf="feedback.status !== 'new'"
+            class="btn-status btn-new"
+            (click)="updateStatus(feedback._id, 'new')">
+            {{ t('admin.markNew') }}
+          </button>
+          <button
+            *ngIf="feedback.status !== 'read'"
+            class="btn-status btn-read"
+            (click)="updateStatus(feedback._id, 'read')">
+            {{ t('admin.markRead') }}
+          </button>
+          <button
+            *ngIf="feedback.status !== 'resolved'"
+            class="btn-status btn-resolved"
+            (click)="updateStatus(feedback._id, 'resolved')">
+            {{ t('admin.markResolved') }}
+          </button>
+        </div>
+        <button class="btn-delete" (click)="deleteFeedback(feedback._id)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

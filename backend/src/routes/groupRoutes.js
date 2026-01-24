@@ -15,7 +15,8 @@ const {
   getPendingMembers,
   approveMember,
   rejectMember,
-  kickMember
+  kickMember,
+  updateTrashTalk
 } = require('../controllers/groupController');
 const { protect } = require('../middleware/auth');
 
@@ -36,5 +37,8 @@ router.get('/:id/pending', protect, getPendingMembers);
 router.post('/:id/approve/:userId', protect, approveMember);
 router.post('/:id/reject/:userId', protect, rejectMember);
 router.post('/:id/kick/:userId', protect, kickMember);
+
+// Trash talk
+router.post('/:id/trash-talk', protect, updateTrashTalk);
 
 module.exports = router;

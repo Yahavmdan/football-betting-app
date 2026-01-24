@@ -14,6 +14,13 @@ export interface Group {
   isPending?: boolean;
 }
 
+export interface TrashTalk {
+  message: string | null;
+  teamLogo: string | null;
+  bgColor: string | null;
+  updatedAt: Date | null;
+}
+
 export interface GroupMember {
   user: {
     _id: string;
@@ -25,6 +32,7 @@ export interface GroupMember {
   joinedAt: Date;
   points: number;
   hasOngoingBets?: boolean;
+  trashTalk?: TrashTalk;
 }
 
 export interface PendingMember {

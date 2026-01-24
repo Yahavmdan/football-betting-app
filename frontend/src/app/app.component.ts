@@ -2,12 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { NavbarComponent } from './components/layout/navbar.component';
 import { LoadingSpinnerComponent } from './components/shared/loading-spinner/loading-spinner.component';
+import { FeedbackButtonComponent } from './components/shared/feedback-button/feedback-button.component';
 import { TranslationService } from './services/translation.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, NavbarComponent, LoadingSpinnerComponent],
+  imports: [RouterOutlet, NavbarComponent, LoadingSpinnerComponent, FeedbackButtonComponent],
   templateUrl: './app.component.html',
   styles: []
 })

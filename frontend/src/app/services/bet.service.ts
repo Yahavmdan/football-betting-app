@@ -50,4 +50,33 @@ export class BetService {
       `${this.apiUrl}/group/${groupId}/all`
     );
   }
+
+  getUserStatistics(userId: string, groupId: string): Observable<{ success: boolean; data: UserStatistics }> {
+    return this.http.get<{ success: boolean; data: UserStatistics }>(
+      `${this.apiUrl}/user/${userId}/group/${groupId}/stats`
+    );
+  }
+}
+
+export interface UserStatistics {
+  groupStats: BetStats;
+  globalStats: BetStats;
+  groupsCount: number;
+}
+
+export interface BetStats {
+  totalBets: number;
+  calculatedBets: number;
+  correctPredictions: number;
+  successRate: number;
+  predictions: {
+    homeWins: number;
+    draws: number;
+    awayWins: number;
+  };
+  correctByType: {
+    homeWins: number;
+    draws: number;
+    awayWins: number;
+  };
 }

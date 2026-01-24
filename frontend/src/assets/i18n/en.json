@@ -4,7 +4,8 @@
   },
   "nav": {
     "myGroups": "My Groups",
-    "logout": "Logout"
+    "logout": "Logout",
+    "feedback": "Feedback"
   },
   "auth": {
     "login": "Login",
@@ -83,7 +84,16 @@
     "showBets": "Show Bets",
     "showBetsOn": "Visible - Members can see each other's bets after match ends",
     "showBetsOff": "Hidden - Members can only see their own bets",
-    "showBetsHint": "Choose whether members can see each other's bets after a match finishes"
+    "showBetsHint": "Choose whether members can see each other's bets after a match finishes",
+    "trashTalk": "Trash Talk",
+    "trashTalkTitle": "Send a Trash Talk",
+    "trashTalkDesc": "Write a message that will randomly float above your name!",
+    "trashTalkPlaceholder": "e.g., I'm coming for that top spot...",
+    "preview": "Preview",
+    "selectTeam": "Select team logo",
+    "noTeam": "No logo",
+    "selectColor": "Select background color",
+    "noColor": "Default"
   },
   "matches": {
     "scheduled": "SCHEDULED",
@@ -163,6 +173,7 @@
     "betPlaced": "Bet placed",
     "editBet": "Edit Bet",
     "viewGroupBets": "View Group Bets",
+    "viewMyBet": "View My Bet",
     "memberBets": "Group Bets",
     "noBet": "---",
     "close": "Close",
@@ -242,6 +253,37 @@
     "reminderOption30": "30 minutes before",
     "reminderOption60": "1 hour before"
   },
+  "admin": {
+    "feedbackTitle": "User Feedback",
+    "feedbackSubtitle": "Bug reports and suggestions from users",
+    "loadError": "Failed to load feedback",
+    "retry": "Retry",
+    "noFeedback": "No feedback yet",
+    "noFeedbackDesc": "When users submit bug reports or suggestions, they will appear here.",
+    "anonymous": "Anonymous",
+    "statusNew": "New",
+    "statusRead": "Read",
+    "statusResolved": "Resolved",
+    "markNew": "Mark New",
+    "markRead": "Mark Read",
+    "markResolved": "Mark Resolved",
+    "confirmDelete": "Are you sure you want to delete this feedback?"
+  },
+  "feedback": {
+    "reportBug": "Contact us",
+    "title": "Contact us",
+    "description": "Found a bug or have a suggestion? Let us know and we'll look into it.",
+    "messageLabel": "Your Message",
+    "messagePlaceholder": "Describe the bug or suggestion...",
+    "send": "Send",
+    "sending": "Sending...",
+    "successMessage": "Thank you! Your feedback has been sent.",
+    "errorMessage": "Failed to send feedback. Please try again.",
+    "rateLimitError": "You can only send 5 messages every 3 hours. Please try again later.",
+    "minimize": "Minimize",
+    "addImage": "Add screenshot",
+    "invalidFileType": "Only image files are allowed (jpg, png, gif, webp)"
+  },
   "filters": {
     "filter": "Filter",
     "filterMatches": "Filter Matches",
@@ -264,5 +306,13 @@
     "apply": "Apply",
     "noMatchesFound": "No matches found with the selected filters",
     "saveFiltersTooltip": "Save filters for next visit"
+  },
+  "stats": {
+    "groupStats": "Group Statistics",
+    "globalStats": "Global Statistics",
+    "totalBets": "Total Bets",
+    "successRate": "Success Rate",
+    "correct": "Correct",
+    "groups": "Groups"
   }
 }

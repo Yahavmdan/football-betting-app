@@ -14,13 +14,13 @@ const {
   getTelegramStatus
 } = require('../controllers/userController');
 const { protect } = require('../middleware/auth');
-const upload = require('../middleware/upload');
+const { uploadProfile } = require('../middleware/upload');
 
 // All routes are protected
 router.get('/profile', protect, getProfile);
 router.put('/profile', protect, updateProfile);
 router.put('/password', protect, changePassword);
-router.post('/profile-picture', protect, upload.single('profilePicture'), uploadProfilePicture);
+router.post('/profile-picture', protect, uploadProfile.single('profilePicture'), uploadProfilePicture);
 router.delete('/profile-picture', protect, deleteProfilePicture);
 router.put('/settings', protect, updateSettings);
 router.delete('/account', protect, deleteAccount);

@@ -4,7 +4,8 @@
   },
   "nav": {
     "myGroups": "הקבוצות שלי",
-    "logout": "התנתק"
+    "logout": "התנתק",
+    "feedback": "משוב"
   },
   "auth": {
     "login": "התחברות",
@@ -83,7 +84,16 @@
     "showBets": "הצג הימורים",
     "showBetsOn": "גלוי - חברים יכולים לראות הימורים של אחרים אחרי סיום המשחק",
     "showBetsOff": "מוסתר - חברים יכולים לראות רק את ההימורים שלהם",
-    "showBetsHint": "בחר האם חברים יכולים לראות הימורים של אחרים אחרי סיום משחק"
+    "showBetsHint": "בחר האם חברים יכולים לראות הימורים של אחרים אחרי סיום משחק",
+    "trashTalk": "טראש טוק",
+    "trashTalkTitle": "שלח טראש טוק",
+    "trashTalkDesc": "כתוב הודעה שתצוף מעל השם שלך!",
+    "trashTalkPlaceholder": "לדוגמה: אני בא על המקום הראשון...",
+    "preview": "תצוגה מקדימה",
+    "selectTeam": "בחר לוגו קבוצה",
+    "noTeam": "ללא לוגו",
+    "selectColor": "בחר צבע רקע",
+    "noColor": "ברירת מחדל"
   },
   "matches": {
     "scheduled": "מתוכנן",
@@ -163,6 +173,7 @@
     "betPlaced": "הימור בוצע",
     "editBet": "ערוך הימור",
     "viewGroupBets": "צפה בהימורי הקבוצה",
+    "viewMyBet": "צפה בהימור שלי",
     "memberBets": "הימורי הקבוצה",
     "noBet": "---",
     "close": "סגור",
@@ -242,6 +253,37 @@
     "reminderOption30": "30 דקות לפני",
     "reminderOption60": "שעה לפני"
   },
+  "admin": {
+    "feedbackTitle": "משוב משתמשים",
+    "feedbackSubtitle": "דיווחי באגים והצעות מהמשתמשים",
+    "loadError": "טעינת המשוב נכשלה",
+    "retry": "נסה שוב",
+    "noFeedback": "אין משוב עדיין",
+    "noFeedbackDesc": "כאשר משתמשים ישלחו דיווחי באגים או הצעות, הם יופיעו כאן.",
+    "anonymous": "אנונימי",
+    "statusNew": "חדש",
+    "statusRead": "נקרא",
+    "statusResolved": "טופל",
+    "markNew": "סמן כחדש",
+    "markRead": "סמן כנקרא",
+    "markResolved": "סמן כטופל",
+    "confirmDelete": "האם אתה בטוח שברצונך למחוק משוב זה?"
+  },
+  "feedback": {
+    "reportBug": "כתבו לנו",
+    "title": "כתבו לנו",
+    "description": "מצאת באג או יש לך הצעה? ספר לנו ונבדוק את זה.",
+    "rateLimitError": "ניתן לשלוח עד 5 הודעות כל 3 שעות. נסה שוב מאוחר יותר.",
+    "messageLabel": "ההודעה שלך",
+    "messagePlaceholder": "תאר את הבאג או ההצעה...",
+    "send": "שלח",
+    "sending": "שולח...",
+    "successMessage": "תודה! המשוב שלך נשלח.",
+    "errorMessage": "שליחת המשוב נכשלה. נסה שוב.",
+    "minimize": "מזער",
+    "addImage": "הוסף צילום מסך",
+    "invalidFileType": "ניתן להעלות רק קבצי תמונה (jpg, png, gif, webp)"
+  },
   "filters": {
     "filter": "סינון",
     "filterMatches": "סנן משחקים",
@@ -264,5 +306,13 @@
     "apply": "החל",
     "noMatchesFound": "לא נמצאו משחקים בהתאם לסינון",
     "saveFiltersTooltip": "שמור סינונים לביקור הבא"
+  },
+  "stats": {
+    "groupStats": "סטטיסטיקות בקבוצה",
+    "globalStats": "סטטיסטיקות כלליות",
+    "totalBets": "סה״כ הימורים",
+    "successRate": "אחוז הצלחה",
+    "correct": "נכונים",
+    "groups": "קבוצות"
   }
 }
