@@ -93,7 +93,8 @@
     "selectTeam": "Select team logo",
     "noTeam": "No logo",
     "selectColor": "Select background color",
-    "noColor": "Default"
+    "noColor": "Default",
+    "showMessage": "Show message"
   },
   "matches": {
     "scheduled": "SCHEDULED",

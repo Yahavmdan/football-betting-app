@@ -2496,6 +2496,31 @@ h2 {
     color: #ef4444;
 }
 
+.btn-show-trash-talk {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #f59e0b;
+    padding: 0.2rem;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    margin-left: 0.25rem;
+    opacity: 0.6;
+}
+
+.btn-show-trash-talk:hover:not(:disabled) {
+    opacity: 1;
+    background: rgba(245, 158, 11, 0.15);
+}
+
+.btn-show-trash-talk:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
 .kick-confirm {
     margin-top: 1rem;
     padding: 1rem;
@@ -4103,6 +4128,14 @@ h2 {
 
 :host-context(.dark-theme) .btn-kick:hover {
     background: rgba(239, 68, 68, 0.15);
+}
+
+:host-context(.dark-theme) .btn-show-trash-talk {
+    color: #fbbf24;
+}
+
+:host-context(.dark-theme) .btn-show-trash-talk:hover {
+    background: rgba(251, 191, 36, 0.15);
 }
 
 :host-context(.dark-theme) .pending-in-leaderboard {

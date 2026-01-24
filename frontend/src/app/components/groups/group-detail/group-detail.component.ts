@@ -895,6 +895,16 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     return this.visibleTrashTalks.get(userId) === true;
   }
 
+  showTrashTalkManual(userId: string): void {
+    // Show the trash talk bubble for this user
+    this.visibleTrashTalks.set(userId, true);
+
+    // Hide after 4 seconds
+    setTimeout(() => {
+      this.visibleTrashTalks.set(userId, false);
+    }, 4000);
+  }
+
   openTrashTalkInput(): void {
     // Find current user's trash talk
     const currentUserId = this.authService.getCurrentUser()?.id;

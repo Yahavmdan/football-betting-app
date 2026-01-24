@@ -93,7 +93,8 @@
     "selectTeam": "בחר לוגו קבוצה",
     "noTeam": "ללא לוגו",
     "selectColor": "בחר צבע רקע",
-    "noColor": "ברירת מחדל"
+    "noColor": "ברירת מחדל",
+    "showMessage": "הצג הודעה"
   },
   "matches": {
     "scheduled": "מתוכנן",
