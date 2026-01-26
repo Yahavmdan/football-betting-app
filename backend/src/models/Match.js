@@ -67,6 +67,16 @@ const matchSchema = new mongoose.Schema({
       default: 1
     }
   }],
+  // API-specific fields for automatic groups
+  homeTeamId: Number,
+  awayTeamId: Number,
+  homeTeamLogo: String,
+  awayTeamLogo: String,
+  round: String,
+  // Live match fields
+  elapsed: Number,      // Minutes elapsed in the match
+  extraTime: Number,    // Extra/stoppage time minutes
+  statusShort: String,  // e.g., "1H", "HT", "2H"
   createdAt: {
     type: Date,
     default: Date.now

@@ -105,6 +105,27 @@
       border-left: 4px solid #3b82f6;
       font-weight: 500;
     }
+    .sync-section {
+      background: linear-gradient(135deg, rgba(74, 222, 128, 0.1) 0%, rgba(34, 197, 94, 0.05) 100%);
+      border: 2px solid rgba(74, 222, 128, 0.3);
+    }
+    .sync-description {
+      color: #475569;
+      margin-bottom: 1rem;
+      font-size: 0.95rem;
+    }
+    .sync-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    :host-context(.dark-theme) .sync-section {
+      background: linear-gradient(135deg, rgba(74, 222, 128, 0.1) 0%, rgba(34, 197, 94, 0.05) 100%);
+      border-color: rgba(74, 222, 128, 0.3);
+    }
+    :host-context(.dark-theme) .sync-description {
+      color: #9ca3af;
+    }
     .loading, .empty-state {
       text-align: center;
       padding: 2.5rem;

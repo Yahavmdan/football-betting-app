@@ -86,6 +86,19 @@ const groupSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
+  matchType: {
+    type: String,
+    enum: ['manual', 'automatic'],
+    default: 'manual'
+  },
+  selectedLeague: {
+    type: String,
+    default: null
+  },
+  selectedSeason: {
+    type: Number,
+    default: null
+  },
   createdAt: {
     type: Date,
     default: Date.now

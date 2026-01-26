@@ -5,11 +5,22 @@ export interface Match {
   awayTeam: string;
   matchDate: Date;
   status: 'SCHEDULED' | 'LIVE' | 'FINISHED' | 'POSTPONED' | 'CANCELLED';
-  result: MatchResult;
+  result?: MatchResult;
   competition: string;
+  season?: string;
   groups: string[];
-  relativePoints: RelativePoints[];
-  createdAt: Date;
+  relativePoints?: RelativePoints[];
+  createdAt?: Date;
+  // API-specific fields (for automatic groups)
+  homeTeamId?: number;
+  awayTeamId?: number;
+  homeTeamLogo?: string;
+  awayTeamLogo?: string;
+  round?: string;
+  // Live match fields
+  elapsed?: number;  // Minutes elapsed in the match
+  extraTime?: number;  // Extra/stoppage time minutes
+  statusShort?: string;  // e.g., "1H", "HT", "2H"
 }
 
 export interface MatchResult {

@@ -3,7 +3,6 @@
     margin: 0 auto;
     padding: 2rem;
     animation: fadeIn 0.5s ease-out;
-    overflow-x: hidden;
 }
 
 @keyframes fadeIn {
@@ -518,7 +517,6 @@
 .matches-section {
     min-height: 400px;
     min-width: 0;
-    overflow: hidden;
 }
 
 h2 {
@@ -689,7 +687,82 @@ h2 {
     flex-direction: column;
     gap: 1rem;
     min-width: 0;
-    overflow: hidden;
+}
+
+/* Round separator styles for automatic groups */
+.matches-by-round {
+    gap: 0;
+}
+
+.round-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.round-separator {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.35rem 0.75rem;
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    border-radius: 6px;
+    border: 1px solid rgba(34, 197, 94, 0.15);
+    margin-bottom: 0.5rem;
+    position: sticky;
+    top: 70px;
+    z-index: 10;
+}
+
+.round-group:not(:first-child) .round-separator {
+    margin-top: 0.75rem;
+}
+
+.round-matches {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.round-name {
+    font-weight: 600;
+    font-size: 0.75rem;
+    color: #15803d;
+    font-family: 'Poppins', sans-serif;
+}
+
+.round-dates {
+    font-size: 0.7rem;
+    color: #166534;
+    opacity: 0.7;
+}
+
+@media (max-width: 640px) {
+    .round-separator {
+        padding: 0.3rem 0.6rem;
+    }
+
+    .round-name {
+        font-size: 0.7rem;
+    }
+
+    .round-dates {
+        font-size: 0.65rem;
+    }
+}
+
+/* Dark mode for round separator */
+:host-context(.dark-theme) .round-separator {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgb(0, 98, 37) 100%);
+    border-color: rgba(34, 197, 94, 0.25);
+}
+
+:host-context(.dark-theme) .round-name {
+    color: #4ade80;
+}
+
+:host-context(.dark-theme) .round-dates {
+    color: #86efac;
 }
 
 .match-card {
@@ -879,6 +952,52 @@ h2 {
 
 .status-compact.started {
     background: #f59e0b;
+}
+
+.status-compact.live {
+    background: #059669;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.elapsed-time {
+    margin-left: 0.2rem;
+    font-weight: 700;
+}
+
+.live-time {
+    direction: ltr;
+    display: inline-block;
+    unicode-bidi: isolate;
+}
+
+.extra-time {
+    font-size: 0.85em;
+    opacity: 0.9;
+    margin-left: 0.15rem;
+}
+
+.live-indicator {
+    width: 6px;
+    height: 6px;
+    background: #ffffff;
+    border-radius: 50%;
+    animation: livePulse 1.5s ease-in-out infinite;
+    box-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
+}
+
+@keyframes livePulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+        box-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
+    }
+    50% {
+        opacity: 0.5;
+        transform: scale(0.85);
+        box-shadow: 0 0 8px rgba(255, 255, 255, 0.9), 0 0 12px rgba(255, 255, 255, 0.6);
+    }
 }
 
 .bet-indicator {
@@ -1136,6 +1255,15 @@ h2 {
 
 :host-context(.dark-theme) .status-compact.started {
     background: #d97706;
+}
+
+:host-context(.dark-theme) .status-compact.live {
+    background: #047857;
+}
+
+:host-context(.dark-theme) .live-indicator {
+    background: #ffffff;
+    box-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
 }
 
 :host-context(.dark-theme) .bet-indicator {
@@ -2136,6 +2264,48 @@ h2 {
     font-size: 0.9rem;
     color: #64748b;
     font-weight: 400;
+}
+
+.btn-refresh-live {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-refresh-live:hover:not(:disabled) {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.4);
+}
+
+.btn-refresh-live:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.btn-refresh-live svg {
+    transition: transform 0.3s ease;
+}
+
+.btn-refresh-live svg.spinning {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .btn-filter {
@@ -3877,6 +4047,14 @@ h2 {
 :host-context(.dark-theme) .btn-people:hover {
     background: #4b5563;
     color: #e5e7eb;
+}
+
+:host-context(.dark-theme) .btn-refresh-live {
+    background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+}
+
+:host-context(.dark-theme) .btn-refresh-live:hover:not(:disabled) {
+    box-shadow: 0 4px 12px rgba(4, 120, 87, 0.5);
 }
 
 :host-context(.dark-theme) .btn-filter {

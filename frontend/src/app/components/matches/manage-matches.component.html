@@ -4,7 +4,21 @@
     <button (click)="goBack()" class="btn-secondary">{{ 'bets.back' | translate }}</button>
   </div>
 
-  <div class="section" *ngIf="canManageGroup()">
+  <!-- Sync section for automatic groups -->
+  <div class="section sync-section" *ngIf="isAutomaticGroup() && canManageGroup()">
+    <h2>{{ 'groups.syncMatches' | translate }}</h2>
+    <p class="sync-description">{{ 'groups.syncMatchesDesc' | translate }}</p>
+    <button
+      (click)="syncMatches()"
+      [disabled]="loadingSync"
+      class="btn-primary sync-btn">
+      {{ loadingSync ? ('groups.syncingMatches' | translate) : ('groups.syncMatches' | translate) }}
+    </button>
+    <div *ngIf="syncMessage" class="info-message" style="margin-top: 1rem;">{{ syncMessage }}</div>
+    <div *ngIf="syncError" class="error-message" style="margin-top: 1rem;">{{ syncError }}</div>
+  </div>
+
+  <div class="section" *ngIf="canManageGroup() && !isAutomaticGroup()">
     <h2>{{ 'matches.addManually' | translate }}</h2>
     <form (ngSubmit)="createManualMatch()" class="manual-match-form">
       <div class="form-row teams-row">
@@ -168,7 +182,7 @@
         <div class="match-footer">
           <span class="date">{{ match.matchDate | date:'dd/MM/yy, HH:mm' }}</span>
           <span *ngIf="match.status === 'FINISHED'" class="result">
-            {{ match.result.homeScore }} - {{ match.result.awayScore }}
+            {{ match.result?.homeScore }} - {{ match.result?.awayScore }}
           </span>
           <span *ngIf="match.status === 'SCHEDULED' && match.result && match.result.homeScore !== null" class="result ongoing">
             {{ 'matches.ongoingScore' | translate }}: {{ match.result.homeScore }} - {{ match.result.awayScore }}

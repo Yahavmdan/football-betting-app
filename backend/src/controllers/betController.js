@@ -5,15 +5,49 @@ const calculatePoints = require('../utils/calculatePoints');
 
 exports.placeBet = async (req, res) => {
   try {
-    const { matchId, groupId, outcome, wagerAmount } = req.body;
+    const { matchId, groupId, outcome, wagerAmount, matchData } = req.body;
 
-    const match = await Match.findById(matchId);
+    let match;
+
+    // Check if matchId is an externalApiId (for automatic groups)
+    if (matchId && matchId.startsWith('apifootball_')) {
+      // Try to find by externalApiId
+      match = await Match.findOne({ externalApiId: matchId });
+
+      // If not found in DB, create it from the provided matchData
+      if (!match && matchData) {
+        match = await Match.create({
+          externalApiId: matchData.externalApiId,
+          homeTeam: matchData.homeTeam,
+          awayTeam: matchData.awayTeam,
+          matchDate: new Date(matchData.matchDate),
+          status: matchData.status || 'SCHEDULED',
+          competition: matchData.competition || 'Unknown',
+          season: matchData.season,
+          groups: [groupId],
+          homeTeamId: matchData.homeTeamId,
+          awayTeamId: matchData.awayTeamId,
+          homeTeamLogo: matchData.homeTeamLogo,
+          awayTeamLogo: matchData.awayTeamLogo
+        });
+        console.log(`Created new match from API data: ${match.externalApiId}`);
+      }
+    } else {
+      // Regular ObjectId lookup
+      match = await Match.findById(matchId);
+    }
 
     if (!match) {
       return res.status(404).json({
         success: false,
         message: 'Match not found'
       });
+    }
+
+    // Ensure the match is associated with this group
+    if (!match.groups.includes(groupId)) {
+      match.groups.push(groupId);
+      await match.save();
     }
 
     if (match.status !== 'SCHEDULED') {
@@ -64,10 +98,10 @@ exports.placeBet = async (req, res) => {
 
     const userCredits = group.members[memberIndex].points;
 
-    // Check if user already placed a bet on this match
+    // Check if user already placed a bet on this match (use actual match._id)
     const existingBet = await Bet.findOne({
       user: req.user._id,
-      match: matchId,
+      match: match._id,
       group: groupId
     });
 
@@ -134,7 +168,7 @@ exports.placeBet = async (req, res) => {
 
     const bet = await Bet.create({
       user: req.user._id,
-      match: matchId,
+      match: match._id,
       group: groupId,
       prediction: {
         outcome
@@ -192,9 +226,28 @@ exports.checkExistingBet = async (req, res) => {
       });
     }
 
+    let match;
+    // Check if matchId is an externalApiId (for automatic groups)
+    if (matchId && matchId.startsWith('apifootball_')) {
+      match = await Match.findOne({ externalApiId: matchId });
+    } else {
+      match = await Match.findById(matchId);
+    }
+
+    // If match doesn't exist in DB, there can't be an existing bet
+    if (!match) {
+      return res.status(200).json({
+        success: true,
+        data: {
+          hasBet: false,
+          bet: null
+        }
+      });
+    }
+
     const existingBet = await Bet.findOne({
       user: req.user._id,
-      match: matchId,
+      match: match._id,
       group: groupId
     });
 
@@ -218,7 +271,13 @@ exports.getBetsByMatch = async (req, res) => {
     const { matchId } = req.params;
     const { groupId } = req.query;
 
-    const match = await Match.findById(matchId);
+    let match;
+    // Check if matchId is an externalApiId (for automatic groups)
+    if (matchId && matchId.startsWith('apifootball_')) {
+      match = await Match.findOne({ externalApiId: matchId });
+    } else {
+      match = await Match.findById(matchId);
+    }
 
     if (!match) {
       return res.status(404).json({
@@ -230,7 +289,7 @@ exports.getBetsByMatch = async (req, res) => {
     if (match.status !== 'FINISHED') {
       const userBet = await Bet.findOne({
         user: req.user._id,
-        match: matchId,
+        match: match._id,
         group: groupId
       });
 
@@ -242,7 +301,7 @@ exports.getBetsByMatch = async (req, res) => {
     }
 
     const bets = await Bet.find({
-      match: matchId,
+      match: match._id,
       group: groupId
     }).populate('user', 'username profilePicture');
 
@@ -284,7 +343,13 @@ exports.getGroupMembersBets = async (req, res) => {
       });
     }
 
-    const match = await Match.findById(matchId);
+    let match;
+    // Check if matchId is an externalApiId (for automatic groups)
+    if (matchId && matchId.startsWith('apifootball_')) {
+      match = await Match.findOne({ externalApiId: matchId });
+    } else {
+      match = await Match.findById(matchId);
+    }
 
     if (!match) {
       return res.status(404).json({
@@ -299,7 +364,7 @@ exports.getGroupMembersBets = async (req, res) => {
     if (group.showBets !== true && !matchHasStarted) {
       const userBet = await Bet.findOne({
         user: req.user._id,
-        match: matchId,
+        match: match._id,
         group: groupId
       });
 
@@ -330,7 +395,7 @@ exports.getGroupMembersBets = async (req, res) => {
 
     // Get all bets for this match in this group
     const bets = await Bet.find({
-      match: matchId,
+      match: match._id,
       group: groupId
     });
 

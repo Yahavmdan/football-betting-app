@@ -96,6 +96,54 @@
                 </div>
                 <small class="form-hint">{{ 'groups.showBetsHint' | translate }}</small>
             </div>
+            <div class="form-group">
+                <label>{{ 'groups.matchType' | translate }} *</label>
+                <div class="bet-type-selection">
+                    <div class="bet-type-option"
+                         [class.selected]="groupData.matchType === 'manual'"
+                         (click)="selectMatchType('manual')">
+                        <div class="option-header">
+                            <input type="radio"
+                                   id="matchTypeManual"
+                                   name="matchType"
+                                   value="manual"
+                                   [(ngModel)]="groupData.matchType"
+                                   required/>
+                            <label for="matchTypeManual">{{ 'groups.matchTypeManual' | translate }}</label>
+                        </div>
+                        <p class="option-description">{{ 'groups.matchTypeManualDesc' | translate }}</p>
+                    </div>
+                    <div class="bet-type-option"
+                         [class.selected]="groupData.matchType === 'automatic'"
+                         (click)="selectMatchType('automatic')">
+                        <div class="option-header">
+                            <input type="radio"
+                                   id="matchTypeAutomatic"
+                                   name="matchType"
+                                   value="automatic"
+                                   [(ngModel)]="groupData.matchType"
+                                   required/>
+                            <label for="matchTypeAutomatic">{{ 'groups.matchTypeAutomatic' | translate }}</label>
+                        </div>
+                        <p class="option-description">{{ 'groups.matchTypeAutomaticDesc' | translate }}</p>
+                    </div>
+                </div>
+            </div>
+            <div *ngIf="groupData.matchType === 'automatic'" class="form-group">
+                <label>{{ 'groups.selectLeague' | translate }} *</label>
+                <app-select
+                    [groups]="leagueGroups"
+                    [(ngModel)]="groupData.selectedLeague"
+                    name="selectedLeague"
+                    [searchable]="true"
+                    [placeholder]="'groups.selectLeaguePlaceholder' | translate"
+                    [placeholderHe]="'בחר ליגה...'"
+                    [searchPlaceholder]="'groups.searchLeagues' | translate"
+                    [searchPlaceholderHe]="'חפש ליגה...'"
+                    [disabled]="loadingLeagues"
+                ></app-select>
+                <small class="form-hint">{{ 'groups.leagueSelectionHint' | translate }}</small>
+            </div>
             <div *ngIf="errorMessage" class="error-message">
                 {{ errorMessage }}
             </div>
@@ -103,7 +151,7 @@
                 <button type="button" (click)="goBack()"
                         class="btn-secondary">{{ 'groups.cancel' | translate }}
                 </button>
-                <button type="submit" [disabled]="!createGroupForm.valid || loading" class="btn-primary">
+                <button type="submit" [disabled]="!createGroupForm.valid || !isFormValid() || loading" class="btn-primary">
                     {{ loading ? ('groups.creating' | translate) : ('groups.createGroup' | translate) }}
                 </button>
             </div>

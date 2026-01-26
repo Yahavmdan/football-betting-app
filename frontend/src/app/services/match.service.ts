@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Match } from '../models/match.model';
+import { League } from '../models/league.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -28,8 +29,19 @@ export class MatchService {
     });
   }
 
-  getAvailableLeagues(): Observable<{ success: boolean; data: any[] }> {
-    return this.http.get<{ success: boolean; data: any[] }>(`${this.apiUrl}/leagues/available`);
+  getAvailableLeagues(): Observable<{ success: boolean; data: League[] }> {
+    return this.http.get<{ success: boolean; data: League[] }>(`${this.apiUrl}/leagues/available`);
+  }
+
+  getLeagueFixtures(leagueId: string, season?: number, scheduled?: boolean): Observable<{ success: boolean; data: any[]; fromCache: boolean; cachedAt: string }> {
+    const params: any = { leagueId };
+    if (season) params.season = season.toString();
+    if (scheduled) params.scheduled = 'true';
+    return this.http.get<{ success: boolean; data: any[]; fromCache: boolean; cachedAt: string }>(`${this.apiUrl}/leagues/fixtures`, { params });
+  }
+
+  syncLeagueToGroup(groupId: string): Observable<{ success: boolean; message: string; data: { added: number; skipped: number; total: number } }> {
+    return this.http.post<{ success: boolean; message: string; data: { added: number; skipped: number; total: number } }>(`${this.apiUrl}/sync-league`, { groupId });
   }
 
   fetchAndSaveMatches(leagueId?: string): Observable<{ success: boolean; message: string; data: Match[] }> {
@@ -88,15 +100,100 @@ export class MatchService {
     return this.http.put<{ success: boolean; message: string; data: Match }>(`${this.apiUrl}/${data.matchId}`, data);
   }
 
-  getHeadToHead(homeTeam: string, awayTeam: string): Observable<{ success: boolean; data: Match[] }> {
-    return this.http.get<{ success: boolean; data: Match[] }>(`${this.apiUrl}/head-to-head`, {
-      params: { homeTeam, awayTeam }
+  getHeadToHead(homeTeam: string, awayTeam: string, homeTeamId?: number, awayTeamId?: number): Observable<{ success: boolean; data: Match[] }> {
+    const params: any = { homeTeam, awayTeam };
+    if (homeTeamId) params.homeTeamId = homeTeamId.toString();
+    if (awayTeamId) params.awayTeamId = awayTeamId.toString();
+    return this.http.get<{ success: boolean; data: Match[] }>(`${this.apiUrl}/head-to-head`, { params });
+  }
+
+  getTeamRecentMatches(team: string, teamId?: number): Observable<{ success: boolean; data: Match[] }> {
+    const params: any = { team };
+    if (teamId) params.teamId = teamId.toString();
+    return this.http.get<{ success: boolean; data: Match[] }>(`${this.apiUrl}/team-recent`, { params });
+  }
+
+  // Get all currently live fixtures worldwide
+  getLiveFixtures(): Observable<{ success: boolean; data: any[]; count: number }> {
+    return this.http.get<{ success: boolean; data: any[]; count: number }>(`${this.apiUrl}/live`);
+  }
+
+  // Add live fixtures to a group for testing
+  addLiveFixturesToGroup(groupId: string, limit: number = 5): Observable<{ success: boolean; message: string; data: Match[] }> {
+    return this.http.post<{ success: boolean; message: string; data: Match[] }>(`${this.apiUrl}/live/add-to-group`, {
+      groupId,
+      limit
     });
   }
 
-  getTeamRecentMatches(team: string): Observable<{ success: boolean; data: Match[] }> {
-    return this.http.get<{ success: boolean; data: Match[] }>(`${this.apiUrl}/team-recent`, {
-      params: { team }
-    });
+  // Refresh live matches in a group with fresh data from API
+  refreshLiveMatches(groupId: string): Observable<{ success: boolean; message: string; data: Match[] }> {
+    return this.http.post<{ success: boolean; message: string; data: Match[] }>(`${this.apiUrl}/live/refresh/${groupId}`, {});
   }
+
+  // Get teams for a specific league (for automatic groups)
+  getLeagueTeams(leagueId: string, season?: number): Observable<{ success: boolean; data: ApiTeam[] }> {
+    const params: any = { leagueId };
+    if (season) params.season = season.toString();
+    return this.http.get<{ success: boolean; data: ApiTeam[] }>(`${this.apiUrl}/leagues/teams`, { params });
+  }
+
+  // Get filtered fixtures from API (for automatic groups)
+  getFilteredFixtures(filters: {
+    leagueId: string;
+    season?: number;
+    dateFrom?: string;
+    dateTo?: string;
+    status?: string[];
+    teamId?: string;
+    homeScore?: number;
+    awayScore?: number;
+    groupId?: string;
+  }): Observable<{ success: boolean; data: ApiFixture[] }> {
+    const params: any = { leagueId: filters.leagueId };
+
+    if (filters.season) params.season = filters.season.toString();
+    if (filters.dateFrom) params.dateFrom = filters.dateFrom;
+    if (filters.dateTo) params.dateTo = filters.dateTo;
+    if (filters.status && filters.status.length > 0) params.status = filters.status.join(',');
+    if (filters.teamId) params.teamId = filters.teamId;
+    if (filters.homeScore !== undefined) params.homeScore = filters.homeScore.toString();
+    if (filters.awayScore !== undefined) params.awayScore = filters.awayScore.toString();
+    if (filters.groupId) params.groupId = filters.groupId;
+
+    return this.http.get<{ success: boolean; data: ApiFixture[] }>(`${this.apiUrl}/leagues/fixtures/filtered`, { params });
+  }
+}
+
+// API response types for automatic groups
+export interface ApiTeam {
+  id: number;
+  name: string;
+  code: string;
+  logo: string;
+  country: string;
+}
+
+export interface ApiFixture {
+  externalApiId: string;
+  homeTeam: string;
+  homeTeamId: number;
+  homeTeamLogo: string;
+  awayTeam: string;
+  awayTeamId: number;
+  awayTeamLogo: string;
+  matchDate: string;
+  elapsed?: number;
+  extraTime?: number;
+  statusShort?: string;
+  status: string;
+  result: {
+    homeScore: number;
+    awayScore: number;
+    outcome: string;
+  } | null;
+  competition: string;
+  season: number;
+  round: string;
+  venue: string | null;
 }

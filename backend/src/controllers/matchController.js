@@ -1,6 +1,7 @@
 const Match = require('../models/Match');
 const Group = require('../models/Group');
 const axios = require('axios');
+const apiFootballService = require('../services/apiFootballService');
 
 exports.getMatches = async (req, res) => {
   try {
@@ -320,16 +321,353 @@ exports.updateMatchResults = async (req, res) => {
   }
 };
 
-// Get available leagues
+// Get available leagues (hard-coded list, no API call)
 exports.getAvailableLeagues = async (req, res) => {
   try {
-    const leagues = [
-      { id: '4644', name: 'Israeli Premier League (Ligat Ha\'al)', country: 'Israel' }
-    ];
+    const leagues = apiFootballService.getSupportedLeagues();
 
     res.status(200).json({
       success: true,
       data: leagues
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Clear fixture cache for a league (for testing/debugging)
+exports.clearLeagueCache = async (req, res) => {
+  try {
+    const { leagueId, season } = req.query;
+
+    if (!leagueId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide leagueId'
+      });
+    }
+
+    await apiFootballService.clearCache(leagueId, season ? parseInt(season) : null);
+
+    res.status(200).json({
+      success: true,
+      message: `Cache cleared for league ${leagueId}`,
+      currentSeason: apiFootballService.getCurrentSeason()
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Search leagues by country (for finding correct league IDs)
+exports.searchLeagues = async (req, res) => {
+  try {
+    const { country } = req.query;
+
+    if (!country) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide country name'
+      });
+    }
+
+    const leagues = await apiFootballService.searchLeaguesByCountry(country);
+
+    res.status(200).json({
+      success: true,
+      data: leagues
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Get teams for a specific league
+exports.getLeagueTeams = async (req, res) => {
+  try {
+    const { leagueId, season } = req.query;
+
+    if (!leagueId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide leagueId'
+      });
+    }
+
+    const teams = await apiFootballService.getTeamsForLeague(leagueId, season ? parseInt(season) : null);
+
+    res.status(200).json({
+      success: true,
+      data: teams
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Get filtered fixtures for automatic groups
+exports.getFilteredFixtures = async (req, res) => {
+  try {
+    const { leagueId, season, dateFrom, dateTo, status, teamId, homeScore, awayScore, groupId } = req.query;
+
+    if (!leagueId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide leagueId'
+      });
+    }
+
+    const filters = {};
+
+    if (dateFrom) filters.dateFrom = dateFrom;
+    if (dateTo) filters.dateTo = dateTo;
+
+    // Parse status filter (can be comma-separated)
+    const statusArray = status ? status.split(',') : [];
+    if (statusArray.length > 0) {
+      filters.status = statusArray;
+    }
+
+    // Single team filter (API limitation)
+    if (teamId) {
+      filters.teamId = teamId;
+    }
+
+    let fixtures = await apiFootballService.getFilteredFixtures(
+      leagueId,
+      season ? parseInt(season) : null,
+      filters
+    );
+
+    // Also fetch local DB matches that might have been updated locally (e.g., LIVE status for testing)
+    const localQuery = {};
+    if (groupId) {
+      localQuery.groups = groupId;
+    }
+    // Filter by status if provided
+    if (statusArray.length > 0) {
+      localQuery.status = { $in: statusArray };
+    }
+    // Filter by date range if provided
+    if (dateFrom || dateTo) {
+      localQuery.matchDate = {};
+      if (dateFrom) localQuery.matchDate.$gte = new Date(dateFrom);
+      if (dateTo) localQuery.matchDate.$lte = new Date(dateTo + 'T23:59:59');
+    }
+
+    const localMatches = await Match.find(localQuery);
+
+    // Merge local matches with API fixtures
+    // Local matches take precedence (for status updates like LIVE)
+    localMatches.forEach(localMatch => {
+      const existingIndex = fixtures.findIndex(f =>
+        f.externalApiId === localMatch.externalApiId
+      );
+
+      // Convert local match to API fixture format
+      const localAsFixture = {
+        externalApiId: localMatch.externalApiId || localMatch._id.toString(),
+        homeTeam: localMatch.homeTeam,
+        homeTeamId: localMatch.homeTeamId,
+        homeTeamLogo: localMatch.homeTeamLogo,
+        awayTeam: localMatch.awayTeam,
+        awayTeamId: localMatch.awayTeamId,
+        awayTeamLogo: localMatch.awayTeamLogo,
+        matchDate: localMatch.matchDate,
+        status: localMatch.status,
+        result: localMatch.result,
+        competition: localMatch.competition,
+        season: localMatch.season,
+        round: localMatch.round || 'Unknown',
+        elapsed: localMatch.elapsed,
+        extraTime: localMatch.extraTime,
+        statusShort: localMatch.statusShort
+      };
+
+      if (existingIndex !== -1) {
+        // Always replace API fixture with local version for LIVE matches (to get elapsed time)
+        // or if status is different
+        if (localMatch.status === 'LIVE' || localMatch.status !== fixtures[existingIndex].status) {
+          fixtures[existingIndex] = localAsFixture;
+        }
+      } else {
+        // Add local match if not in API results
+        fixtures.push(localAsFixture);
+      }
+    });
+
+    // Apply score filter locally (API doesn't support this)
+    if (homeScore !== undefined || awayScore !== undefined) {
+      fixtures = fixtures.filter(match => {
+        if (match.status !== 'FINISHED' || !match.result) return false;
+
+        const homeMatch = homeScore === undefined || match.result.homeScore === parseInt(homeScore);
+        const awayMatch = awayScore === undefined || match.result.awayScore === parseInt(awayScore);
+
+        return homeMatch && awayMatch;
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: fixtures
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Get fixtures for a specific league
+exports.getLeagueFixtures = async (req, res) => {
+  try {
+    const { leagueId, season, scheduled, daysBack, daysForward } = req.query;
+
+    if (!leagueId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide leagueId'
+      });
+    }
+
+    let result;
+    if (scheduled === 'true') {
+      result = await apiFootballService.getScheduledFixtures(leagueId, season ? parseInt(season) : null);
+    } else if (daysBack || daysForward) {
+      // Use date range filter
+      result = await apiFootballService.getFixturesInRange(
+        leagueId,
+        season ? parseInt(season) : null,
+        daysBack ? parseInt(daysBack) : 7,
+        daysForward ? parseInt(daysForward) : 7
+      );
+    } else {
+      result = await apiFootballService.getFixtures(leagueId, season ? parseInt(season) : null);
+    }
+
+    res.status(200).json({
+      success: true,
+      data: result.fixtures,
+      fromCache: result.fromCache,
+      cachedAt: result.cachedAt
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Sync league fixtures to a group
+exports.syncLeagueFixturesToGroup = async (req, res) => {
+  try {
+    const { groupId } = req.body;
+
+    if (!groupId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide groupId'
+      });
+    }
+
+    // Find the group
+    const group = await Group.findById(groupId);
+
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        message: 'Group not found'
+      });
+    }
+
+    // Check if user is the group creator OR is admin
+    const isCreator = group.creator.toString() === req.user._id.toString();
+    if (!isCreator && !req.user.isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: 'Only the group creator can sync matches'
+      });
+    }
+
+    // Check if group is automatic type
+    if (group.matchType !== 'automatic') {
+      return res.status(400).json({
+        success: false,
+        message: 'This group is not set to automatic match loading'
+      });
+    }
+
+    // Check if group has a selected league
+    if (!group.selectedLeague) {
+      return res.status(400).json({
+        success: false,
+        message: 'No league selected for this group'
+      });
+    }
+
+    // Get fixtures from the past week to the next week
+    const { fixtures } = await apiFootballService.getFixturesInRange(
+      group.selectedLeague,
+      group.selectedSeason,
+      7,  // days back
+      7   // days forward
+    );
+
+    let addedCount = 0;
+    let skippedCount = 0;
+
+    for (const fixtureData of fixtures) {
+      // Check if match already exists
+      let match = await Match.findOne({ externalApiId: fixtureData.externalApiId });
+
+      if (match) {
+        // Match exists, check if it's already in this group
+        if (!match.groups.includes(groupId)) {
+          match.groups.push(groupId);
+          await match.save();
+          addedCount++;
+        } else {
+          skippedCount++;
+        }
+      } else {
+        // Create new match
+        match = await Match.create({
+          externalApiId: fixtureData.externalApiId,
+          homeTeam: fixtureData.homeTeam,
+          awayTeam: fixtureData.awayTeam,
+          matchDate: fixtureData.matchDate,
+          status: fixtureData.status,
+          competition: fixtureData.competition,
+          season: fixtureData.season,
+          groups: [groupId]
+        });
+        addedCount++;
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Synced ${addedCount} matches to group (${skippedCount} already existed)`,
+      data: {
+        added: addedCount,
+        skipped: skippedCount,
+        total: fixtures.length
+      }
     });
   } catch (error) {
     res.status(500).json({
@@ -850,15 +1188,68 @@ exports.editMatch = async (req, res) => {
   }
 };
 
+// TEST ONLY: Set match as LIVE for testing purposes
+exports.setMatchLive = async (req, res) => {
+  try {
+    const { matchId } = req.params;
+    const { homeScore, awayScore } = req.body;
+
+    const match = await Match.findById(matchId);
+
+    if (!match) {
+      return res.status(404).json({
+        success: false,
+        message: 'Match not found'
+      });
+    }
+
+    // Set match as LIVE with current score
+    match.status = 'LIVE';
+    match.result = {
+      homeScore: homeScore !== undefined ? homeScore : 1,
+      awayScore: awayScore !== undefined ? awayScore : 0,
+      outcome: null
+    };
+
+    await match.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Match set to LIVE for testing',
+      data: match
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
 // Get head-to-head history between two teams
 exports.getHeadToHead = async (req, res) => {
   try {
-    const { homeTeam, awayTeam } = req.query;
+    const { homeTeam, awayTeam, homeTeamId, awayTeamId } = req.query;
+
+    // If team IDs are provided, use API-Football for H2H
+    if (homeTeamId && awayTeamId) {
+      try {
+        const h2hMatches = await apiFootballService.getHeadToHead(homeTeamId, awayTeamId, 5);
+        return res.status(200).json({
+          success: true,
+          data: h2hMatches,
+          source: 'api'
+        });
+      } catch (apiError) {
+        console.error('API H2H failed, falling back to local DB:', apiError.message);
+        // Fall through to local DB query
+      }
+    }
 
     if (!homeTeam || !awayTeam) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide both homeTeam and awayTeam'
+        message: 'Please provide both homeTeam and awayTeam (or homeTeamId and awayTeamId)'
       });
     }
 
@@ -879,7 +1270,8 @@ exports.getHeadToHead = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      data: matches
+      data: matches,
+      source: 'local'
     });
   } catch (error) {
     res.status(500).json({
@@ -892,12 +1284,27 @@ exports.getHeadToHead = async (req, res) => {
 // Get recent matches for a team (last 5 matches)
 exports.getTeamRecentMatches = async (req, res) => {
   try {
-    const { team } = req.query;
+    const { team, teamId } = req.query;
+
+    // If team ID is provided, use API-Football
+    if (teamId) {
+      try {
+        const recentMatches = await apiFootballService.getTeamRecentMatches(teamId, 5);
+        return res.status(200).json({
+          success: true,
+          data: recentMatches,
+          source: 'api'
+        });
+      } catch (apiError) {
+        console.error('API team recent failed, falling back to local DB:', apiError.message);
+        // Fall through to local DB query
+      }
+    }
 
     if (!team) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide team name'
+        message: 'Please provide team name or teamId'
       });
     }
 
@@ -917,7 +1324,176 @@ exports.getTeamRecentMatches = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      data: matches
+      data: matches,
+      source: 'local'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Get all currently live fixtures worldwide from API-Football
+exports.getLiveFixtures = async (req, res) => {
+  try {
+    const liveFixtures = await apiFootballService.getLiveFixtures();
+
+    res.status(200).json({
+      success: true,
+      data: liveFixtures,
+      count: liveFixtures.length
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Refresh live matches in a group with fresh data from API
+exports.refreshLiveMatches = async (req, res) => {
+  try {
+    const { groupId } = req.params;
+
+    // Get current live matches in the group
+    const liveMatchesInGroup = await Match.find({
+      groups: groupId,
+      status: 'LIVE'
+    });
+
+    if (liveMatchesInGroup.length === 0) {
+      return res.status(200).json({
+        success: true,
+        message: 'No live matches to refresh',
+        data: []
+      });
+    }
+
+    // Fetch fresh live data from API
+    const freshLiveFixtures = await apiFootballService.getLiveFixtures();
+
+    // Update each live match with fresh data
+    const updatedMatches = [];
+    for (const match of liveMatchesInGroup) {
+      const freshData = freshLiveFixtures.find(f => f.externalApiId === match.externalApiId);
+
+      if (freshData) {
+        // Update with fresh data
+        match.result = freshData.result;
+        match.elapsed = freshData.elapsed;
+        match.extraTime = freshData.extraTime;
+        match.statusShort = freshData.statusShort;
+        await match.save();
+        updatedMatches.push(match);
+      } else {
+        // Match is no longer in live API - it has likely finished
+        // Mark as FINISHED and set final outcome
+        match.status = 'FINISHED';
+        match.elapsed = null;
+        match.extraTime = null;
+        match.statusShort = 'FT';
+
+        // Set the outcome based on the score
+        if (match.result && match.result.homeScore !== null && match.result.awayScore !== null) {
+          if (match.result.homeScore > match.result.awayScore) {
+            match.result.outcome = '1';
+          } else if (match.result.homeScore < match.result.awayScore) {
+            match.result.outcome = '2';
+          } else {
+            match.result.outcome = 'X';
+          }
+        }
+
+        await match.save();
+        updatedMatches.push(match);
+      }
+    }
+
+    // Return all matches for the group (not just live)
+    const allMatches = await Match.find({ groups: groupId }).sort({ matchDate: 1 });
+
+    res.status(200).json({
+      success: true,
+      message: `Refreshed ${updatedMatches.length} live matches`,
+      data: allMatches
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Add live fixtures to a group for testing
+exports.addLiveFixturesToGroup = async (req, res) => {
+  try {
+    const { groupId, limit = 5 } = req.body;
+
+    if (!groupId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide groupId'
+      });
+    }
+
+    // Verify group exists
+    const group = await Group.findById(groupId);
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        message: 'Group not found'
+      });
+    }
+
+    // Fetch live fixtures
+    const liveFixtures = await apiFootballService.getLiveFixtures();
+
+    if (liveFixtures.length === 0) {
+      return res.status(200).json({
+        success: true,
+        message: 'No live fixtures available at the moment',
+        data: []
+      });
+    }
+
+    // Add first N live fixtures to the group
+    const fixturesToAdd = liveFixtures.slice(0, limit);
+    const addedMatches = [];
+
+    for (const fixture of fixturesToAdd) {
+      // Check if match already exists
+      let match = await Match.findOne({ externalApiId: fixture.externalApiId });
+
+      if (match) {
+        // Update existing match and add to group if not already
+        match.status = 'LIVE';
+        match.result = fixture.result;
+        match.elapsed = fixture.elapsed;
+        match.extraTime = fixture.extraTime;
+        match.statusShort = fixture.statusShort;
+        if (!match.groups.includes(groupId)) {
+          match.groups.push(groupId);
+        }
+        await match.save();
+      } else {
+        // Create new match
+        match = new Match({
+          ...fixture,
+          groups: [groupId]
+        });
+        await match.save();
+      }
+      addedMatches.push(match);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Added ${addedMatches.length} live fixtures to group`,
+      data: addedMatches
     });
   } catch (error) {
     res.status(500).json({

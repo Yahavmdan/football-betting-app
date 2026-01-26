@@ -19,6 +19,19 @@ export interface PlaceBetData {
   groupId: string;
   outcome: '1' | 'X' | '2';
   wagerAmount?: number;
+  matchData?: {
+    externalApiId: string;
+    homeTeam: string;
+    awayTeam: string;
+    matchDate: Date | string;
+    status: string;
+    competition: string;
+    season?: string;
+    homeTeamId?: number;
+    awayTeamId?: number;
+    homeTeamLogo?: string;
+    awayTeamLogo?: string;
+  };
 }
 
 export interface MemberBet {
