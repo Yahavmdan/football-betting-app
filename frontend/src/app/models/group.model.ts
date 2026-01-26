@@ -6,6 +6,9 @@ export interface Group {
   startingCredits: number;
   creditsGoal: number;
   showBets: boolean;
+  matchType: 'manual' | 'automatic';
+  selectedLeague?: string;
+  selectedSeason?: number;
   creator: any;
   members: GroupMember[];
   pendingMembers: PendingMember[];
@@ -53,6 +56,9 @@ export interface CreateGroupData {
   startingCredits?: number;
   creditsGoal?: number;
   showBets?: boolean;
+  matchType?: 'manual' | 'automatic';
+  selectedLeague?: string;
+  selectedSeason?: number;
 }
 
 export interface JoinGroupData {

@@ -295,6 +295,11 @@
               <polyline points="7 3 7 8 15 8"></polyline>
             </svg>
           </label>
+          <button *ngIf="hasLiveMatches()" (click)="refreshLiveMatches()" class="btn-refresh-live" [class.refreshing]="refreshingLive" [disabled]="refreshingLive">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [class.spinning]="refreshingLive">
+              <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+            </svg>
+          </button>
           <button (click)="openFilterDialog()" class="btn-filter" [class.has-filters]="hasActiveFilters()">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
@@ -411,23 +416,58 @@
         </div>
       </div>
       <div *ngIf="loadingMatches" class="loading">{{ 'auth.loading' | translate }}</div>
-      <div *ngIf="!loadingMatches && filteredMatches.length > 0" class="matches-list">
+
+      <!-- Automatic groups: Show matches grouped by round -->
+      <div *ngIf="!loadingMatches && filteredMatches.length > 0 && isAutomaticGroup() && matchesByRound.length > 0" class="matches-list matches-by-round">
+        <div *ngFor="let roundGroup of matchesByRound" class="round-group">
+          <div class="round-separator">
+            <span class="round-name">{{ 'matches.round' | translate }} {{ roundGroup.roundNumber }}</span>
+            <span class="round-dates">{{ formatRoundDateRange(roundGroup.startDate, roundGroup.endDate) }}</span>
+          </div>
+          <div class="round-matches">
+            <div *ngFor="let match of roundGroup.matches" class="match-card compact" [class.has-bet]="hasBetOnMatch(match._id)" [class.expanded]="expandedMatchId === match._id">
+              <ng-container *ngTemplateOutlet="matchCardTemplate; context: { $implicit: match }"></ng-container>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Manual groups or no rounds: Show flat list -->
+      <div *ngIf="!loadingMatches && filteredMatches.length > 0 && (!isAutomaticGroup() || matchesByRound.length === 0)" class="matches-list">
         <div *ngFor="let match of filteredMatches" class="match-card compact" [class.has-bet]="hasBetOnMatch(match._id)" [class.expanded]="expandedMatchId === match._id">
-          <!-- Compact view - always visible -->
+          <ng-container *ngTemplateOutlet="matchCardTemplate; context: { $implicit: match }"></ng-container>
+        </div>
+      </div>
+      <div *ngIf="!loadingMatches && filteredMatches.length === 0" class="empty-state">
+        {{ hasActiveFilters() ? ('filters.noMatchesFound' | translate) : ('groups.noMatches' | translate) }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Match Card Template -->
+  <ng-template #matchCardTemplate let-match>
+    <!-- Compact view - always visible -->
           <div class="match-compact-row" (click)="toggleMatchExpand(match._id)">
             <div class="match-compact-teams">
               <span class="team-name">{{ match.homeTeam | teamTranslate }}</span>
-              <img *ngIf="getTeamLogo(match.homeTeam)" [src]="getTeamLogo(match.homeTeam)" [alt]="match.homeTeam | teamTranslate" class="team-logo-small" (error)="onImageError($event)">
-              <span *ngIf="match.status === 'FINISHED' || (match.result && match.result.homeScore !== null)" class="score-inline">{{ match.result.homeScore }}</span>
+              <img *ngIf="getTeamLogo(match.homeTeam, match)" [src]="getTeamLogo(match.homeTeam, match)" [alt]="match.homeTeam | teamTranslate" class="team-logo-small" (error)="onImageError($event)">
+              <span *ngIf="match.status === 'FINISHED' || (match.result && match.result.homeScore !== null)" class="score-inline">{{ match.result?.homeScore }}</span>
               <span class="vs-compact">-</span>
-              <span *ngIf="match.status === 'FINISHED' || (match.result && match.result.awayScore !== null)" class="score-inline">{{ match.result.awayScore }}</span>
-              <img *ngIf="getTeamLogo(match.awayTeam)" [src]="getTeamLogo(match.awayTeam)" [alt]="match.awayTeam | teamTranslate" class="team-logo-small" (error)="onImageError($event)">
+              <span *ngIf="match.status === 'FINISHED' || (match.result && match.result.awayScore !== null)" class="score-inline">{{ match.result?.awayScore }}</span>
+              <img *ngIf="getTeamLogo(match.awayTeam, match)" [src]="getTeamLogo(match.awayTeam, match)" [alt]="match.awayTeam | teamTranslate" class="team-logo-small" (error)="onImageError($event)">
               <span class="team-name">{{ match.awayTeam | teamTranslate }}</span>
             </div>
             <div class="match-compact-info">
               <span class="date-compact">{{ match.matchDate | date:'dd/MM HH:mm' }}</span>
-              <span class="status-compact" [class.finished]="match.status === 'FINISHED'" [class.started]="match.status === 'SCHEDULED' && isMatchInPast(match.matchDate)">
-                {{ (match.status === 'SCHEDULED' && isMatchInPast(match.matchDate)) ? ('matches.started' | translate) : ('matches.' + match.status.toLowerCase() | translate) }}
+              <span class="status-compact" [class.finished]="match.status === 'FINISHED'" [class.started]="match.status === 'SCHEDULED' && isMatchInPast(match.matchDate)" [class.live]="match.status === 'LIVE'">
+                <span *ngIf="match.status === 'LIVE'" class="live-indicator"></span>
+                <ng-container *ngIf="match.status === 'LIVE'">
+                  <ng-container *ngIf="match.elapsed !== undefined && match.elapsed !== null; else liveNoTime"><span class="live-time">{{ match.elapsed }}'<span *ngIf="match.extraTime" class="extra-time">(+{{ match.extraTime }})</span></span></ng-container>
+                  <ng-template #liveNoTime>{{ 'matches.live' | translate }}</ng-template>
+                </ng-container>
+                <ng-container *ngIf="match.status !== 'LIVE'">
+                  {{ (match.status === 'SCHEDULED' && isMatchInPast(match.matchDate)) ? ('matches.started' | translate) : ('matches.' + match.status.toLowerCase() | translate) }}
+                </ng-container>
               </span>
               <span *ngIf="hasBetOnMatch(match._id)" class="bet-indicator">✓</span>
               <button class="btn-expand" [class.expanded]="expandedMatchId === match._id">
@@ -443,8 +483,8 @@
           <div class="match-expanded-content">
             <!-- Team logo backgrounds -->
             <div class="match-bg-logos">
-              <div class="bg-logo bg-logo-home" *ngIf="getTeamLogo(match.homeTeam)" [style.background-image]="'url(' + getTeamLogo(match.homeTeam) + ')'"></div>
-              <div class="bg-logo bg-logo-away" *ngIf="getTeamLogo(match.awayTeam)" [style.background-image]="'url(' + getTeamLogo(match.awayTeam) + ')'"></div>
+              <div class="bg-logo bg-logo-home" *ngIf="getTeamLogo(match.homeTeam, match)" [style.background-image]="'url(' + getTeamLogo(match.homeTeam, match) + ')'"></div>
+              <div class="bg-logo bg-logo-away" *ngIf="getTeamLogo(match.awayTeam, match)" [style.background-image]="'url(' + getTeamLogo(match.awayTeam, match) + ')'"></div>
             </div>
             <div class="match-expanded-header">
               <span class="competition">{{ match.competition }}</span>
@@ -511,7 +551,7 @@
                 <!-- Home Team Form -->
                 <div class="team-form-column">
                   <div class="team-form-header">
-                    <img *ngIf="getTeamLogo(match.homeTeam)" [src]="getTeamLogo(match.homeTeam)" class="team-form-logo" (error)="onImageError($event)">
+                    <img *ngIf="getTeamLogo(match.homeTeam, match)" [src]="getTeamLogo(match.homeTeam, match)" class="team-form-logo" (error)="onImageError($event)">
                     <span class="team-form-name">{{ match.homeTeam | teamTranslate }}</span>
                   </div>
                   <div *ngIf="homeTeamRecentMatches.length === 0" class="team-form-empty">
@@ -531,7 +571,7 @@
                 <!-- Away Team Form -->
                 <div class="team-form-column">
                   <div class="team-form-header">
-                    <img *ngIf="getTeamLogo(match.awayTeam)" [src]="getTeamLogo(match.awayTeam)" class="team-form-logo" (error)="onImageError($event)">
+                    <img *ngIf="getTeamLogo(match.awayTeam, match)" [src]="getTeamLogo(match.awayTeam, match)" class="team-form-logo" (error)="onImageError($event)">
                     <span class="team-form-name">{{ match.awayTeam | teamTranslate }}</span>
                   </div>
                   <div *ngIf="awayTeamRecentMatches.length === 0" class="team-form-empty">
@@ -641,7 +681,7 @@
                   class="inline-outcome-btn"
                   [class.selected]="inlineBetData.outcome === '1'"
                   (click)="selectInlineOutcome('1')">
-                  <img *ngIf="getTeamLogo(match.homeTeam)" [src]="getTeamLogo(match.homeTeam)" class="inline-outcome-logo" (error)="onImageError($event)">
+                  <img *ngIf="getTeamLogo(match.homeTeam, match)" [src]="getTeamLogo(match.homeTeam, match)" class="inline-outcome-logo" (error)="onImageError($event)">
                   <span class="inline-outcome-number">1</span>
                   <span class="inline-outcome-name">{{ match.homeTeam | teamTranslate }}</span>
                 </button>
@@ -658,7 +698,7 @@
                   class="inline-outcome-btn"
                   [class.selected]="inlineBetData.outcome === '2'"
                   (click)="selectInlineOutcome('2')">
-                  <img *ngIf="getTeamLogo(match.awayTeam)" [src]="getTeamLogo(match.awayTeam)" class="inline-outcome-logo" (error)="onImageError($event)">
+                  <img *ngIf="getTeamLogo(match.awayTeam, match)" [src]="getTeamLogo(match.awayTeam, match)" class="inline-outcome-logo" (error)="onImageError($event)">
                   <span class="inline-outcome-number">2</span>
                   <span class="inline-outcome-name">{{ match.awayTeam | teamTranslate }}</span>
                 </button>
@@ -730,13 +770,7 @@
           </div>
           </div> <!-- Close match-expanded-content -->
           </div> <!-- Close match-expanded-wrapper -->
-        </div>
-      </div>
-      <div *ngIf="!loadingMatches && filteredMatches.length === 0" class="empty-state">
-        {{ hasActiveFilters() ? ('filters.noMatchesFound' | translate) : ('groups.noMatches' | translate) }}
-      </div>
-    </div>
-  </div>
+  </ng-template>
 
   <!-- Profile Picture Modal -->
   <div *ngIf="viewingProfilePicture" class="profile-picture-modal" (click)="closeProfilePicture()">

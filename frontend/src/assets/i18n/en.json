@@ -94,7 +94,20 @@
     "noTeam": "No logo",
     "selectColor": "Select background color",
     "noColor": "Default",
-    "showMessage": "Show message"
+    "showMessage": "Show message",
+    "matchType": "Match Loading",
+    "matchTypeManual": "Manual",
+    "matchTypeAutomatic": "Automatic",
+    "matchTypeManualDesc": "Add matches manually to the group",
+    "matchTypeAutomaticDesc": "Matches are loaded automatically from leagues",
+    "selectLeague": "Select League",
+    "selectLeaguePlaceholder": "Select a league...",
+    "searchLeagues": "Search leagues...",
+    "leagueSelectionHint": "Choose the league from which matches will be automatically loaded",
+    "syncMatches": "Sync Matches",
+    "syncingMatches": "Syncing...",
+    "matchesSynced": "Matches synced successfully",
+    "syncMatchesDesc": "Fetch matches from the past week and the upcoming week"
   },
   "matches": {
     "scheduled": "SCHEDULED",
@@ -139,6 +152,7 @@
     "confirmMarkFinished": "Are you sure you want to mark this match as finished? Points will be calculated.",
     "confirmDelete": "Are you sure you want to delete this match? This action cannot be undone.",
     "ongoingScore": "Current Score",
+    "round": "Round",
     "relativePoints": "Points Distribution",
     "homeWinPoints": "Home Win Points",
     "drawPoints": "Draw Points",
@@ -150,7 +164,8 @@
     "headToHead": "Head to Head",
     "noHeadToHead": "No previous matches found",
     "teamForm": "Recent Matches",
-    "noRecentMatches": "No recent matches"
+    "noRecentMatches": "No recent matches",
+    "added": "added"
   },
   "bets": {
     "placeYourBet": "Place Your Bet",

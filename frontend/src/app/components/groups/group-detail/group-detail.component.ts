@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { GroupService } from '../../../services/group.service';
-import { MatchService } from '../../../services/match.service';
+import { MatchService, ApiTeam, ApiFixture } from '../../../services/match.service';
 import { BetService } from '../../../services/bet.service';
 import { AuthService } from '../../../services/auth.service';
 import { TranslationService } from '../../../services/translation.service';
@@ -34,6 +34,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   loadingLeaderboard = true;
   loadingMatches = true;
   matchesWithBets: Set<string> = new Set();
+  refreshingLive = false;
 
   // Score update
   editingMatchId: string | null = null;
@@ -120,6 +121,13 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   saveFiltersEnabled = false;
   private apiBaseUrl = environment.apiUrl.replace('/api', '');
 
+  // API teams for automatic groups
+  apiTeams: ApiTeam[] = [];
+  loadingApiTeams = false;
+
+  // Round grouping for automatic groups
+  matchesByRound: RoundGroup[] = [];
+
   // Select options for filters
   memberSelectOptions: SelectOption[] = [];
   teamSelectOptions: SelectOption[] = [];
@@ -165,11 +173,20 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   }
 
   private initTeamSelectOptions(): void {
-    this.teamSelectOptions = this.allTeams.map(team => ({
-      value: team.name,
-      label: team.name,
-      image: team.logo || undefined
-    }));
+    // For automatic groups, use API teams; for manual groups, use local teams
+    if (this.isAutomaticGroup() && this.apiTeams.length > 0) {
+      this.teamSelectOptions = this.apiTeams.map(team => ({
+        value: team.id.toString(), // Use team ID for API filtering
+        label: team.name,
+        image: team.logo || undefined
+      }));
+    } else {
+      this.teamSelectOptions = this.allTeams.map(team => ({
+        value: team.name,
+        label: team.name,
+        image: team.logo || undefined
+      }));
+    }
   }
 
   loadGroupDetails(): void {
@@ -178,10 +195,72 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
         this.group = response.data;
         // Load pending members after group is loaded (needs group data for canManageGroup check)
         this.loadPendingMembers();
+        // For automatic groups, load teams from API
+        if (this.isAutomaticGroup()) {
+          this.loadApiTeams();
+        }
       },
       error: (error) => {
         console.error('Failed to load group:', error);
         void this.router.navigate(['/groups']);
+      }
+    });
+  }
+
+  isAutomaticGroup(): boolean {
+    return this.group?.matchType === 'automatic';
+  }
+
+  hasLiveMatches(): boolean {
+    return this.filteredMatches.some(match => match.status === 'LIVE');
+  }
+
+  refreshLiveMatches(): void {
+    if (this.refreshingLive) return;
+
+    this.refreshingLive = true;
+
+    // Call the refresh API to get fresh live data from external API
+    this.matchService.refreshLiveMatches(this.groupId).subscribe({
+      next: (response) => {
+        // Update matches with fresh data
+        this.matches = response.data.sort((a, b) => {
+          // SCHEDULED/LIVE matches come first
+          if ((a.status === 'SCHEDULED' || a.status === 'LIVE') && b.status === 'FINISHED') return -1;
+          if (a.status === 'FINISHED' && (b.status === 'SCHEDULED' || b.status === 'LIVE')) return 1;
+
+          const dateA = new Date(a.matchDate).getTime();
+          const dateB = new Date(b.matchDate).getTime();
+
+          if (a.status !== 'FINISHED') {
+            return dateA - dateB;
+          } else {
+            return dateB - dateA;
+          }
+        });
+        this.applyFilters();
+        this.refreshingLive = false;
+      },
+      error: (error) => {
+        console.error('Failed to refresh live matches:', error);
+        this.refreshingLive = false;
+      }
+    });
+  }
+
+  loadApiTeams(): void {
+    if (!this.group?.selectedLeague) return;
+
+    this.loadingApiTeams = true;
+    this.matchService.getLeagueTeams(this.group.selectedLeague, this.group.selectedSeason).subscribe({
+      next: (response) => {
+        this.apiTeams = response.data;
+        this.initTeamSelectOptions(); // Reinitialize with API teams
+        this.loadingApiTeams = false;
+      },
+      error: (error) => {
+        console.error('Failed to load API teams:', error);
+        this.loadingApiTeams = false;
       }
     });
   }
@@ -284,13 +363,19 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   }
 
   loadHeadToHead(matchId: string): void {
-    const match = this.matches.find(m => m._id === matchId);
+    const match = this.matches.find(m => m._id === matchId) || this.filteredMatches.find(m => m._id === matchId);
     if (!match) return;
 
     this.loadingHeadToHead = true;
     this.headToHeadMatches = [];
 
-    this.matchService.getHeadToHead(match.homeTeam, match.awayTeam).subscribe({
+    // Pass team IDs for API-Football lookup (for automatic groups)
+    this.matchService.getHeadToHead(
+      match.homeTeam,
+      match.awayTeam,
+      match.homeTeamId,
+      match.awayTeamId
+    ).subscribe({
       next: (response) => {
         this.headToHeadMatches = response.data;
         this.loadingHeadToHead = false;
@@ -303,15 +388,15 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   }
 
   loadTeamForm(matchId: string): void {
-    const match = this.matches.find(m => m._id === matchId);
+    const match = this.matches.find(m => m._id === matchId) || this.filteredMatches.find(m => m._id === matchId);
     if (!match) return;
 
     this.loadingTeamForm = true;
     this.homeTeamRecentMatches = [];
     this.awayTeamRecentMatches = [];
 
-    // Load home team recent matches
-    this.matchService.getTeamRecentMatches(match.homeTeam).subscribe({
+    // Load home team recent matches (with teamId for API-Football)
+    this.matchService.getTeamRecentMatches(match.homeTeam, match.homeTeamId).subscribe({
       next: (response) => {
         this.homeTeamRecentMatches = response.data;
       },
@@ -320,8 +405,8 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
       }
     });
 
-    // Load away team recent matches
-    this.matchService.getTeamRecentMatches(match.awayTeam).subscribe({
+    // Load away team recent matches (with teamId for API-Football)
+    this.matchService.getTeamRecentMatches(match.awayTeam, match.awayTeamId).subscribe({
       next: (response) => {
         this.awayTeamRecentMatches = response.data;
         this.loadingTeamForm = false;
@@ -350,9 +435,19 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   loadMyBets(): void {
     this.betService.getMyBets(this.groupId).subscribe({
       next: (response) => {
-        this.matchesWithBets = new Set(
-          response.data.map(bet => bet.match?._id || bet.match)
-        );
+        const betMatchIds: string[] = [];
+        response.data.forEach(bet => {
+          const match = bet.match;
+          if (match) {
+            // Add the MongoDB _id
+            betMatchIds.push(match._id || match);
+            // Also add externalApiId if present (for API matches)
+            if (match.externalApiId) {
+              betMatchIds.push(match.externalApiId);
+            }
+          }
+        });
+        this.matchesWithBets = new Set(betMatchIds);
       },
       error: (error) => {
         console.error('Failed to load bets:', error);
@@ -365,8 +460,9 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   }
 
   canUpdateScore(match: Match): boolean {
-    // Can update if match is not finished and match has started
+    // Can update if match is not finished, not live, and match has started
     if (match.status === 'FINISHED') return false;
+    if (match.status === 'LIVE') return false; // Don't allow manual score updates for live matches
     const matchDate = new Date(match.matchDate);
     return new Date() >= matchDate;
   }
@@ -620,7 +716,20 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   }
 
   // Team logo helpers
-  getTeamLogo(teamName: string): string | null {
+  getTeamLogo(teamName: string, match?: Match): string | null {
+    // For automatic groups with API data, use the logo from the match
+    if (this.isAutomaticGroup() && match) {
+      if (match.homeTeam === teamName && match.homeTeamLogo) {
+        return match.homeTeamLogo;
+      }
+      if (match.awayTeam === teamName && match.awayTeamLogo) {
+        return match.awayTeamLogo;
+      }
+      // Try to find in API teams list
+      const apiTeam = this.apiTeams.find(t => t.name === teamName);
+      if (apiTeam) return apiTeam.logo;
+    }
+    // Fall back to local team data
     const team = getTeamByName(teamName);
     return team ? team.logo : null;
   }
@@ -691,6 +800,17 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   }
 
   applyFilters(): void {
+    // For automatic groups, use API-based filtering
+    if (this.isAutomaticGroup() && this.group?.selectedLeague) {
+      this.applyApiFilters();
+      return;
+    }
+
+    // For manual groups, use local filtering
+    this.applyLocalFilters();
+  }
+
+  private applyLocalFilters(): void {
     let filtered = [...this.matches];
     const now = new Date();
 
@@ -757,12 +877,200 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     }
 
     this.filteredMatches = filtered;
+    this.groupMatchesByRound();
     this.closeFilterDialog();
 
     // Save filters if enabled
     if (this.saveFiltersEnabled) {
       this.saveFiltersToServer();
     }
+  }
+
+  private applyApiFilters(): void {
+    this.loadingMatches = true;
+
+    // Build API filter params
+    const apiFilters: any = {
+      leagueId: this.group!.selectedLeague!
+    };
+
+    if (this.group?.selectedSeason) {
+      apiFilters.season = this.group.selectedSeason;
+    }
+
+    // Status filter - map to API status values
+    const statusFilters: string[] = [];
+    if (this.filters.showFinished) statusFilters.push('FINISHED');
+    if (this.filters.showNotStarted) statusFilters.push('SCHEDULED');
+    if (this.filters.showOngoing) statusFilters.push('LIVE');
+    if (statusFilters.length > 0) {
+      apiFilters.status = statusFilters;
+    }
+
+    // Date filters - ensure proper order
+    let dateFrom = this.filters.dateFrom;
+    let dateTo = this.filters.dateTo;
+
+    // Swap dates if they're reversed
+    if (dateFrom && dateTo && dateFrom > dateTo) {
+      console.log(`Frontend: Swapping reversed dates: ${dateFrom} <-> ${dateTo}`);
+      [dateFrom, dateTo] = [dateTo, dateFrom];
+    }
+
+    if (dateFrom) {
+      apiFilters.dateFrom = dateFrom;
+    }
+    if (dateTo) {
+      apiFilters.dateTo = dateTo;
+    }
+
+    // Team filter (API supports single team, so use first selected)
+    if (this.filters.selectedTeams.length === 1) {
+      apiFilters.teamId = this.filters.selectedTeams[0];
+    }
+
+    // Score filter
+    if (this.filters.homeScore !== null) {
+      apiFilters.homeScore = this.filters.homeScore;
+    }
+    if (this.filters.awayScore !== null) {
+      apiFilters.awayScore = this.filters.awayScore;
+    }
+
+    // Add groupId to fetch local DB matches as well
+    if (this.groupId) {
+      apiFilters.groupId = this.groupId;
+    }
+
+    this.matchService.getFilteredFixtures(apiFilters).subscribe({
+      next: (response) => {
+        // Transform API fixtures to match format for display
+        let fixtures = response.data.map(fixture => this.apiFixtureToMatch(fixture));
+
+        // Apply multiple team filter locally if more than one team selected
+        if (this.filters.selectedTeams.length > 1) {
+          fixtures = fixtures.filter(match => {
+            const matchHomeId = (match as any).homeTeamId?.toString();
+            const matchAwayId = (match as any).awayTeamId?.toString();
+            return this.filters.selectedTeams.some(teamId =>
+              matchHomeId === teamId || matchAwayId === teamId
+            );
+          });
+        }
+
+        // Apply members who betted filter locally (requires local bet data)
+        if (this.filters.selectedMembers.length > 0) {
+          // For API matches, we need to match by externalApiId
+          fixtures = fixtures.filter(match => {
+            return this.filters.selectedMembers.some(memberId => {
+              return this.allBets.some(bet => {
+                const betMatch = typeof bet.match === 'object' ? bet.match : null;
+                const betUserId = typeof bet.user === 'string' ? bet.user : bet.user?._id;
+                // Match by externalApiId if available
+                if (betMatch && 'externalApiId' in betMatch) {
+                  return (betMatch as any).externalApiId === match.externalApiId && betUserId === memberId;
+                }
+                return false;
+              });
+            });
+          });
+        }
+
+        // Merge local DB matches (for matches with status updated locally, like LIVE)
+        const localMatches = this.matches.filter(localMatch => {
+          // Include local matches that don't exist in API results or have different status
+          const apiMatch = fixtures.find(f =>
+            f.externalApiId === localMatch.externalApiId || f._id === localMatch._id
+          );
+          // If not in API results, include it if it passes the status filter
+          if (!apiMatch) {
+            if (statusFilters.length === 0) return true;
+            return statusFilters.includes(localMatch.status);
+          }
+          // If in API but local has LIVE status (manually set), prefer local
+          if (localMatch.status === 'LIVE' && apiMatch.status !== 'LIVE') {
+            return true;
+          }
+          return false;
+        });
+
+        // Add local matches to fixtures, replacing API version if exists
+        localMatches.forEach(localMatch => {
+          const existingIndex = fixtures.findIndex(f =>
+            f.externalApiId === localMatch.externalApiId || f._id === localMatch._id
+          );
+          if (existingIndex !== -1) {
+            fixtures[existingIndex] = localMatch;
+          } else {
+            fixtures.push(localMatch);
+          }
+        });
+
+        // Sort matches: LIVE first, then upcoming, then finished
+        fixtures.sort((a, b) => {
+          // LIVE matches come first
+          if (a.status === 'LIVE' && b.status !== 'LIVE') return -1;
+          if (a.status !== 'LIVE' && b.status === 'LIVE') return 1;
+          // Then SCHEDULED
+          if (a.status === 'SCHEDULED' && b.status !== 'SCHEDULED') return -1;
+          if (a.status !== 'SCHEDULED' && b.status === 'SCHEDULED') return 1;
+
+          const dateA = new Date(a.matchDate).getTime();
+          const dateB = new Date(b.matchDate).getTime();
+
+          if (a.status === 'SCHEDULED') {
+            return dateA - dateB;
+          } else {
+            return dateB - dateA;
+          }
+        });
+
+        this.filteredMatches = fixtures;
+        this.groupMatchesByRound();
+        this.loadingMatches = false;
+        this.closeFilterDialog();
+
+        // Save filters if enabled
+        if (this.saveFiltersEnabled) {
+          this.saveFiltersToServer();
+        }
+      },
+      error: (error) => {
+        console.error('Failed to load filtered fixtures:', error);
+        this.loadingMatches = false;
+        // Fall back to local filtering
+        this.applyLocalFilters();
+      }
+    });
+  }
+
+  private apiFixtureToMatch(fixture: ApiFixture): Match {
+    return {
+      _id: fixture.externalApiId, // Use externalApiId as _id for display
+      externalApiId: fixture.externalApiId,
+      homeTeam: fixture.homeTeam,
+      awayTeam: fixture.awayTeam,
+      matchDate: new Date(fixture.matchDate),
+      status: fixture.status as 'SCHEDULED' | 'LIVE' | 'FINISHED' | 'POSTPONED' | 'CANCELLED',
+      result: fixture.result ? {
+        homeScore: fixture.result.homeScore,
+        awayScore: fixture.result.awayScore,
+        outcome: fixture.result.outcome as '1' | 'X' | '2'
+      } : undefined,
+      competition: fixture.competition,
+      season: fixture.season?.toString(),
+      groups: [],
+      // Store additional API data for filtering
+      homeTeamId: fixture.homeTeamId,
+      awayTeamId: fixture.awayTeamId,
+      homeTeamLogo: fixture.homeTeamLogo,
+      awayTeamLogo: fixture.awayTeamLogo,
+      round: fixture.round,
+      // Live match fields
+      elapsed: fixture.elapsed,
+      extraTime: fixture.extraTime,
+      statusShort: fixture.statusShort
+    } as Match & { homeTeamId?: number; awayTeamId?: number; homeTeamLogo?: string; awayTeamLogo?: string };
   }
 
   loadSavedFilters(): void {
@@ -1102,10 +1410,33 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
       betDataToSubmit.wagerAmount = this.inlineWagerAmount;
     }
 
+    // For API matches (externalApiId), include the full match data so backend can create it if needed
+    if (this.inlineBetData.matchId.startsWith('apifootball_')) {
+      const match = this.filteredMatches.find(m => m._id === this.inlineBetData.matchId) ||
+                    this.matches.find(m => m._id === this.inlineBetData.matchId);
+      if (match) {
+        betDataToSubmit.matchData = {
+          externalApiId: match.externalApiId,
+          homeTeam: match.homeTeam,
+          awayTeam: match.awayTeam,
+          matchDate: match.matchDate,
+          status: match.status,
+          competition: match.competition,
+          season: match.season,
+          homeTeamId: (match as any).homeTeamId,
+          awayTeamId: (match as any).awayTeamId,
+          homeTeamLogo: (match as any).homeTeamLogo,
+          awayTeamLogo: (match as any).awayTeamLogo
+        };
+      }
+    }
+
     this.betService.placeBet(betDataToSubmit).subscribe({
       next: (response) => {
         this.inlineBetSuccess = response.message || this.translationService.translate('bets.betPlacedSuccess');
         this.inlineLoadingBet = false;
+        // Immediately mark this match as having a bet (instant feedback)
+        this.matchesWithBets.add(this.inlineBetData.matchId);
         // Refresh data
         this.loadMyBets();
         this.loadLeaderboard();
@@ -1121,4 +1452,76 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
       }
     });
   }
+
+  // Round grouping methods for automatic groups
+  groupMatchesByRound(): void {
+    if (!this.isAutomaticGroup()) {
+      this.matchesByRound = [];
+      return;
+    }
+
+    const roundMap = new Map<string, Match[]>();
+
+    // Group matches by round
+    this.filteredMatches.forEach(match => {
+      const round = match.round || 'Unknown';
+      if (!roundMap.has(round)) {
+        roundMap.set(round, []);
+      }
+      roundMap.get(round)!.push(match);
+    });
+
+    // Convert to array and calculate date ranges
+    this.matchesByRound = Array.from(roundMap.entries()).map(([round, matches]) => {
+      // Sort matches within round by date
+      matches.sort((a, b) => new Date(a.matchDate).getTime() - new Date(b.matchDate).getTime());
+
+      const dates = matches.map(m => new Date(m.matchDate));
+      const minDate = new Date(Math.min(...dates.map(d => d.getTime())));
+      const maxDate = new Date(Math.max(...dates.map(d => d.getTime())));
+
+      return {
+        round: round,
+        roundNumber: this.extractRoundNumber(round),
+        startDate: minDate,
+        endDate: maxDate,
+        matches: matches
+      };
+    });
+
+    // Sort rounds by their number (extract number from round string)
+    this.matchesByRound.sort((a, b) => {
+      const numA = this.extractRoundNumber(a.round);
+      const numB = this.extractRoundNumber(b.round);
+      return numA - numB;
+    });
+  }
+
+  extractRoundNumber(round: string): number {
+    const match = round.match(/(\d+)/);
+    return match ? parseInt(match[1], 10) : 0;
+  }
+
+  formatRoundDateRange(startDate: Date, endDate: Date): string {
+    const formatDate = (d: Date) => {
+      const day = d.getDate().toString().padStart(2, '0');
+      const month = (d.getMonth() + 1).toString().padStart(2, '0');
+      const year = d.getFullYear().toString().slice(-2);
+      return `${day}/${month}/${year}`;
+    };
+
+    if (startDate.toDateString() === endDate.toDateString()) {
+      return formatDate(startDate);
+    }
+    return `${formatDate(startDate)} - ${formatDate(endDate)}`;
+  }
+}
+
+// Interface for round grouping
+export interface RoundGroup {
+  round: string;
+  roundNumber: number;
+  startDate: Date;
+  endDate: Date;
+  matches: Match[];
 }

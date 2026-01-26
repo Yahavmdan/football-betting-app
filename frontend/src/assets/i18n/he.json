@@ -94,7 +94,20 @@
     "noTeam": "ללא לוגו",
     "selectColor": "בחר צבע רקע",
     "noColor": "ברירת מחדל",
-    "showMessage": "הצג הודעה"
+    "showMessage": "הצג הודעה",
+    "matchType": "טעינת משחקים",
+    "matchTypeManual": "ידני",
+    "matchTypeAutomatic": "אוטומטי",
+    "matchTypeManualDesc": "הוסף משחקים ידנית לקבוצה",
+    "matchTypeAutomaticDesc": "משחקים נטענים אוטומטית מהליגות",
+    "selectLeague": "בחר ליגה",
+    "selectLeaguePlaceholder": "בחר ליגה...",
+    "searchLeagues": "חפש ליגה...",
+    "leagueSelectionHint": "בחר את הליגה ממנה יטענו המשחקים אוטומטית",
+    "syncMatches": "סנכרן משחקים",
+    "syncingMatches": "מסנכרן...",
+    "matchesSynced": "המשחקים סונכרנו בהצלחה",
+    "syncMatchesDesc": "שלוף משחקים מהשבוע האחרון והשבוע הקרוב"
   },
   "matches": {
     "scheduled": "מתוכנן",
@@ -139,6 +152,7 @@
     "confirmMarkFinished": "האם אתה בטוח שברצונך לסמן את המשחק כהסתיים? הנקודות יחושבו.",
     "confirmDelete": "האם אתה בטוח שברצונך למחוק את המשחק? פעולה זו לא ניתנת לביטול.",
     "ongoingScore": "תוצאה נוכחית",
+    "round": "מחזור",
     "relativePoints": "חלוקת נקודות",
     "homeWinPoints": "נקודות לניצחון בית",
     "drawPoints": "נקודות לתיקו",
@@ -150,7 +164,8 @@
     "headToHead": "מפגשים קודמים",
     "noHeadToHead": "לא נמצאו משחקים קודמים",
     "teamForm": "משחקים אחרונים",
-    "noRecentMatches": "אין משחקים אחרונים"
+    "noRecentMatches": "אין משחקים אחרונים",
+    "added": "נוספו"
   },
   "bets": {
     "placeYourBet": "בצע את ההימור שלך",

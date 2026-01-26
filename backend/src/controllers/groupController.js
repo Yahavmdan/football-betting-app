@@ -6,7 +6,15 @@ const generateInviteCode = require('../utils/generateInviteCode');
 
 exports.createGroup = async (req, res) => {
   try {
-    const { name, description, betType, startingCredits, creditsGoal, showBets } = req.body;
+    const { name, description, betType, startingCredits, creditsGoal, showBets, matchType, selectedLeague, selectedSeason } = req.body;
+
+    // Validate selectedLeague for automatic match type
+    if (matchType === 'automatic' && !selectedLeague) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please select a league for automatic match loading'
+      });
+    }
 
     let inviteCode;
     let isUnique = false;
@@ -29,6 +37,9 @@ exports.createGroup = async (req, res) => {
       startingCredits: betType === 'relative' ? (startingCredits || 100) : 100,
       creditsGoal: betType === 'relative' ? (creditsGoal || 1000) : 1000,
       showBets: !(showBets === false || showBets === 'false'),
+      matchType: matchType || 'manual',
+      selectedLeague: matchType === 'automatic' ? selectedLeague : null,
+      selectedSeason: matchType === 'automatic' && selectedSeason ? parseInt(selectedSeason) : null,
       creator: req.user._id,
       inviteCode,
       members: [{

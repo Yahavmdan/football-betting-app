@@ -14,7 +14,14 @@
       "Bash(cmd.exe /c 'rmdir /s /q node_modules')",
       "Bash(npm install:*)",
       "Bash(npm uninstall:*)",
-      "Bash(git ls-tree:*)"
+      "Bash(git ls-tree:*)",
+      "WebFetch(domain:www.api-football.com)",
+      "Bash(curl:*)",
+      "WebSearch",
+      "WebFetch(domain:api-sports.io)",
+      "Bash(npx ng build:*)",
+      "Bash(node src/scripts/setMatchLive.js:*)",
+      "Bash(node:*)"
     ]
   }
 }

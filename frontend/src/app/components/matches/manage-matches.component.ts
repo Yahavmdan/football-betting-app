@@ -99,6 +99,11 @@ export class ManageMatchesComponent implements OnInit {
   deletingMatchId: string | null = null;
   loadingDeleteMatch = false;
 
+  // Sync matches (for automatic groups)
+  loadingSync = false;
+  syncMessage = '';
+  syncError = '';
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -251,6 +256,31 @@ export class ManageMatchesComponent implements OnInit {
 
   canManageGroup(): boolean {
     return this.isGroupCreator() || this.authService.isAdmin();
+  }
+
+  isAutomaticGroup(): boolean {
+    return this.group?.matchType === 'automatic';
+  }
+
+  syncMatches(): void {
+    if (!this.groupId) return;
+
+    this.loadingSync = true;
+    this.syncMessage = '';
+    this.syncError = '';
+
+    this.matchService.syncLeagueToGroup(this.groupId).subscribe({
+      next: (response) => {
+        this.syncMessage = this.translationService.translate('groups.matchesSynced') +
+          ` (${response.data.added} ${this.translationService.translate('matches.added')})`;
+        this.loadingSync = false;
+        this.loadMatches();
+      },
+      error: (error) => {
+        this.syncError = error.error?.message || 'Failed to sync matches';
+        this.loadingSync = false;
+      }
+    });
   }
 
   goBack(): void {
