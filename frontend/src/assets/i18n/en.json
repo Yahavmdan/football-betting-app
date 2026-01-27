@@ -107,7 +107,9 @@
     "syncMatches": "Sync Matches",
     "syncingMatches": "Syncing...",
     "matchesSynced": "Matches synced successfully",
-    "syncMatchesDesc": "Fetch matches from the past week and the upcoming week"
+    "syncMatchesDesc": "Fetch matches from the past week and the upcoming week",
+    "shareLink": "Share join link",
+    "linkCopied": "Link copied!"
   },
   "matches": {
     "scheduled": "SCHEDULED",

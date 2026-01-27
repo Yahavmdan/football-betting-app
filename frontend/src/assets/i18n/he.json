@@ -107,7 +107,9 @@
     "syncMatches": "סנכרן משחקים",
     "syncingMatches": "מסנכרן...",
     "matchesSynced": "המשחקים סונכרנו בהצלחה",
-    "syncMatchesDesc": "שלוף משחקים מהשבוע האחרון והשבוע הקרוב"
+    "syncMatchesDesc": "שלוף משחקים מהשבוע האחרון והשבוע הקרוב",
+    "shareLink": "שתף קישור הצטרפות",
+    "linkCopied": "הקישור הועתק!"
   },
   "matches": {
     "scheduled": "מתוכנן",

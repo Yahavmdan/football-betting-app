@@ -17,6 +17,12 @@ export const routes: Routes = [
     loadComponent: () => import('./components/auth/register.component').then(m => m.RegisterComponent)
   },
   {
+    // Shareable join link - redirects to join page with code pre-filled
+    path: 'join/:code',
+    canActivate: [authGuard],
+    loadComponent: () => import('./components/groups/join-group/join-group.component').then(m => m.JoinGroupComponent)
+  },
+  {
     path: 'groups',
     canActivate: [authGuard],
     children: [
