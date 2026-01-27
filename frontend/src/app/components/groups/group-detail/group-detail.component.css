@@ -74,6 +74,401 @@
     border-radius: 8px;
 }
 
+/* League Standings Button */
+.btn-standings {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-standings:hover {
+    background: rgba(59, 130, 246, 0.2);
+}
+
+.btn-standings.active {
+    background: #3b82f6;
+    color: white;
+}
+
+/* Sync Matches Button */
+.btn-sync {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-sync:hover:not(:disabled) {
+    background: rgba(34, 197, 94, 0.2);
+}
+
+.btn-sync:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.btn-sync svg.spinning {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* League Standings Section */
+.standings-section {
+    margin-top: 1.5rem;
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid #e2e8f0;
+}
+
+.standings-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.standings-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.standings-title h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #1e293b;
+}
+
+.league-logo {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+}
+
+.season-badge {
+    background: #e2e8f0;
+    color: #64748b;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.btn-close-standings {
+    background: transparent;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.btn-close-standings:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
+.standings-loading,
+.standings-error {
+    text-align: center;
+    padding: 2rem;
+    color: #64748b;
+}
+
+.standings-error {
+    color: #ef4444;
+}
+
+.standings-table-wrapper {
+    overflow-x: auto;
+    border-radius: 12px;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.standings-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+}
+
+.standings-table th {
+    background: #f1f5f9;
+    color: #64748b;
+    font-weight: 600;
+    padding: 0.75rem 0.5rem;
+    text-align: center;
+    white-space: nowrap;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.standings-table td {
+    padding: 0.6rem 0.5rem;
+    text-align: center;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+}
+
+.standings-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.standings-table .col-rank {
+    width: 40px;
+    font-weight: 700;
+    color: #64748b;
+}
+
+.standings-table .col-team {
+    text-align: left;
+    min-width: 150px;
+}
+
+.standings-table .col-team .team-logo-tiny {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+}
+
+.standings-table .col-team .team-name {
+    vertical-align: middle;
+    font-weight: 500;
+}
+
+.standings-table .col-points {
+    color: #1e293b;
+    font-size: 0.9rem;
+}
+
+.standings-table .col-gd.positive {
+    color: #22c55e;
+}
+
+.standings-table .col-gd.negative {
+    color: #ef4444;
+}
+
+.standings-table .col-form {
+    min-width: 100px;
+}
+
+.form-badges {
+    display: flex;
+    justify-content: center;
+    gap: 2px;
+}
+
+.form-badge {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: white;
+}
+
+.form-badge.win {
+    background: #22c55e;
+}
+
+.form-badge.draw {
+    background: #94a3b8;
+}
+
+.form-badge.loss {
+    background: #ef4444;
+}
+
+/* Position indicators */
+.standings-table tbody tr.champions-league .col-rank {
+    color: #22c55e;
+    position: relative;
+}
+
+.standings-table tbody tr.champions-league .col-rank::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 70%;
+    background: #22c55e;
+    border-radius: 0 2px 2px 0;
+}
+
+.standings-table tbody tr.europa-league .col-rank {
+    color: #3b82f6;
+    position: relative;
+}
+
+.standings-table tbody tr.europa-league .col-rank::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 70%;
+    background: #3b82f6;
+    border-radius: 0 2px 2px 0;
+}
+
+.standings-table tbody tr.relegation .col-rank {
+    color: #ef4444;
+    position: relative;
+}
+
+.standings-table tbody tr.relegation .col-rank::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 70%;
+    background: #ef4444;
+    border-radius: 0 2px 2px 0;
+}
+
+/* RTL support for standings */
+:host-context([dir="rtl"]) .standings-table .col-team {
+    text-align: right;
+}
+
+:host-context([dir="rtl"]) .standings-table .col-team .team-logo-tiny {
+    margin-right: 0;
+    margin-left: 0.5rem;
+}
+
+:host-context([dir="rtl"]) .standings-table tbody tr.champions-league .col-rank::before,
+:host-context([dir="rtl"]) .standings-table tbody tr.europa-league .col-rank::before,
+:host-context([dir="rtl"]) .standings-table tbody tr.relegation .col-rank::before {
+    left: auto;
+    right: 0;
+    border-radius: 2px 0 0 2px;
+}
+
+/* Dark mode for standings */
+:host-context(.dark-theme) .standings-section {
+    background: #1e293b;
+    border-color: #334155;
+}
+
+:host-context(.dark-theme) .standings-title h3 {
+    color: #e2e8f0;
+}
+
+:host-context(.dark-theme) .season-badge {
+    background: #334155;
+    color: #94a3b8;
+}
+
+:host-context(.dark-theme) .btn-close-standings:hover {
+    background: #334155;
+    color: #e2e8f0;
+}
+
+:host-context(.dark-theme) .standings-table-wrapper {
+    background: #0f172a;
+}
+
+:host-context(.dark-theme) .standings-table th {
+    background: #1e293b;
+    color: #94a3b8;
+    border-bottom-color: #334155;
+}
+
+:host-context(.dark-theme) .standings-table td {
+    color: #e2e8f0;
+    border-bottom-color: #1e293b;
+}
+
+:host-context(.dark-theme) .standings-table tbody tr:hover {
+    background: #1e293b;
+}
+
+:host-context(.dark-theme) .standings-table .col-points {
+    color: #f1f5f9;
+}
+
+/* Mobile responsive for standings */
+@media (max-width: 768px) {
+    .standings-section {
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+
+    .standings-table {
+        font-size: 0.7rem;
+    }
+
+    .standings-table th,
+    .standings-table td {
+        padding: 0.5rem 0.25rem;
+    }
+
+    .standings-table .col-team {
+        min-width: 120px;
+    }
+
+    .standings-table .col-team .team-logo-tiny {
+        width: 16px;
+        height: 16px;
+    }
+
+    .form-badge {
+        width: 14px;
+        height: 14px;
+        font-size: 0.55rem;
+    }
+
+    /* Hide some columns on mobile */
+    .standings-table .col-gf,
+    .standings-table .col-ga {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .standings-table .col-drawn,
+    .standings-table .col-form {
+        display: none;
+    }
+}
+
 .content-grid {
     display: grid;
     grid-template-columns: 320px 1fr;
@@ -765,6 +1160,48 @@ h2 {
     color: #86efac;
 }
 
+/* Load more rounds buttons */
+.btn-load-rounds {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    color: #64748b;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-bottom: 1rem;
+}
+
+.btn-load-rounds:hover {
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    border-color: #94a3b8;
+    color: #475569;
+}
+
+.btn-load-future {
+    margin-bottom: 0;
+    margin-top: 1rem;
+}
+
+:host-context(.dark-theme) .btn-load-rounds {
+    background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+    border-color: #4b5563;
+    color: #9ca3af;
+}
+
+:host-context(.dark-theme) .btn-load-rounds:hover {
+    background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
+    border-color: #6b7280;
+    color: #d1d5db;
+}
+
 .match-card {
     border: 2px solid #f1f5f9;
     border-radius: 16px;
@@ -1213,7 +1650,13 @@ h2 {
     flex-direction: row-reverse;
 }
 
-/* RTL: Natural flex-direction: row puts Home on right, Away on left (correct for betting convention) */
+:host-context([dir="rtl"]) .match-compact-teams {
+    flex-direction: row-reverse;
+}
+
+:host-context([dir="rtl"]) .match-compact-info {
+    flex-direction: row-reverse;
+}
 
 /* Dark mode for compact match cards */
 :host-context(.dark-theme) .match-compact-row:hover {
@@ -1524,6 +1967,14 @@ h2 {
     /* RTL support for mobile */
     :host-context([dir="rtl"]) .match-compact-row {
         flex-direction: column;
+    }
+
+    :host-context([dir="rtl"]) .match-compact-teams {
+        flex-direction: row-reverse;
+    }
+
+    :host-context([dir="rtl"]) .match-compact-info {
+        flex-direction: row-reverse;
     }
 
     :host-context([dir="rtl"]) .btn-expand {
@@ -2308,6 +2759,37 @@ h2 {
     }
 }
 
+/* Per-match refresh button */
+.btn-refresh-match {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    color: #059669;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.btn-refresh-match:hover:not(:disabled) {
+    background: rgba(5, 150, 105, 0.1);
+    transform: scale(1.1);
+}
+
+.btn-refresh-match:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-refresh-match.refreshing svg {
+    animation: spin 1s linear infinite;
+}
+
 .btn-filter {
     display: flex;
     align-items: center;
@@ -2469,8 +2951,21 @@ h2 {
 
 .date-range {
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     gap: 0.75rem;
+}
+
+.date-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex: 1;
+}
+
+.date-label {
+    font-size: 0.75rem;
+    color: #64748b;
+    font-weight: 500;
 }
 
 .date-range .form-control {
@@ -2482,6 +2977,7 @@ h2 {
 .date-separator {
     color: #94a3b8;
     font-weight: 500;
+    padding-bottom: 0.6rem;
 }
 
 .multi-select-dropdown {
@@ -3219,6 +3715,27 @@ h2 {
     background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(29, 78, 216, 0.05) 100%);
     border-radius: 10px;
     border-left: 3px solid #3b82f6;
+}
+
+.inline-points-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.odds-api-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
 }
 
 .inline-points-grid {
@@ -4057,6 +4574,14 @@ h2 {
     box-shadow: 0 4px 12px rgba(4, 120, 87, 0.5);
 }
 
+:host-context(.dark-theme) .btn-refresh-match {
+    color: #34d399;
+}
+
+:host-context(.dark-theme) .btn-refresh-match:hover:not(:disabled) {
+    background: rgba(52, 211, 153, 0.15);
+}
+
 :host-context(.dark-theme) .btn-filter {
     background: #374151;
     border-color: #4b5563;
@@ -4254,6 +4779,10 @@ h2 {
 
 :host-context(.dark-theme) .date-separator {
     color: #6b7280;
+}
+
+:host-context(.dark-theme) .date-label {
+    color: #9ca3af;
 }
 
 :host-context(.dark-theme) .selected-items {

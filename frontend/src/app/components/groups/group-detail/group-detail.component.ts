@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { GroupService } from '../../../services/group.service';
-import { MatchService, ApiTeam, ApiFixture } from '../../../services/match.service';
+import { MatchService, ApiTeam, ApiFixture, LeagueStandings, StandingTeam } from '../../../services/match.service';
 import { BetService } from '../../../services/bet.service';
 import { AuthService } from '../../../services/auth.service';
 import { TranslationService } from '../../../services/translation.service';
@@ -35,6 +35,8 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   loadingMatches = true;
   matchesWithBets: Set<string> = new Set();
   refreshingLive = false;
+  refreshingMatchId: string | null = null; // Track which individual match is being refreshed
+  syncingMatches = false;
 
   // Score update
   editingMatchId: string | null = null;
@@ -65,6 +67,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
 
   // Match card expand/collapse
   expandedMatchId: string | null = null;
+  expandedMatch: Match | null = null; // Store the actual match object for H2H and form data
   headToHeadMatches: Match[] = [];
   homeTeamRecentMatches: Match[] = [];
   awayTeamRecentMatches: Match[] = [];
@@ -125,8 +128,20 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   apiTeams: ApiTeam[] = [];
   loadingApiTeams = false;
 
+  // League standings
+  showStandings = false;
+  leagueStandings: LeagueStandings | null = null;
+  loadingStandings = false;
+  standingsError = '';
+
   // Round grouping for automatic groups
   matchesByRound: RoundGroup[] = [];
+  allRounds: RoundGroup[] = []; // All rounds before pagination
+  visiblePastRounds = 1; // Number of past rounds to show (default: last played round)
+  visibleFutureRounds = 1; // Number of future rounds to show (default: next round)
+  hasMorePastRounds = false;
+  hasMoreFutureRounds = false;
+  currentRoundIndex = 0; // Index of the "current" round (first with upcoming matches)
 
   // Select options for filters
   memberSelectOptions: SelectOption[] = [];
@@ -195,7 +210,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
         this.group = response.data;
         // Load pending members after group is loaded (needs group data for canManageGroup check)
         this.loadPendingMembers();
-        // For automatic groups, load teams from API
+        // For automatic groups, load teams from API and rebuild round options
         if (this.isAutomaticGroup()) {
           this.loadApiTeams();
         }
@@ -212,7 +227,12 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   }
 
   hasLiveMatches(): boolean {
-    return this.filteredMatches.some(match => match.status === 'LIVE');
+    const now = new Date();
+    return this.filteredMatches.some(match => {
+      // Match is live if status is LIVE OR (status is SCHEDULED and matchDate is in the past)
+      const matchDate = new Date(match.matchDate);
+      return match.status === 'LIVE' || (match.status === 'SCHEDULED' && matchDate <= now);
+    });
   }
 
   refreshLiveMatches(): void {
@@ -248,6 +268,47 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     });
   }
 
+  // Refresh a single match (more efficient - 1 API call per match)
+  refreshSingleMatch(match: Match, event: Event): void {
+    event.stopPropagation(); // Prevent expanding/collapsing the match card
+
+    if (this.refreshingMatchId) return; // Already refreshing a match
+
+    this.refreshingMatchId = match._id;
+
+    this.matchService.refreshSingleMatch(match._id).subscribe({
+      next: (response) => {
+        // Update the match in the local array
+        const index = this.matches.findIndex(m => m._id === match._id);
+        if (index !== -1) {
+          this.matches[index] = response.data;
+        }
+
+        // Also update in filtered matches
+        const filteredIndex = this.filteredMatches.findIndex(m => m._id === match._id);
+        if (filteredIndex !== -1) {
+          this.filteredMatches[filteredIndex] = response.data;
+        }
+
+        this.groupMatchesByRound();
+        this.refreshingMatchId = null;
+      },
+      error: (error) => {
+        console.error('Failed to refresh match:', error);
+        this.refreshingMatchId = null;
+      }
+    });
+  }
+
+  // Check if a match can be refreshed (is from API and is live or started)
+  canRefreshMatch(match: Match): boolean {
+    if (!match.externalApiId) return false; // Only API matches can be refreshed
+    const now = new Date();
+    const matchDate = new Date(match.matchDate);
+    // Can refresh if LIVE or SCHEDULED but already started
+    return match.status === 'LIVE' || (match.status === 'SCHEDULED' && matchDate <= now);
+  }
+
   loadApiTeams(): void {
     if (!this.group?.selectedLeague) return;
 
@@ -261,6 +322,48 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
       error: (error) => {
         console.error('Failed to load API teams:', error);
         this.loadingApiTeams = false;
+      }
+    });
+  }
+
+  toggleStandings(): void {
+    this.showStandings = !this.showStandings;
+    if (this.showStandings && !this.leagueStandings && !this.loadingStandings) {
+      this.loadStandings();
+    }
+  }
+
+  loadStandings(): void {
+    if (!this.group?.selectedLeague) return;
+
+    this.loadingStandings = true;
+    this.standingsError = '';
+    this.matchService.getLeagueStandings(this.group.selectedLeague, this.group.selectedSeason).subscribe({
+      next: (response) => {
+        this.leagueStandings = response.data;
+        this.loadingStandings = false;
+      },
+      error: (error) => {
+        console.error('Failed to load standings:', error);
+        this.standingsError = error.error?.message || 'Failed to load standings';
+        this.loadingStandings = false;
+      }
+    });
+  }
+
+  syncMatches(): void {
+    if (this.syncingMatches || !this.group?.selectedLeague) return;
+
+    this.syncingMatches = true;
+    this.matchService.syncLeagueToGroup(this.groupId).subscribe({
+      next: () => {
+        this.syncingMatches = false;
+        // Reload matches to show newly synced data
+        this.loadMatches();
+      },
+      error: (error) => {
+        console.error('Failed to sync matches:', error);
+        this.syncingMatches = false;
       }
     });
   }
@@ -344,9 +447,11 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     return new Date(matchDate) <= new Date();
   }
 
-  toggleMatchExpand(matchId: string): void {
+  toggleMatchExpand(match: Match): void {
+    const matchId = match._id;
     if (this.expandedMatchId === matchId) {
       this.expandedMatchId = null;
+      this.expandedMatch = null;
       // Close any open panels when collapsing
       this.viewingBetsForMatch = null;
       this.placingBetForMatch = null;
@@ -356,15 +461,18 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
       this.awayTeamRecentMatches = [];
     } else {
       this.expandedMatchId = matchId;
+      this.expandedMatch = match;
       // Fetch head-to-head history and team form
-      this.loadHeadToHead(matchId);
-      this.loadTeamForm(matchId);
+      this.loadHeadToHead(match);
+      this.loadTeamForm(match);
     }
   }
 
-  loadHeadToHead(matchId: string): void {
-    const match = this.matches.find(m => m._id === matchId) || this.filteredMatches.find(m => m._id === matchId);
-    if (!match) return;
+  loadHeadToHead(match: Match): void {
+    if (!match) {
+      console.error('Match not provided for head-to-head');
+      return;
+    }
 
     this.loadingHeadToHead = true;
     this.headToHeadMatches = [];
@@ -387,9 +495,11 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  loadTeamForm(matchId: string): void {
-    const match = this.matches.find(m => m._id === matchId) || this.filteredMatches.find(m => m._id === matchId);
-    if (!match) return;
+  loadTeamForm(match: Match): void {
+    if (!match) {
+      console.error('Match not provided for team form');
+      return;
+    }
 
     this.loadingTeamForm = true;
     this.homeTeamRecentMatches = [];
@@ -796,6 +906,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
       homeScore: null,
       awayScore: null
     };
+    this.resetRoundPagination(); // Reset to show only current rounds
     this.applyFilters();
   }
 
@@ -821,7 +932,8 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
         const matchDate = new Date(match.matchDate);
         const isFinished = match.status === 'FINISHED';
         const isNotStarted = match.status === 'SCHEDULED' && matchDate > now;
-        const isOngoing = match.status === 'SCHEDULED' && matchDate <= now;
+        // Ongoing includes: LIVE status OR SCHEDULED with past matchDate (started but not marked as LIVE yet)
+        const isOngoing = match.status === 'LIVE' || (match.status === 'SCHEDULED' && matchDate <= now);
 
         return (this.filters.showFinished && isFinished) ||
                (this.filters.showNotStarted && isNotStarted) ||
@@ -1045,8 +1157,13 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   }
 
   private apiFixtureToMatch(fixture: ApiFixture): Match {
+    // Find the local match to get relativePoints (stored in our DB, not from API)
+    const localMatch = this.matches.find(m =>
+      m.externalApiId === fixture.externalApiId
+    );
+
     return {
-      _id: fixture.externalApiId, // Use externalApiId as _id for display
+      _id: localMatch?._id || fixture.externalApiId, // Use real DB _id if available
       externalApiId: fixture.externalApiId,
       homeTeam: fixture.homeTeam,
       awayTeam: fixture.awayTeam,
@@ -1059,7 +1176,9 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
       } : undefined,
       competition: fixture.competition,
       season: fixture.season?.toString(),
-      groups: [],
+      groups: localMatch?.groups || [],
+      // Include relativePoints from local match (stored in our DB)
+      relativePoints: localMatch?.relativePoints,
       // Store additional API data for filtering
       homeTeamId: fixture.homeTeamId,
       awayTeamId: fixture.awayTeamId,
@@ -1312,6 +1431,38 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
 
     // Check for existing bet
     this.checkExistingBetForMatch(match._id);
+
+    // For API matches in relative groups, refresh to get latest odds
+    if (match.externalApiId && this.group?.betType === 'relative') {
+      this.refreshMatchOdds(match);
+    }
+  }
+
+  // Refresh a single match to get latest odds (for relative betting)
+  private refreshMatchOdds(match: Match): void {
+    this.matchService.refreshSingleMatch(match._id, this.groupId).subscribe({
+      next: (response) => {
+        // Update the match in local arrays with fresh data
+        const updatedMatch = response.data;
+
+        const matchIndex = this.matches.findIndex(m => m._id === match._id || m.externalApiId === match.externalApiId);
+        if (matchIndex !== -1) {
+          this.matches[matchIndex] = updatedMatch;
+        }
+
+        const filteredIndex = this.filteredMatches.findIndex(m => m._id === match._id || m.externalApiId === match.externalApiId);
+        if (filteredIndex !== -1) {
+          this.filteredMatches[filteredIndex] = updatedMatch;
+        }
+
+        // Re-group matches by round to reflect updated data
+        this.groupMatchesByRound();
+      },
+      error: (error) => {
+        console.error('Failed to refresh match odds:', error);
+        // Don't show error to user - just use existing odds
+      }
+    });
   }
 
   closeInlineBetForm(): void {
@@ -1361,12 +1512,24 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     this.inlineBetData.outcome = outcome;
   }
 
-  getMatchRelativePoints(match: Match): { homeWin: number; draw: number; awayWin: number } | null {
-    if (!match || !match.relativePoints || match.relativePoints.length === 0) {
+  getMatchRelativePoints(match: Match): { homeWin: number; draw: number; awayWin: number; fromApi?: boolean } | null {
+    // For relative groups, always return points (use defaults if not available)
+    if (this.group?.betType !== 'relative') {
       return null;
     }
-    const matchPoints = match.relativePoints.find(rp => rp.group === this.groupId);
-    return matchPoints || null;
+
+    if (match && match.relativePoints && match.relativePoints.length > 0) {
+      // Convert to string for comparison (group could be ObjectId or string)
+      const matchPoints = match.relativePoints.find(rp =>
+        rp.group?.toString() === this.groupId || rp.group === this.groupId
+      );
+      if (matchPoints) {
+        return matchPoints;
+      }
+    }
+
+    // Return default values for relative groups without specific odds
+    return { homeWin: 1, draw: 1, awayWin: 1, fromApi: false };
   }
 
   calculateInlinePotentialWin(match: Match): number {
@@ -1457,6 +1620,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   groupMatchesByRound(): void {
     if (!this.isAutomaticGroup()) {
       this.matchesByRound = [];
+      this.allRounds = [];
       return;
     }
 
@@ -1472,7 +1636,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     });
 
     // Convert to array and calculate date ranges
-    this.matchesByRound = Array.from(roundMap.entries()).map(([round, matches]) => {
+    this.allRounds = Array.from(roundMap.entries()).map(([round, matches]) => {
       // Sort matches within round by date
       matches.sort((a, b) => new Date(a.matchDate).getTime() - new Date(b.matchDate).getTime());
 
@@ -1490,11 +1654,77 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     });
 
     // Sort rounds by their number (extract number from round string)
-    this.matchesByRound.sort((a, b) => {
+    this.allRounds.sort((a, b) => {
       const numA = this.extractRoundNumber(a.round);
       const numB = this.extractRoundNumber(b.round);
       return numA - numB;
     });
+
+    // Apply pagination only when no filters are active
+    if (this.hasActiveFilters()) {
+      // Show all rounds when filters are applied
+      this.matchesByRound = [...this.allRounds];
+      this.hasMorePastRounds = false;
+      this.hasMoreFutureRounds = false;
+    } else {
+      // Apply round pagination
+      this.applyRoundPagination();
+    }
+  }
+
+  // Find the current round and apply pagination
+  private applyRoundPagination(): void {
+    if (this.allRounds.length === 0) {
+      this.matchesByRound = [];
+      this.hasMorePastRounds = false;
+      this.hasMoreFutureRounds = false;
+      return;
+    }
+
+    const now = new Date();
+
+    // Find the "current" round: first round that has upcoming matches (not all finished)
+    // If all rounds are finished, use the last round
+    this.currentRoundIndex = this.allRounds.findIndex(round => {
+      // A round is "current" if it has at least one match that is not finished
+      return round.matches.some(match => match.status !== 'FINISHED');
+    });
+
+    // If all rounds are finished, set current to the last round
+    if (this.currentRoundIndex === -1) {
+      this.currentRoundIndex = this.allRounds.length - 1;
+    }
+
+    // Calculate visible range
+    // Past rounds: from (currentRoundIndex - visiblePastRounds) to (currentRoundIndex - 1)
+    // Future rounds: from currentRoundIndex to (currentRoundIndex + visibleFutureRounds - 1)
+    const startIndex = Math.max(0, this.currentRoundIndex - this.visiblePastRounds);
+    const endIndex = Math.min(this.allRounds.length - 1, this.currentRoundIndex + this.visibleFutureRounds - 1);
+
+    // Slice the visible rounds
+    this.matchesByRound = this.allRounds.slice(startIndex, endIndex + 1);
+
+    // Check if there are more rounds to load
+    this.hasMorePastRounds = startIndex > 0;
+    this.hasMoreFutureRounds = endIndex < this.allRounds.length - 1;
+  }
+
+  // Load more previous rounds (3 at a time)
+  loadPreviousRounds(): void {
+    this.visiblePastRounds += 3;
+    this.applyRoundPagination();
+  }
+
+  // Load more future rounds (3 at a time)
+  loadFutureRounds(): void {
+    this.visibleFutureRounds += 3;
+    this.applyRoundPagination();
+  }
+
+  // Reset pagination when filters change
+  resetRoundPagination(): void {
+    this.visiblePastRounds = 1;
+    this.visibleFutureRounds = 1;
   }
 
   extractRoundNumber(round: string): number {

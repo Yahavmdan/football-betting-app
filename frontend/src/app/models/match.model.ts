@@ -34,4 +34,5 @@ export interface RelativePoints {
   homeWin: number;
   draw: number;
   awayWin: number;
+  fromApi?: boolean;
 }

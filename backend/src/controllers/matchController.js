@@ -14,6 +14,55 @@ exports.getMatches = async (req, res) => {
 
     const matches = await Match.find(query).sort({ matchDate: 1 });
 
+    // Auto-enrich potentially live matches with fresh API data
+    const now = new Date();
+    const potentiallyLiveMatches = matches.filter(match =>
+      match.externalApiId &&
+      match.externalApiId.startsWith('apifootball_') &&
+      (match.status === 'LIVE' || (match.status === 'SCHEDULED' && new Date(match.matchDate) <= now))
+    );
+
+    if (potentiallyLiveMatches.length > 0) {
+      try {
+        // Fetch all live fixtures with one API call
+        const liveFixtures = await apiFootballService.getLiveFixtures();
+
+        // Update matches with fresh data
+        for (const match of potentiallyLiveMatches) {
+          const freshData = liveFixtures.find(f => f.externalApiId === match.externalApiId);
+
+          if (freshData) {
+            // Match is currently live - update with fresh data
+            match.status = 'LIVE';
+            match.result = freshData.result;
+            match.elapsed = freshData.elapsed;
+            match.extraTime = freshData.extraTime;
+            match.statusShort = freshData.statusShort;
+            await match.save();
+          } else if (match.status === 'LIVE') {
+            // Match was LIVE but no longer in live API - it likely finished
+            // Fetch individual fixture to get final result
+            try {
+              const finalData = await apiFootballService.getFixtureById(match.externalApiId);
+              if (finalData) {
+                match.status = finalData.status;
+                match.result = finalData.result;
+                match.elapsed = finalData.elapsed;
+                match.extraTime = finalData.extraTime;
+                match.statusShort = finalData.statusShort;
+                await match.save();
+              }
+            } catch (err) {
+              console.error(`Failed to fetch final data for match ${match.externalApiId}:`, err.message);
+            }
+          }
+        }
+      } catch (apiError) {
+        // If API fails, still return DB data (graceful degradation)
+        console.error('Failed to fetch live data:', apiError.message);
+      }
+    }
+
     res.status(200).json({
       success: true,
       data: matches
@@ -595,12 +644,12 @@ exports.syncLeagueFixturesToGroup = async (req, res) => {
       });
     }
 
-    // Check if user is the group creator OR is admin
-    const isCreator = group.creator.toString() === req.user._id.toString();
-    if (!isCreator && !req.user.isAdmin) {
+    // Check if user is a member of the group
+    const isMember = group.members.some(m => m.user.toString() === req.user._id.toString());
+    if (!isMember && !req.user.isAdmin) {
       return res.status(403).json({
         success: false,
-        message: 'Only the group creator can sync matches'
+        message: 'Only group members can sync matches'
       });
     }
 
@@ -630,23 +679,65 @@ exports.syncLeagueFixturesToGroup = async (req, res) => {
 
     let addedCount = 0;
     let skippedCount = 0;
+    const isRelativeGroup = group.betType === 'relative';
 
     for (const fixtureData of fixtures) {
       // Check if match already exists
       let match = await Match.findOne({ externalApiId: fixtureData.externalApiId });
 
+      // For relative groups, fetch odds from API
+      let oddsData = null;
+      if (isRelativeGroup) {
+        try {
+          oddsData = await apiFootballService.getFixtureOdds(fixtureData.externalApiId);
+        } catch (err) {
+          console.error(`Failed to fetch odds for ${fixtureData.externalApiId}:`, err.message);
+        }
+      }
+
       if (match) {
         // Match exists, check if it's already in this group
         if (!match.groups.includes(groupId)) {
           match.groups.push(groupId);
+
+          // Add relativePoints for this group if relative mode
+          if (isRelativeGroup && oddsData) {
+            // Check if relativePoints already exists for this group
+            const existingRP = match.relativePoints?.find(rp => rp.group?.toString() === groupId);
+            if (!existingRP) {
+              if (!match.relativePoints) match.relativePoints = [];
+              match.relativePoints.push({
+                group: groupId,
+                homeWin: oddsData.homeWin,
+                draw: oddsData.draw,
+                awayWin: oddsData.awayWin,
+                fromApi: true
+              });
+            }
+          }
+
           await match.save();
           addedCount++;
         } else {
+          // Already in group, but update odds if relative mode and match not started
+          if (isRelativeGroup && oddsData && match.status === 'SCHEDULED') {
+            const rpIndex = match.relativePoints?.findIndex(rp => rp.group?.toString() === groupId);
+            if (rpIndex >= 0) {
+              match.relativePoints[rpIndex] = {
+                group: groupId,
+                homeWin: oddsData.homeWin,
+                draw: oddsData.draw,
+                awayWin: oddsData.awayWin,
+                fromApi: true
+              };
+              await match.save();
+            }
+          }
           skippedCount++;
         }
       } else {
-        // Create new match
-        match = await Match.create({
+        // Create new match with all API fields
+        const matchData = {
           externalApiId: fixtureData.externalApiId,
           homeTeam: fixtureData.homeTeam,
           awayTeam: fixtureData.awayTeam,
@@ -654,8 +745,27 @@ exports.syncLeagueFixturesToGroup = async (req, res) => {
           status: fixtureData.status,
           competition: fixtureData.competition,
           season: fixtureData.season,
-          groups: [groupId]
-        });
+          groups: [groupId],
+          // API-specific fields
+          homeTeamId: fixtureData.homeTeamId,
+          awayTeamId: fixtureData.awayTeamId,
+          homeTeamLogo: fixtureData.homeTeamLogo,
+          awayTeamLogo: fixtureData.awayTeamLogo,
+          round: fixtureData.round
+        };
+
+        // Add relativePoints if relative mode
+        if (isRelativeGroup && oddsData) {
+          matchData.relativePoints = [{
+            group: groupId,
+            homeWin: oddsData.homeWin,
+            draw: oddsData.draw,
+            awayWin: oddsData.awayWin,
+            fromApi: true
+          }];
+        }
+
+        match = await Match.create(matchData);
         addedCount++;
       }
     }
@@ -697,6 +807,14 @@ exports.createManualMatch = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: 'Group not found'
+      });
+    }
+
+    // Automatic groups don't allow manual match creation
+    if (group.matchType === 'automatic') {
+      return res.status(403).json({
+        success: false,
+        message: 'Cannot create manual matches for automatic groups. Matches are synced automatically from the API.'
       });
     }
 
@@ -834,6 +952,14 @@ exports.updateMatchScore = async (req, res) => {
       });
     }
 
+    // Automatic groups don't allow manual score updates
+    if (group.matchType === 'automatic') {
+      return res.status(403).json({
+        success: false,
+        message: 'Cannot manually update scores for automatic groups. Scores are updated automatically from the API.'
+      });
+    }
+
     // Check if user is the group creator OR is admin
     const isCreator = group.creator.toString() === req.user._id.toString();
     if (!isCreator && !req.user.isAdmin) {
@@ -934,6 +1060,14 @@ exports.markMatchAsFinished = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: 'Group not found'
+      });
+    }
+
+    // Automatic groups don't allow manual marking as finished
+    if (group.matchType === 'automatic') {
+      return res.status(403).json({
+        success: false,
+        message: 'Cannot manually mark matches as finished for automatic groups. Match status is updated automatically from the API.'
       });
     }
 
@@ -1057,6 +1191,14 @@ exports.deleteMatch = async (req, res) => {
       });
     }
 
+    // Automatic groups don't allow manual match deletion
+    if (group.matchType === 'automatic') {
+      return res.status(403).json({
+        success: false,
+        message: 'Cannot delete matches for automatic groups. Matches are managed automatically from the API.'
+      });
+    }
+
     // Check if user is the group creator OR is admin
     const isCreator = group.creator.toString() === req.user._id.toString();
     if (!isCreator && !req.user.isAdmin) {
@@ -1130,6 +1272,14 @@ exports.editMatch = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: 'Group not found'
+      });
+    }
+
+    // Automatic groups don't allow manual match editing
+    if (group.matchType === 'automatic') {
+      return res.status(403).json({
+        success: false,
+        message: 'Cannot edit matches for automatic groups. Match data is managed automatically from the API.'
       });
     }
 
@@ -1357,39 +1507,50 @@ exports.getLiveFixtures = async (req, res) => {
 exports.refreshLiveMatches = async (req, res) => {
   try {
     const { groupId } = req.params;
+    const now = new Date();
 
-    // Get current live matches in the group
-    const liveMatchesInGroup = await Match.find({
+    // Get matches that are either:
+    // 1. Already marked as LIVE
+    // 2. SCHEDULED but matchDate is in the past (potentially started)
+    const potentiallyLiveMatches = await Match.find({
       groups: groupId,
-      status: 'LIVE'
+      $or: [
+        { status: 'LIVE' },
+        { status: 'SCHEDULED', matchDate: { $lte: now } }
+      ],
+      // Only consider matches with externalApiId (from API)
+      externalApiId: { $exists: true, $ne: null }
     });
 
-    if (liveMatchesInGroup.length === 0) {
+    if (potentiallyLiveMatches.length === 0) {
+      // Return all matches even if no live matches to refresh
+      const allMatches = await Match.find({ groups: groupId }).sort({ matchDate: 1 });
       return res.status(200).json({
         success: true,
         message: 'No live matches to refresh',
-        data: []
+        data: allMatches
       });
     }
 
     // Fetch fresh live data from API
     const freshLiveFixtures = await apiFootballService.getLiveFixtures();
 
-    // Update each live match with fresh data
+    // Update each match with fresh data
     const updatedMatches = [];
-    for (const match of liveMatchesInGroup) {
+    for (const match of potentiallyLiveMatches) {
       const freshData = freshLiveFixtures.find(f => f.externalApiId === match.externalApiId);
 
       if (freshData) {
-        // Update with fresh data
+        // Match is live - update with fresh data
+        match.status = 'LIVE';
         match.result = freshData.result;
         match.elapsed = freshData.elapsed;
         match.extraTime = freshData.extraTime;
         match.statusShort = freshData.statusShort;
         await match.save();
         updatedMatches.push(match);
-      } else {
-        // Match is no longer in live API - it has likely finished
+      } else if (match.status === 'LIVE') {
+        // Match was LIVE but is no longer in live API - it has likely finished
         // Mark as FINISHED and set final outcome
         match.status = 'FINISHED';
         match.elapsed = null;
@@ -1410,6 +1571,8 @@ exports.refreshLiveMatches = async (req, res) => {
         await match.save();
         updatedMatches.push(match);
       }
+      // Note: If match is SCHEDULED but not in live API, leave it as SCHEDULED
+      // It might not have started yet or might be from a different source
     }
 
     // Return all matches for the group (not just live)
@@ -1419,6 +1582,109 @@ exports.refreshLiveMatches = async (req, res) => {
       success: true,
       message: `Refreshed ${updatedMatches.length} live matches`,
       data: allMatches
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Refresh a single match with fresh data from API (efficient - 1 API call per match)
+exports.refreshSingleMatch = async (req, res) => {
+  try {
+    const { matchId } = req.params;
+    const { groupId } = req.query; // Optional: specific group to refresh odds for
+
+    // Try to find by MongoDB _id first, then by externalApiId
+    let match;
+    if (matchId.startsWith('apifootball_')) {
+      match = await Match.findOne({ externalApiId: matchId });
+    } else {
+      match = await Match.findById(matchId);
+    }
+
+    if (!match) {
+      return res.status(404).json({
+        success: false,
+        message: 'Match not found'
+      });
+    }
+
+    // Only refresh matches that have externalApiId (from API)
+    if (!match.externalApiId) {
+      return res.status(400).json({
+        success: false,
+        message: 'This match is not from the API and cannot be refreshed'
+      });
+    }
+
+    // Fetch fresh data for this specific fixture (1 API call)
+    const freshData = await apiFootballService.getFixtureById(match.externalApiId);
+
+    if (!freshData) {
+      return res.status(404).json({
+        success: false,
+        message: 'Could not fetch fresh data for this match'
+      });
+    }
+
+    // Update match with fresh data
+    match.status = freshData.status;
+    match.statusShort = freshData.statusShort;
+    match.elapsed = freshData.elapsed;
+    match.extraTime = freshData.extraTime;
+
+    // Update result if available
+    if (freshData.result && (freshData.result.homeScore !== null || freshData.result.awayScore !== null)) {
+      match.result = freshData.result;
+    }
+
+    // Fetch and update odds for relative groups
+    if (match.groups && match.groups.length > 0) {
+      // Get groups to check which are relative
+      const groupsToCheck = groupId
+        ? [await Group.findById(groupId)]
+        : await Group.find({ _id: { $in: match.groups } });
+
+      const relativeGroups = groupsToCheck.filter(g => g && g.betType === 'relative');
+
+      if (relativeGroups.length > 0) {
+        // Fetch fresh odds from API
+        const oddsData = await apiFootballService.getFixtureOdds(match.externalApiId);
+
+        if (oddsData) {
+          // Update relativePoints for each relative group
+          for (const group of relativeGroups) {
+            const existingIndex = match.relativePoints.findIndex(
+              rp => rp.group.toString() === group._id.toString()
+            );
+
+            const newOdds = {
+              group: group._id,
+              homeWin: oddsData.homeWin,
+              draw: oddsData.draw,
+              awayWin: oddsData.awayWin,
+              fromApi: true
+            };
+
+            if (existingIndex !== -1) {
+              match.relativePoints[existingIndex] = newOdds;
+            } else {
+              match.relativePoints.push(newOdds);
+            }
+          }
+        }
+      }
+    }
+
+    await match.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Match refreshed successfully',
+      data: match
     });
   } catch (error) {
     res.status(500).json({
@@ -1494,6 +1760,42 @@ exports.addLiveFixturesToGroup = async (req, res) => {
       success: true,
       message: `Added ${addedMatches.length} live fixtures to group`,
       data: addedMatches
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Get league standings/table
+exports.getLeagueStandings = async (req, res) => {
+  try {
+    const { leagueId, season } = req.query;
+
+    if (!leagueId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide leagueId'
+      });
+    }
+
+    const standings = await apiFootballService.getLeagueStandings(
+      leagueId,
+      season ? parseInt(season) : null
+    );
+
+    if (!standings) {
+      return res.status(404).json({
+        success: false,
+        message: 'Standings not available for this league'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: standings
     });
   } catch (error) {
     res.status(500).json({

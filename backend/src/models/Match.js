@@ -65,6 +65,10 @@ const matchSchema = new mongoose.Schema({
     awayWin: {
       type: Number,
       default: 1
+    },
+    fromApi: {
+      type: Boolean,
+      default: false
     }
   }],
   // API-specific fields for automatic groups
