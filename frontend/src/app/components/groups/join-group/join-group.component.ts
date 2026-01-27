@@ -1,7 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { GroupService } from '../../../services/group.service';
 import { JoinGroupData } from '../../../models/group.model';
 import { TranslatePipe } from '../../../services/translate.pipe';
@@ -14,19 +14,32 @@ import { TranslationService } from '../../../services/translation.service';
   templateUrl: './join-group.component.html',
   styleUrls: ['./join-group.component.css']
 })
-export class JoinGroupComponent {
+export class JoinGroupComponent implements OnInit {
   joinData: JoinGroupData = {
     inviteCode: ''
   };
   errorMessage = '';
   successMessage = '';
   loading = false;
+  codeFromUrl = false; // Track if code came from URL (for auto-submit)
 
   constructor(
     private groupService: GroupService,
     private router: Router,
+    private route: ActivatedRoute,
     private translationService: TranslationService
   ) {}
+
+  ngOnInit(): void {
+    // Check for invite code in route params (from /join/:code)
+    const codeFromParams = this.route.snapshot.params['code'];
+    if (codeFromParams) {
+      this.joinData.inviteCode = codeFromParams.toUpperCase();
+      this.codeFromUrl = true;
+      // Auto-submit when code is provided via URL
+      this.onSubmit();
+    }
+  }
 
   onSubmit(): void {
     this.loading = true;

@@ -37,6 +37,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   refreshingLive = false;
   refreshingMatchId: string | null = null; // Track which individual match is being refreshed
   syncingMatches = false;
+  linkCopied = false;
 
   // Score update
   editingMatchId: string | null = null;
@@ -441,6 +442,21 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
 
   canManageGroup(): boolean {
     return this.isGroupCreator() || this.authService.isAdmin();
+  }
+
+  copyJoinLink(): void {
+    if (!this.group?.inviteCode) return;
+
+    const joinUrl = `${window.location.origin}/join/${this.group.inviteCode}`;
+
+    navigator.clipboard.writeText(joinUrl).then(() => {
+      this.linkCopied = true;
+      setTimeout(() => {
+        this.linkCopied = false;
+      }, 2000);
+    }).catch(err => {
+      console.error('Failed to copy link:', err);
+    });
   }
 
   isMatchInPast(matchDate: Date | string): boolean {

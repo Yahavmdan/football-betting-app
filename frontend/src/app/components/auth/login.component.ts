@@ -6,6 +6,7 @@ import { AuthService } from '../../services/auth.service';
 import { LoginCredentials } from '../../models/user.model';
 import { TranslatePipe } from '../../services/translate.pipe';
 import { TranslationService } from '../../services/translation.service';
+import { REDIRECT_URL_KEY } from '../../guards/auth.guard';
 
 @Component({
   selector: 'app-login',
@@ -34,7 +35,14 @@ export class LoginComponent {
 
     this.authService.login(this.credentials).subscribe({
       next: () => {
-        void this.router.navigate(['/groups']);
+        // Check for saved redirect URL (e.g., from join link)
+        const redirectUrl = sessionStorage.getItem(REDIRECT_URL_KEY);
+        if (redirectUrl) {
+          sessionStorage.removeItem(REDIRECT_URL_KEY);
+          void this.router.navigateByUrl(redirectUrl);
+        } else {
+          void this.router.navigate(['/groups']);
+        }
       },
       error: (error) => {
         this.errorMessage = error.error?.message || this.translationService.translate('auth.loginFailed');
