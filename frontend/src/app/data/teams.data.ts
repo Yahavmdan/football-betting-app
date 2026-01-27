@@ -28,7 +28,7 @@ export const ISRAELI_LEAGUES: League[] = [
             {
                 id: 3,
                 name: 'הפועל באר שבע',
-                nameEn: 'Hapoel Be\'er Sheva',
+                nameEn: 'Hapoel Beer Sheva',
                 nameHe: 'הפועל באר שבע',
                 logo: 'assets/team-logos/3.png'
             },
@@ -55,18 +55,18 @@ export const ISRAELI_LEAGUES: League[] = [
             },
             {id: 7, name: 'בני סכנין', nameEn: 'Bnei Sakhnin', nameHe: 'בני סכנין', logo: 'assets/team-logos/7.png'},
             {id: 8, name: 'הפועל חיפה', nameEn: 'Hapoel Haifa', nameHe: 'הפועל חיפה', logo: 'assets/team-logos/8.png'},
-            {id: 9, name: 'מ.ס אשדוד', nameEn: 'MS Ashdod', nameHe: 'מ.ס אשדוד', logo: 'assets/team-logos/9.png'},
+            {id: 9, name: 'מ.ס אשדוד', nameEn: 'Ashdod', nameHe: 'מ.ס אשדוד', logo: 'assets/team-logos/9.png'},
             {
                 id: 10,
                 name: 'הפועל ירושלים',
-                nameEn: 'Hapoel Jerusalem',
+                nameEn: 'Hapoel Katamon',
                 nameHe: 'הפועל ירושלים',
                 logo: 'assets/team-logos/10.png'
             },
             {
                 id: 11,
                 name: 'מכבי בני ריינה',
-                nameEn: 'Maccabi Bnei Reineh',
+                nameEn: 'Maccabi Bnei Raina',
                 nameHe: 'מכבי בני ריינה',
                 logo: 'assets/team-logos/11.png'
             },
@@ -99,9 +99,9 @@ export const ISRAELI_LEAGUES: League[] = [
         teams: [
             {
                 id: 15,
-                name: 'בני יהודה תל אביב',
-                nameEn: 'Bnei Yehuda Tel Aviv',
-                nameHe: 'בני יהודה תל אביב',
+                name: 'בני יהודה',
+                nameEn: 'Bnei Yehuda',
+                nameHe: 'בני יהודה',
                 logo: 'assets/team-logos/15.png'
             },
             {
@@ -122,7 +122,7 @@ export const ISRAELI_LEAGUES: League[] = [
             {
                 id: 19,
                 name: 'הפועל נוף הגליל',
-                nameEn: 'Hapoel Nof HaGalil',
+                nameEn: 'Hapoel Nazareth Illit',
                 nameHe: 'הפועל נוף הגליל',
                 logo: 'assets/team-logos/19.png'
             },
@@ -164,14 +164,14 @@ export const ISRAELI_LEAGUES: League[] = [
             {
                 id: 25,
                 name: 'מ.ס קרית ים',
-                nameEn: 'MS Kiryat Yam',
+                nameEn: 'Kiryat Yam SC',
                 nameHe: 'מ.ס קרית ים',
                 logo: 'assets/team-logos/25.png'
             },
             {
                 id: 26,
                 name: 'הפועל רמת גן גבעתיים',
-                nameEn: 'Hapoel Ramat Gan Givatayim',
+                nameEn: 'Hapoel Ramat Gan',
                 nameHe: 'הפועל רמת גן גבעתיים',
                 logo: 'assets/team-logos/26.png'
             },
@@ -182,7 +182,7 @@ export const ISRAELI_LEAGUES: League[] = [
                 nameHe: 'מכבי פתח תקווה',
                 logo: 'assets/team-logos/30.png'
             },
-            {id: 31, name: "מ.ס כפר קאסם", nameEn: "MS Kafr Qasim", nameHe: "מ.ס כפר קאסם", logo: "assets/team-logos/31.png"},
+            {id: 31, name: "מ.ס כפר קאסם", nameEn: "Kafr Qasim", nameHe: "מ.ס כפר קאסם", logo: "assets/team-logos/31.png"},
             {id: 33, name: "הפועל כפר שלם", nameEn: "Hapoel Kfar Shalem", nameHe: "הפועל כפר שלם", logo: "assets/team-logos/33.png"},
             {id: 32, name: "הפועל חדרה", nameEn: "Hapoel Hadera", nameHe: "הפועל חדרה", logo: "assets/team-logos/32.png"},
         ]

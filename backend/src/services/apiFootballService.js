@@ -128,24 +128,46 @@ async function getFixtures(leagueId, season = null) {
   const apiFixtures = await fetchFixturesFromAPI(leagueId, currentSeason);
 
   // Transform fixtures to our format
-  const transformedFixtures = apiFixtures.map(fixture => ({
-    externalApiId: `apifootball_${fixture.fixture.id}`,
-    homeTeam: fixture.teams.home.name,
-    homeTeamLogo: fixture.teams.home.logo,
-    awayTeam: fixture.teams.away.name,
-    awayTeamLogo: fixture.teams.away.logo,
-    matchDate: new Date(fixture.fixture.date),
-    status: mapStatus(fixture.fixture.status.short),
-    result: fixture.fixture.status.short === 'FT' || fixture.fixture.status.short === 'AET' || fixture.fixture.status.short === 'PEN' ? {
-      homeScore: fixture.goals.home,
-      awayScore: fixture.goals.away,
-      outcome: fixture.goals.home > fixture.goals.away ? '1' : fixture.goals.home < fixture.goals.away ? '2' : 'X'
-    } : null,
-    competition: fixture.league.name,
-    season: fixture.league.season,
-    round: fixture.league.round,
-    venue: fixture.fixture.venue?.name || null
-  }));
+  const transformedFixtures = apiFixtures.map(fixture => {
+    const status = mapStatus(fixture.fixture.status.short);
+    const isFinished = ['FT', 'AET', 'PEN', 'AWD', 'WO'].includes(fixture.fixture.status.short);
+    const isLive = status === 'LIVE';
+
+    // Include scores for both finished and live matches
+    let result = null;
+    if (isFinished || isLive) {
+      const homeScore = fixture.goals.home;
+      const awayScore = fixture.goals.away;
+      result = {
+        homeScore: homeScore,
+        awayScore: awayScore,
+        outcome: isFinished && homeScore !== null && awayScore !== null
+          ? (homeScore > awayScore ? '1' : homeScore < awayScore ? '2' : 'X')
+          : null
+      };
+    }
+
+    return {
+      externalApiId: `apifootball_${fixture.fixture.id}`,
+      homeTeam: fixture.teams.home.name,
+      homeTeamId: fixture.teams.home.id,
+      homeTeamLogo: fixture.teams.home.logo,
+      awayTeam: fixture.teams.away.name,
+      awayTeamId: fixture.teams.away.id,
+      awayTeamLogo: fixture.teams.away.logo,
+      matchDate: new Date(fixture.fixture.date),
+      status: status,
+      statusShort: fixture.fixture.status.short,
+      elapsed: fixture.fixture.status.elapsed,
+      extraTime: fixture.fixture.status.extra,
+      result: result,
+      competition: fixture.league.name,
+      leagueId: fixture.league.id,
+      season: fixture.league.season,
+      round: fixture.league.round,
+      venue: fixture.fixture.venue?.name || null
+    };
+  });
 
   // Save to cache
   await FixtureCache.findOneAndUpdate(
@@ -318,26 +340,46 @@ async function getFilteredFixtures(leagueId, season = null, filters = {}) {
 
     if (response.data && response.data.response) {
       // Transform fixtures to our format
-      const transformedFixtures = response.data.response.map(fixture => ({
-        externalApiId: `apifootball_${fixture.fixture.id}`,
-        homeTeam: fixture.teams.home.name,
-        homeTeamId: fixture.teams.home.id,
-        homeTeamLogo: fixture.teams.home.logo,
-        awayTeam: fixture.teams.away.name,
-        awayTeamId: fixture.teams.away.id,
-        awayTeamLogo: fixture.teams.away.logo,
-        matchDate: new Date(fixture.fixture.date),
-        status: mapStatus(fixture.fixture.status.short),
-        result: fixture.fixture.status.short === 'FT' || fixture.fixture.status.short === 'AET' || fixture.fixture.status.short === 'PEN' ? {
-          homeScore: fixture.goals.home,
-          awayScore: fixture.goals.away,
-          outcome: fixture.goals.home > fixture.goals.away ? '1' : fixture.goals.home < fixture.goals.away ? '2' : 'X'
-        } : null,
-        competition: fixture.league.name,
-        season: fixture.league.season,
-        round: fixture.league.round,
-        venue: fixture.fixture.venue?.name || null
-      }));
+      const transformedFixtures = response.data.response.map(fixture => {
+        const status = mapStatus(fixture.fixture.status.short);
+        const isFinished = ['FT', 'AET', 'PEN', 'AWD', 'WO'].includes(fixture.fixture.status.short);
+        const isLive = status === 'LIVE';
+
+        // Include scores for both finished and live matches
+        let result = null;
+        if (isFinished || isLive) {
+          const homeScore = fixture.goals.home;
+          const awayScore = fixture.goals.away;
+          result = {
+            homeScore: homeScore,
+            awayScore: awayScore,
+            outcome: isFinished && homeScore !== null && awayScore !== null
+              ? (homeScore > awayScore ? '1' : homeScore < awayScore ? '2' : 'X')
+              : null
+          };
+        }
+
+        return {
+          externalApiId: `apifootball_${fixture.fixture.id}`,
+          homeTeam: fixture.teams.home.name,
+          homeTeamId: fixture.teams.home.id,
+          homeTeamLogo: fixture.teams.home.logo,
+          awayTeam: fixture.teams.away.name,
+          awayTeamId: fixture.teams.away.id,
+          awayTeamLogo: fixture.teams.away.logo,
+          matchDate: new Date(fixture.fixture.date),
+          status: status,
+          statusShort: fixture.fixture.status.short,
+          elapsed: fixture.fixture.status.elapsed,
+          extraTime: fixture.fixture.status.extra,
+          result: result,
+          competition: fixture.league.name,
+          leagueId: fixture.league.id,
+          season: fixture.league.season,
+          round: fixture.league.round,
+          venue: fixture.fixture.venue?.name || null
+        };
+      });
 
       // Sort by date
       transformedFixtures.sort((a, b) => new Date(a.matchDate) - new Date(b.matchDate));
@@ -521,6 +563,202 @@ async function getTeamRecentMatches(teamId, last = 5) {
   }
 }
 
+// Get a single fixture by its API ID (efficient for refreshing individual matches)
+// fixtureId should be the numeric ID, not the full externalApiId
+async function getFixtureById(fixtureId) {
+  try {
+    // Extract numeric ID if full externalApiId is passed
+    const numericId = fixtureId.toString().replace('apifootball_', '');
+
+    console.log(`=== Fetching single fixture: ${numericId} ===`);
+
+    const response = await axios.get(`${API_BASE_URL}/fixtures`, {
+      headers: {
+        'x-apisports-key': API_KEY
+      },
+      params: {
+        id: numericId
+      }
+    });
+
+    console.log('API Response - Fixture found:', response.data?.response?.length > 0);
+
+    if (response.data && response.data.response && response.data.response.length > 0) {
+      const fixture = response.data.response[0];
+      return {
+        externalApiId: `apifootball_${fixture.fixture.id}`,
+        homeTeam: fixture.teams.home.name,
+        homeTeamId: fixture.teams.home.id,
+        homeTeamLogo: fixture.teams.home.logo,
+        awayTeam: fixture.teams.away.name,
+        awayTeamId: fixture.teams.away.id,
+        awayTeamLogo: fixture.teams.away.logo,
+        matchDate: new Date(fixture.fixture.date),
+        status: mapStatus(fixture.fixture.status.short),
+        statusShort: fixture.fixture.status.short,
+        elapsed: fixture.fixture.status.elapsed,
+        extraTime: fixture.fixture.status.extra,
+        result: {
+          homeScore: fixture.goals.home,
+          awayScore: fixture.goals.away,
+          outcome: fixture.goals.home > fixture.goals.away ? '1' :
+                   fixture.goals.home < fixture.goals.away ? '2' :
+                   fixture.goals.home !== null ? 'X' : null
+        },
+        competition: fixture.league.name,
+        leagueId: fixture.league.id,
+        season: fixture.league.season,
+        round: fixture.league.round,
+        venue: fixture.fixture.venue?.name || null
+      };
+    }
+    return null;
+  } catch (error) {
+    console.error('Error fetching fixture by ID:', error.message);
+    throw error;
+  }
+}
+
+// Get league standings/table
+async function getLeagueStandings(leagueId, season = null) {
+  const currentSeason = season || getCurrentSeason();
+
+  try {
+    console.log(`=== Fetching standings for league ${leagueId}, season ${currentSeason} ===`);
+
+    const response = await axios.get(`${API_BASE_URL}/standings`, {
+      headers: {
+        'x-apisports-key': API_KEY
+      },
+      params: {
+        league: leagueId,
+        season: currentSeason
+      }
+    });
+
+    console.log('API Response - Standings found:', response.data?.response?.length > 0);
+
+    if (response.data && response.data.response && response.data.response.length > 0) {
+      const leagueData = response.data.response[0];
+      const standings = leagueData.league.standings[0]; // First standings group (for leagues without groups)
+
+      return {
+        league: {
+          id: leagueData.league.id,
+          name: leagueData.league.name,
+          country: leagueData.league.country,
+          logo: leagueData.league.logo,
+          flag: leagueData.league.flag,
+          season: leagueData.league.season
+        },
+        standings: standings.map(team => ({
+          rank: team.rank,
+          team: {
+            id: team.team.id,
+            name: team.team.name,
+            logo: team.team.logo
+          },
+          points: team.points,
+          goalsDiff: team.goalsDiff,
+          form: team.form,
+          description: team.description,
+          played: team.all.played,
+          won: team.all.win,
+          drawn: team.all.draw,
+          lost: team.all.lose,
+          goalsFor: team.all.goals.for,
+          goalsAgainst: team.all.goals.against
+        }))
+      };
+    }
+    return null;
+  } catch (error) {
+    console.error('Error fetching standings:', error.message);
+    throw error;
+  }
+}
+
+// Get odds for a fixture (for relative points calculation)
+async function getFixtureOdds(fixtureId) {
+  try {
+    // Extract numeric ID if full externalApiId is passed
+    const numericId = fixtureId.toString().replace('apifootball_', '');
+
+    console.log(`=== Fetching odds for fixture: ${numericId} ===`);
+
+    const response = await axios.get(`${API_BASE_URL}/odds`, {
+      headers: {
+        'x-apisports-key': API_KEY
+      },
+      params: {
+        fixture: numericId
+      }
+    });
+
+    if (response.data && response.data.response && response.data.response.length > 0) {
+      const oddsData = response.data.response[0];
+
+      // Find "Match Winner" bet from any bookmaker
+      for (const bookmaker of oddsData.bookmakers || []) {
+        const matchWinnerBet = bookmaker.bets.find(bet => bet.name === 'Match Winner');
+        if (matchWinnerBet) {
+          const homeOdd = matchWinnerBet.values.find(v => v.value === 'Home');
+          const drawOdd = matchWinnerBet.values.find(v => v.value === 'Draw');
+          const awayOdd = matchWinnerBet.values.find(v => v.value === 'Away');
+
+          if (homeOdd && drawOdd && awayOdd) {
+            return {
+              homeWin: parseFloat(homeOdd.odd),
+              draw: parseFloat(drawOdd.odd),
+              awayWin: parseFloat(awayOdd.odd),
+              bookmaker: bookmaker.name,
+              updatedAt: oddsData.update
+            };
+          }
+        }
+      }
+    }
+
+    // Return default odds if not available
+    console.log(`No odds found for fixture ${numericId}, using defaults`);
+    return {
+      homeWin: 1,
+      draw: 1,
+      awayWin: 1,
+      bookmaker: null,
+      updatedAt: null
+    };
+  } catch (error) {
+    console.error('Error fetching odds:', error.message);
+    // Return defaults on error
+    return {
+      homeWin: 1,
+      draw: 1,
+      awayWin: 1,
+      bookmaker: null,
+      updatedAt: null
+    };
+  }
+}
+
+// Get odds for multiple fixtures (batch)
+async function getFixturesOdds(fixtureIds) {
+  const oddsMap = {};
+
+  // API doesn't support batch odds, so we fetch one by one
+  // But we limit to avoid too many API calls
+  const limitedIds = fixtureIds.slice(0, 20);
+
+  for (const fixtureId of limitedIds) {
+    const numericId = fixtureId.toString().replace('apifootball_', '');
+    oddsMap[fixtureId] = await getFixtureOdds(numericId);
+    // Small delay to avoid rate limiting
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+
+  return oddsMap;
+}
+
 module.exports = {
   getSupportedLeagues,
   isLeagueSupported,
@@ -534,5 +772,9 @@ module.exports = {
   searchLeaguesByCountry,
   getLiveFixtures,
   getHeadToHead,
-  getTeamRecentMatches
+  getTeamRecentMatches,
+  getFixtureById,
+  getLeagueStandings,
+  getFixtureOdds,
+  getFixturesOdds
 };

@@ -10,6 +10,7 @@ const {
   getLeagueFixtures,
   getFilteredFixtures,
   getLeagueTeams,
+  getLeagueStandings,
   syncLeagueFixturesToGroup,
   clearLeagueCache,
   searchLeagues,
@@ -23,7 +24,8 @@ const {
   setMatchLive,
   getLiveFixtures,
   addLiveFixturesToGroup,
-  refreshLiveMatches
+  refreshLiveMatches,
+  refreshSingleMatch
 } = require('../controllers/matchController');
 const { protect } = require('../middleware/auth');
 
@@ -35,7 +37,9 @@ router.get('/leagues/fixtures/filtered', protect, getFilteredFixtures);
 router.get('/live', protect, getLiveFixtures);
 router.post('/live/add-to-group', protect, addLiveFixturesToGroup);
 router.post('/live/refresh/:groupId', protect, refreshLiveMatches);
+router.post('/:matchId/refresh', protect, refreshSingleMatch);
 router.get('/leagues/teams', protect, getLeagueTeams);
+router.get('/leagues/standings', protect, getLeagueStandings);
 router.delete('/leagues/cache', protect, clearLeagueCache);
 router.post('/sync-league', protect, syncLeagueFixturesToGroup);
 router.get('/head-to-head', protect, getHeadToHead);

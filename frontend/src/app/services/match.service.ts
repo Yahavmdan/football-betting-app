@@ -131,6 +131,13 @@ export class MatchService {
     return this.http.post<{ success: boolean; message: string; data: Match[] }>(`${this.apiUrl}/live/refresh/${groupId}`, {});
   }
 
+  // Refresh a single match with fresh data from API (efficient - 1 API call per data type)
+  // If groupId is provided, also fetches fresh odds for relative betting
+  refreshSingleMatch(matchId: string, groupId?: string): Observable<{ success: boolean; message: string; data: Match }> {
+    const params = groupId ? `?groupId=${groupId}` : '';
+    return this.http.post<{ success: boolean; message: string; data: Match }>(`${this.apiUrl}/${matchId}/refresh${params}`, {});
+  }
+
   // Get teams for a specific league (for automatic groups)
   getLeagueTeams(leagueId: string, season?: number): Observable<{ success: boolean; data: ApiTeam[] }> {
     const params: any = { leagueId };
@@ -162,6 +169,13 @@ export class MatchService {
     if (filters.groupId) params.groupId = filters.groupId;
 
     return this.http.get<{ success: boolean; data: ApiFixture[] }>(`${this.apiUrl}/leagues/fixtures/filtered`, { params });
+  }
+
+  // Get league standings/table
+  getLeagueStandings(leagueId: string, season?: number): Observable<{ success: boolean; data: LeagueStandings }> {
+    const params: any = { leagueId };
+    if (season) params.season = season.toString();
+    return this.http.get<{ success: boolean; data: LeagueStandings }>(`${this.apiUrl}/leagues/standings`, { params });
   }
 }
 
@@ -196,4 +210,35 @@ export interface ApiFixture {
   season: number;
   round: string;
   venue: string | null;
+}
+
+export interface LeagueStandings {
+  league: {
+    id: number;
+    name: string;
+    country: string;
+    logo: string;
+    flag: string;
+    season: number;
+  };
+  standings: StandingTeam[];
+}
+
+export interface StandingTeam {
+  rank: number;
+  team: {
+    id: number;
+    name: string;
+    logo: string;
+  };
+  points: number;
+  goalsDiff: number;
+  form: string;
+  description: string | null;
+  played: number;
+  won: number;
+  drawn: number;
+  lost: number;
+  goalsFor: number;
+  goalsAgainst: number;
 }

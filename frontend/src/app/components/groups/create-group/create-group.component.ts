@@ -24,7 +24,7 @@ export class CreateGroupComponent implements OnInit {
         description: '',
         betType: 'classic',
         startingCredits: 100,
-        creditsGoal: 1000,
+        creditsGoal: 10000,
         showBets: true,
         matchType: 'manual',
         selectedLeague: undefined
@@ -110,7 +110,7 @@ export class CreateGroupComponent implements OnInit {
                 this.groupData.startingCredits = 100;
             }
             if (!this.groupData.creditsGoal) {
-                this.groupData.creditsGoal = 1000;
+                this.groupData.creditsGoal = 10000;
             }
         }
     }

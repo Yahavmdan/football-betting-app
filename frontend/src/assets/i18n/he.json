@@ -63,7 +63,7 @@
     "betTypeClassic": "קלאסי",
     "betTypeRelative": "יחסי",
     "betTypeClassicDesc": "נקודה 1 עבור ניחוש נכון",
-    "betTypeRelativeDesc": "נקודות מותאמות לפי רמת הקושי",
+    "betTypeRelativeDesc": "נקודות מותאמות לפי יחס",
     "startingCredits": "נקודות זכות התחלתיות",
     "enterStartingCredits": "הזן נקודות זכות התחלתיות לכל שחקן",
     "creditsPerPlayer": "נקודות זכות לשחקן",
@@ -153,6 +153,8 @@
     "confirmDelete": "האם אתה בטוח שברצונך למחוק את המשחק? פעולה זו לא ניתנת לביטול.",
     "ongoingScore": "תוצאה נוכחית",
     "round": "מחזור",
+    "loadPreviousRounds": "טען מחזורים קודמים",
+    "loadFutureRounds": "טען מחזורים נוספים",
     "relativePoints": "חלוקת נקודות",
     "homeWinPoints": "נקודות לניצחון בית",
     "drawPoints": "נקודות לתיקו",
@@ -198,7 +200,8 @@
     "enterWagerAmount": "הזן סכום הימור",
     "availableCredits": "נקודות זכות זמינות",
     "insufficientCredits": "אין מספיק נקודות זכות",
-    "potentialWin": "ניצחון פוטנציאלי"
+    "potentialWin": "ניצחון פוטנציאלי",
+    "oddsFromApi": "יחסים חיים"
   },
   "common": {
     "required": "חובה",
@@ -208,7 +211,8 @@
     "edit": "ערוך",
     "delete": "מחק",
     "save": "שמור",
-    "copy": "העתק"
+    "copy": "העתק",
+    "refresh": "רענן"
   },
   "profile": {
     "title": "הפרופיל שלי",
@@ -308,6 +312,8 @@
     "notStarted": "לא התחיל",
     "ongoing": "מתקיים עכשיו",
     "dateRange": "טווח תאריכים",
+    "from": "מתאריך",
+    "to": "עד תאריך",
     "membersBetted": "חברים שהמרו",
     "selectMembers": "בחר חברים...",
     "selected": "נבחרו",
@@ -330,5 +336,18 @@
     "successRate": "אחוז הצלחה",
     "correct": "נכונים",
     "groups": "קבוצות"
+  },
+  "standings": {
+    "leagueTable": "טבלת הליגה",
+    "team": "קבוצה",
+    "played": "מ",
+    "won": "נ",
+    "drawn": "ת",
+    "lost": "ה",
+    "gf": "שע",
+    "ga": "חת",
+    "gd": "הפ",
+    "pts": "נק",
+    "form": "אחרונים"
   }
 }
