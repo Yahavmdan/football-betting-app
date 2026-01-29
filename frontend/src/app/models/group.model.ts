@@ -21,6 +21,7 @@ export interface TrashTalk {
   message: string | null;
   teamLogo: string | null;
   bgColor: string | null;
+  textColor: string | null;
   updatedAt: Date | null;
 }
 

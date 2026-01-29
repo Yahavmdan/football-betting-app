@@ -75,7 +75,7 @@ export class GroupService {
   }
 
   // Trash talk
-  updateTrashTalk(groupId: string, message: string | null, teamLogo?: string | null, bgColor?: string | null): Observable<{ success: boolean; message: string; data: any }> {
-    return this.http.post<{ success: boolean; message: string; data: any }>(`${this.apiUrl}/${groupId}/trash-talk`, { message, teamLogo, bgColor });
+  updateTrashTalk(groupId: string, message: string | null, teamLogo?: string | null, bgColor?: string | null, textColor?: string | null): Observable<{ success: boolean; message: string; data: any }> {
+    return this.http.post<{ success: boolean; message: string; data: any }>(`${this.apiUrl}/${groupId}/trash-talk`, { message, teamLogo, bgColor, textColor });
   }
 }

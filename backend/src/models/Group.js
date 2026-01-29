@@ -45,6 +45,10 @@ const groupSchema = new mongoose.Schema({
         type: String,
         default: null
       },
+      textColor: {
+        type: String,
+        default: null
+      },
       updatedAt: {
         type: Date,
         default: null

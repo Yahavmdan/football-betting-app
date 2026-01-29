@@ -672,7 +672,7 @@ exports.rejectMember = async (req, res) => {
 exports.updateTrashTalk = async (req, res) => {
   try {
     const groupId = req.params.id;
-    const { message, teamLogo, bgColor } = req.body;
+    const { message, teamLogo, bgColor, textColor } = req.body;
 
     const group = await Group.findById(groupId);
 
@@ -700,6 +700,7 @@ exports.updateTrashTalk = async (req, res) => {
       message: message ? message.trim().substring(0, 100) : null,
       teamLogo: teamLogo || null,
       bgColor: bgColor || null,
+      textColor: textColor || null,
       updatedAt: message ? new Date() : null
     };
 

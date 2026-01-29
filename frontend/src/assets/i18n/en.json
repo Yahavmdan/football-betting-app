@@ -93,6 +93,7 @@
     "selectTeam": "Select team logo",
     "noTeam": "No logo",
     "selectColor": "Select background color",
+    "selectTextColor": "Select text color",
     "noColor": "Default",
     "showMessage": "Show message",
     "matchType": "Match Loading",
@@ -109,7 +110,8 @@
     "matchesSynced": "Matches synced successfully",
     "syncMatchesDesc": "Fetch matches from the past week and the upcoming week",
     "shareLink": "Share join link",
-    "linkCopied": "Link copied!"
+    "linkCopied": "Link copied!",
+    "invite": "Invite"
   },
   "matches": {
     "scheduled": "SCHEDULED",

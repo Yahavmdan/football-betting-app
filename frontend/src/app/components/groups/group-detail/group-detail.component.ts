@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -25,6 +25,11 @@ import { AppSelectComponent, SelectOption } from '../../shared/app-select/app-se
   styleUrls: ['./group-detail.component.css']
 })
 export class GroupDetailComponent implements OnInit, OnDestroy {
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    this.showGroupMenu = false;
+  }
+
   groupId: string = '';
   group: Group | null = null;
   leaderboard: GroupMember[] = [];
@@ -38,6 +43,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   refreshingMatchId: string | null = null; // Track which individual match is being refreshed
   syncingMatches = false;
   linkCopied = false;
+  showGroupMenu = false;
 
   // Score update
   editingMatchId: string | null = null;
@@ -90,6 +96,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   trashTalkMessage = '';
   trashTalkTeamLogo: string | null = null;
   trashTalkBgColor: string | null = null;
+  trashTalkTextColor: string | null = null;
   loadingTrashTalk = false;
   visibleTrashTalks: Map<string, boolean> = new Map();
   private trashTalkInterval: any;
@@ -1355,6 +1362,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     this.trashTalkMessage = member?.trashTalk?.message || '';
     this.trashTalkTeamLogo = member?.trashTalk?.teamLogo || null;
     this.trashTalkBgColor = member?.trashTalk?.bgColor || null;
+    this.trashTalkTextColor = member?.trashTalk?.textColor || null;
     this.showTrashTalkInput = true;
   }
 
@@ -1363,6 +1371,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     this.trashTalkMessage = '';
     this.trashTalkTeamLogo = null;
     this.trashTalkBgColor = null;
+    this.trashTalkTextColor = null;
   }
 
   selectTrashTalkTeam(team: { name: string; logo: string }): void {
@@ -1381,12 +1390,20 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     this.trashTalkBgColor = null;
   }
 
+  selectTrashTalkTextColor(color: string): void {
+    this.trashTalkTextColor = color;
+  }
+
+  clearTrashTalkTextColor(): void {
+    this.trashTalkTextColor = null;
+  }
+
   submitTrashTalk(): void {
     this.loadingTrashTalk = true;
     const message = this.trashTalkMessage.trim() || null;
     const currentUserId = this.authService.getCurrentUser()?.id;
 
-    this.groupService.updateTrashTalk(this.groupId, message, this.trashTalkTeamLogo, this.trashTalkBgColor).subscribe({
+    this.groupService.updateTrashTalk(this.groupId, message, this.trashTalkTeamLogo, this.trashTalkBgColor, this.trashTalkTextColor).subscribe({
       next: () => {
         this.loadingTrashTalk = false;
         this.showTrashTalkInput = false;

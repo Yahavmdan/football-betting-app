@@ -93,6 +93,7 @@
     "selectTeam": "בחר לוגו קבוצה",
     "noTeam": "ללא לוגו",
     "selectColor": "בחר צבע רקע",
+    "selectTextColor": "בחר צבע טקסט",
     "noColor": "ברירת מחדל",
     "showMessage": "הצג הודעה",
     "matchType": "טעינת משחקים",
@@ -109,7 +110,8 @@
     "matchesSynced": "המשחקים סונכרנו בהצלחה",
     "syncMatchesDesc": "שלוף משחקים מהשבוע האחרון והשבוע הקרוב",
     "shareLink": "שתף קישור הצטרפות",
-    "linkCopied": "הקישור הועתק!"
+    "linkCopied": "הקישור הועתק!",
+    "invite": "הזמן"
   },
   "matches": {
     "scheduled": "מתוכנן",
