@@ -102,7 +102,7 @@ router.post('/', optionalAuth, uploadFeedback.single('image'), async (req, res) 
 router.get('/', protect, adminOnly, async (req, res) => {
   try {
     const feedbackList = await Feedback.find()
-      .populate('user', 'username email')
+      .populate('user', 'username email profilePicture')
       .sort({ createdAt: -1 });
 
     res.json({

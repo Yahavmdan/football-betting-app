@@ -41,7 +41,8 @@
     <div *ngFor="let feedback of feedbackList" class="feedback-card" [class]="getStatusClass(feedback.status)">
       <div class="feedback-header">
         <div class="user-info">
-          <span class="user-avatar" *ngIf="feedback.user">
+          <img *ngIf="feedback.user?.profilePicture" [src]="feedback.user.profilePicture" alt="Profile" class="user-avatar-img" />
+          <span class="user-avatar" *ngIf="feedback.user && !feedback.user.profilePicture">
             {{ feedback.user.username.charAt(0).toUpperCase() }}
           </span>
           <span class="user-avatar anonymous" *ngIf="!feedback.user">?</span>
