@@ -1,8 +1,10 @@
-import {Component} from '@angular/core';
+import {Component, HostListener, ElementRef, OnDestroy} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {Router, RouterModule} from '@angular/router';
+import {Subscription} from 'rxjs';
 import {AuthService} from '../../services/auth.service';
 import {TranslationService} from '../../services/translation.service';
+import {NotificationService, FeedbackNotification} from '../../services/notification.service';
 import {TranslatePipe} from '../../services/translate.pipe';
 
 @Component({
@@ -12,20 +14,60 @@ import {TranslatePipe} from '../../services/translate.pipe';
     templateUrl: './navbar.component.html',
     styleUrls: ['./navbar.component.css']
 })
-export class NavbarComponent {
+export class NavbarComponent implements OnDestroy {
     currentLang: string = 'en';
     mobileMenuOpen: boolean = false;
     isDarkTheme: boolean = false;
+    notificationsOpen: boolean = false;
+    userDropdownOpen: boolean = false;
+    private userSub: Subscription;
 
     constructor(
         public authService: AuthService,
         private router: Router,
-        private translationService: TranslationService
+        private translationService: TranslationService,
+        public notificationService: NotificationService,
+        private elementRef: ElementRef
     ) {
         this.translationService.currentLang$.subscribe(lang => {
             this.currentLang = lang;
         });
         this.initTheme();
+        this.userSub = this.authService.currentUser$.subscribe(user => {
+            if (user) {
+                this.notificationService.startPolling();
+            } else {
+                this.notificationService.stopPolling();
+                this.notificationsOpen = false;
+            }
+        });
+    }
+
+    ngOnDestroy(): void {
+        this.userSub.unsubscribe();
+    }
+
+    @HostListener('document:click', ['$event'])
+    onDocumentClick(event: Event): void {
+        const target = event.target as HTMLElement;
+        if (this.notificationsOpen) {
+            const wrappers = this.elementRef.nativeElement.querySelectorAll('.notification-wrapper');
+            let insideAny = false;
+            wrappers.forEach((wrapper: HTMLElement) => {
+                if (wrapper.contains(target)) {
+                    insideAny = true;
+                }
+            });
+            if (!insideAny) {
+                this.notificationsOpen = false;
+            }
+        }
+        if (this.userDropdownOpen) {
+            const dropdownWrapper = this.elementRef.nativeElement.querySelector('.user-dropdown-wrapper');
+            if (dropdownWrapper && !dropdownWrapper.contains(target)) {
+                this.userDropdownOpen = false;
+            }
+        }
     }
 
     private initTheme(): void {
@@ -69,6 +111,38 @@ export class NavbarComponent {
     onImageError(event: Event): void {
         const img = event.target as HTMLImageElement;
         img.style.display = 'none';
+    }
+
+    toggleNotifications(): void {
+        this.notificationsOpen = !this.notificationsOpen;
+        if (this.notificationsOpen) {
+            this.userDropdownOpen = false;
+        }
+    }
+
+    toggleUserDropdown(): void {
+        this.userDropdownOpen = !this.userDropdownOpen;
+        if (this.userDropdownOpen) {
+            this.notificationsOpen = false;
+        }
+    }
+
+    closeUserDropdown(): void {
+        this.userDropdownOpen = false;
+    }
+
+    dismissNotification(id: string): void {
+        this.notificationService.dismissNotification(id).subscribe();
+    }
+
+    dismissAllNotifications(): void {
+        this.notificationService.dismissAll();
+        this.notificationsOpen = false;
+    }
+
+    formatNotificationDate(dateString: string): string {
+        const date = new Date(dateString);
+        return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
     }
 
     logout(): void {

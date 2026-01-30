@@ -5,7 +5,9 @@
   "nav": {
     "myGroups": "My Groups",
     "logout": "Logout",
-    "feedback": "Feedback"
+    "feedback": "Feedback",
+    "darkMode": "Dark Mode",
+    "lightMode": "Light Mode"
   },
   "auth": {
     "login": "Login",
@@ -292,7 +294,15 @@
     "markNew": "Mark New",
     "markRead": "Mark Read",
     "markResolved": "Mark Resolved",
-    "confirmDelete": "Are you sure you want to delete this feedback?"
+    "confirmDelete": "Are you sure you want to delete this feedback?",
+    "responsePlaceholder": "Add a response message (optional)...",
+    "sendAndResolve": "Send & Resolve"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No new notifications",
+    "dismissAll": "Dismiss All",
+    "feedbackResolved": "Your feedback has been addressed"
   },
   "feedback": {
     "reportBug": "Contact us",

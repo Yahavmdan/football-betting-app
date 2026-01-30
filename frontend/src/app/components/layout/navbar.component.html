@@ -23,84 +23,88 @@
                     <span></span>
                 </button>
                 <div class="mobile-header-right">
-                    <div class="language-switcher mobile-lang">
-                        <button
-                                (click)="switchLanguage('en')"
-                                [class.active]="currentLang === 'en'"
-                                class="lang-btn"
-                        >
-                            EN
+                    <div class="notification-wrapper mobile-notification" *ngIf="notificationService.notifications$ | async as mobileNotifications">
+                        <button class="notification-bell mobile-bell" (click)="toggleNotifications()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                            </svg>
+                            <span class="notification-badge" *ngIf="mobileNotifications.length > 0">{{ mobileNotifications.length }}</span>
                         </button>
-                        <button
-                                (click)="switchLanguage('he')"
-                                [class.active]="currentLang === 'he'"
-                                class="lang-btn"
-                        >
-                            עב
-                        </button>
+                        <div class="notification-dropdown mobile-dropdown" *ngIf="notificationsOpen">
+                            <div class="notification-dropdown-header">
+                                <span>{{ 'notifications.title' | translate }}</span>
+                                <button *ngIf="mobileNotifications.length > 0" class="dismiss-all-btn" (click)="dismissAllNotifications()">
+                                    {{ 'notifications.dismissAll' | translate }}
+                                </button>
+                            </div>
+                            <div class="notification-list" *ngIf="mobileNotifications.length > 0">
+                                <div class="notification-item" *ngFor="let notification of mobileNotifications">
+                                    <div class="notification-content">
+                                        <p class="notification-label">{{ 'notifications.feedbackResolved' | translate }}</p>
+                                        <p class="notification-original">{{ notification.message.length > 80 ? (notification.message | slice:0:80) + '...' : notification.message }}</p>
+                                        <p class="notification-response" *ngIf="notification.adminResponse">{{ notification.adminResponse }}</p>
+                                        <span class="notification-date">{{ formatNotificationDate(notification.resolvedAt) }}</span>
+                                    </div>
+                                    <button class="dismiss-btn" (click)="dismissNotification(notification._id); $event.stopPropagation()">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="notification-empty" *ngIf="mobileNotifications.length === 0">
+                                <p>{{ 'notifications.empty' | translate }}</p>
+                            </div>
+                        </div>
                     </div>
-                    <button class="theme-toggle mobile-theme" (click)="toggleTheme()">
-                        <svg *ngIf="!isDarkTheme" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                        </svg>
-                        <svg *ngIf="isDarkTheme" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="5"></circle>
-                            <line x1="12" y1="1" x2="12" y2="3"></line>
-                            <line x1="12" y1="21" x2="12" y2="23"></line>
-                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                            <line x1="1" y1="12" x2="3" y2="12"></line>
-                            <line x1="21" y1="12" x2="23" y2="12"></line>
-                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                        </svg>
-                    </button>
                 </div>
             </div>
 
-            <!-- Desktop menu -->
-            <div class="nav-menu desktop-menu">
-                <a routerLink="/groups" routerLinkActive="active">{{ 'nav.myGroups' | translate }}</a>
-                <a *ngIf="user.isAdmin" routerLink="/admin/feedback" routerLinkActive="active" class="admin-link">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                    </svg>
-                    {{ 'nav.feedback' | translate }}
-                </a>
-                <div class="language-switcher">
-                    <button
-                            (click)="switchLanguage('en')"
-                            [class.active]="currentLang === 'en'"
-                            class="lang-btn"
-                    >
-                        EN
+            <!-- Desktop right side: bell + user dropdown -->
+            <div class="nav-right desktop-menu">
+                <!-- Notifications -->
+                <div class="notification-wrapper" *ngIf="notificationService.notifications$ | async as notifications">
+                    <button class="notification-bell" (click)="toggleNotifications()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                        <span class="notification-badge" *ngIf="notifications.length > 0">{{ notifications.length }}</span>
                     </button>
-                    <button
-                            (click)="switchLanguage('he')"
-                            [class.active]="currentLang === 'he'"
-                            class="lang-btn"
-                    >
-                        עב
-                    </button>
+                    <div class="notification-dropdown" *ngIf="notificationsOpen">
+                        <div class="notification-dropdown-header">
+                            <span>{{ 'notifications.title' | translate }}</span>
+                            <button *ngIf="notifications.length > 0" class="dismiss-all-btn" (click)="dismissAllNotifications()">
+                                {{ 'notifications.dismissAll' | translate }}
+                            </button>
+                        </div>
+                        <div class="notification-list" *ngIf="notifications.length > 0">
+                            <div class="notification-item" *ngFor="let notification of notifications">
+                                <div class="notification-content">
+                                    <p class="notification-label">{{ 'notifications.feedbackResolved' | translate }}</p>
+                                    <p class="notification-original">{{ notification.message.length > 80 ? (notification.message | slice:0:80) + '...' : notification.message }}</p>
+                                    <p class="notification-response" *ngIf="notification.adminResponse">{{ notification.adminResponse }}</p>
+                                    <span class="notification-date">{{ formatNotificationDate(notification.resolvedAt) }}</span>
+                                </div>
+                                <button class="dismiss-btn" (click)="dismissNotification(notification._id); $event.stopPropagation()">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="notification-empty" *ngIf="notifications.length === 0">
+                            <p>{{ 'notifications.empty' | translate }}</p>
+                        </div>
+                    </div>
                 </div>
-                <button class="theme-toggle" (click)="toggleTheme()" [title]="isDarkTheme ? 'Switch to light mode' : 'Switch to dark mode'">
-                    <svg *ngIf="!isDarkTheme" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                    </svg>
-                    <svg *ngIf="isDarkTheme" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="5"></circle>
-                        <line x1="12" y1="1" x2="12" y2="3"></line>
-                        <line x1="12" y1="21" x2="12" y2="23"></line>
-                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                        <line x1="1" y1="12" x2="3" y2="12"></line>
-                        <line x1="21" y1="12" x2="23" y2="12"></line>
-                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                    </svg>
-                </button>
-                <div class="user-menu">
-                    <a routerLink="/profile" class="user-profile-link">
+
+                <!-- User dropdown -->
+                <div class="user-dropdown-wrapper">
+                    <button class="user-dropdown-trigger" (click)="toggleUserDropdown()">
                         <img
                                 *ngIf="user.profilePicture"
                                 [src]="getProfilePictureUrl(user.profilePicture)"
@@ -109,11 +113,86 @@
                                 (error)="onImageError($event)"
                         />
                         <span *ngIf="!user.profilePicture" class="nav-profile-placeholder">
-            {{ user.username.charAt(0).toUpperCase() }}
-          </span>
-                        <span class="username">{{ user.username }}</span>
-                    </a>
-                    <button (click)="logout()" class="logout-btn">{{ 'nav.logout' | translate }}</button>
+                            {{ user.username.charAt(0).toUpperCase() }}
+                        </span>
+                        <svg class="dropdown-chevron" [class.open]="userDropdownOpen" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </button>
+                    <div class="user-dropdown" *ngIf="userDropdownOpen">
+                        <a routerLink="/profile" class="dropdown-item" (click)="closeUserDropdown()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            {{ user.username }}
+                        </a>
+                        <a routerLink="/groups" routerLinkActive="active" class="dropdown-item" (click)="closeUserDropdown()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                            {{ 'nav.myGroups' | translate }}
+                        </a>
+                        <a *ngIf="user.isAdmin" routerLink="/admin/feedback" routerLinkActive="active" class="dropdown-item" (click)="closeUserDropdown()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                            {{ 'nav.feedback' | translate }}
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <div class="dropdown-item dropdown-setting">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="2" y1="12" x2="22" y2="12"></line>
+                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                            </svg>
+                            <div class="language-switcher">
+                                <button
+                                        (click)="switchLanguage('en')"
+                                        [class.active]="currentLang === 'en'"
+                                        class="lang-btn"
+                                >
+                                    EN
+                                </button>
+                                <button
+                                        (click)="switchLanguage('he')"
+                                        [class.active]="currentLang === 'he'"
+                                        class="lang-btn"
+                                >
+                                    עב
+                                </button>
+                            </div>
+                        </div>
+                        <button class="dropdown-item dropdown-setting" (click)="toggleTheme()">
+                            <svg *ngIf="!isDarkTheme" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                            </svg>
+                            <svg *ngIf="isDarkTheme" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="5"></circle>
+                                <line x1="12" y1="1" x2="12" y2="3"></line>
+                                <line x1="12" y1="21" x2="12" y2="23"></line>
+                                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                                <line x1="1" y1="12" x2="3" y2="12"></line>
+                                <line x1="21" y1="12" x2="23" y2="12"></line>
+                                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                            </svg>
+                            <span>{{ isDarkTheme ? ('nav.lightMode' | translate) : ('nav.darkMode' | translate) }}</span>
+                        </button>
+                        <div class="dropdown-divider"></div>
+                        <button class="dropdown-item dropdown-logout" (click)="logout()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                <polyline points="16 17 21 12 16 7"></polyline>
+                                <line x1="21" y1="12" x2="9" y2="12"></line>
+                            </svg>
+                            {{ 'nav.logout' | translate }}
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -137,11 +216,47 @@
                             (error)="onImageError($event)"
                     />
                     <span *ngIf="!user.profilePicture" class="nav-profile-placeholder mobile">
-          {{ user.username.charAt(0).toUpperCase() }}
-        </span>
+                        {{ user.username.charAt(0).toUpperCase() }}
+                    </span>
                     <span class="username">{{ user.username }}</span>
                 </a>
-                <button (click)="logout()" class="logout-btn mobile-logout">{{ 'nav.logout' | translate }}</button>
+                <div class="mobile-menu-settings">
+                    <div class="mobile-setting-row">
+                        <div class="language-switcher">
+                            <button
+                                    (click)="switchLanguage('en')"
+                                    [class.active]="currentLang === 'en'"
+                                    class="lang-btn"
+                            >
+                                EN
+                            </button>
+                            <button
+                                    (click)="switchLanguage('he')"
+                                    [class.active]="currentLang === 'he'"
+                                    class="lang-btn"
+                            >
+                                עב
+                            </button>
+                        </div>
+                        <button class="theme-toggle mobile-theme" (click)="toggleTheme()">
+                            <svg *ngIf="!isDarkTheme" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                            </svg>
+                            <svg *ngIf="isDarkTheme" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="5"></circle>
+                                <line x1="12" y1="1" x2="12" y2="3"></line>
+                                <line x1="12" y1="21" x2="12" y2="23"></line>
+                                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                                <line x1="1" y1="12" x2="3" y2="12"></line>
+                                <line x1="21" y1="12" x2="23" y2="12"></line>
+                                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <button (click)="logout()" class="mobile-logout">{{ 'nav.logout' | translate }}</button>
             </div>
         </div>
     </nav>

@@ -5,7 +5,9 @@
   "nav": {
     "myGroups": "הקבוצות שלי",
     "logout": "התנתק",
-    "feedback": "משוב"
+    "feedback": "משוב",
+    "darkMode": "מצב כהה",
+    "lightMode": "מצב בהיר"
   },
   "auth": {
     "login": "התחברות",
@@ -292,7 +294,15 @@
     "markNew": "סמן כחדש",
     "markRead": "סמן כנקרא",
     "markResolved": "סמן כטופל",
-    "confirmDelete": "האם אתה בטוח שברצונך למחוק משוב זה?"
+    "confirmDelete": "האם אתה בטוח שברצונך למחוק משוב זה?",
+    "responsePlaceholder": "הוסף הודעת תגובה (אופציונלי)...",
+    "sendAndResolve": "שלח וסמן כטופל"
+  },
+  "notifications": {
+    "title": "התראות",
+    "empty": "אין התראות חדשות",
+    "dismissAll": "סמן הכל כנקרא",
+    "feedbackResolved": "המשוב שלך טופל"
   },
   "feedback": {
     "reportBug": "כתבו לנו",

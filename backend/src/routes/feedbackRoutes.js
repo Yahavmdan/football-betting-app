@@ -118,10 +118,67 @@ router.get('/', protect, adminOnly, async (req, res) => {
   }
 });
 
+// Get user notifications (resolved feedback for current user)
+router.get('/notifications', protect, async (req, res) => {
+  try {
+    const notifications = await Feedback.find({
+      user: req.user._id,
+      status: 'resolved',
+      userNotified: false
+    })
+    .select('message adminResponse resolvedAt createdAt')
+    .sort({ resolvedAt: -1 });
+
+    res.json({
+      success: true,
+      data: notifications
+    });
+  } catch (error) {
+    console.error('Error fetching notifications:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch notifications'
+    });
+  }
+});
+
+// Dismiss a notification (mark as notified)
+router.patch('/:id/dismiss', protect, async (req, res) => {
+  try {
+    const feedback = await Feedback.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        user: req.user._id,
+        status: 'resolved'
+      },
+      { userNotified: true },
+      { new: true }
+    );
+
+    if (!feedback) {
+      return res.status(404).json({
+        success: false,
+        message: 'Notification not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: feedback
+    });
+  } catch (error) {
+    console.error('Error dismissing notification:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to dismiss notification'
+    });
+  }
+});
+
 // Update feedback status (admin only)
 router.patch('/:id', protect, adminOnly, async (req, res) => {
   try {
-    const { status } = req.body;
+    const { status, adminResponse } = req.body;
 
     if (!['new', 'read', 'resolved'].includes(status)) {
       return res.status(400).json({
@@ -130,9 +187,21 @@ router.patch('/:id', protect, adminOnly, async (req, res) => {
       });
     }
 
+    const updateData = { status };
+
+    if (status === 'resolved') {
+      updateData.resolvedAt = new Date();
+      updateData.adminResponse = adminResponse || null;
+      updateData.userNotified = false;
+    } else {
+      updateData.resolvedAt = null;
+      updateData.adminResponse = null;
+      updateData.userNotified = false;
+    }
+
     const feedback = await Feedback.findByIdAndUpdate(
       req.params.id,
-      { status },
+      updateData,
       { new: true }
     );
 

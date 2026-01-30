@@ -21,6 +21,20 @@ const feedbackSchema = new mongoose.Schema({
     enum: ['new', 'read', 'resolved'],
     default: 'new'
   },
+  adminResponse: {
+    type: String,
+    default: null,
+    trim: true,
+    maxlength: [1000, 'Response cannot exceed 1000 characters']
+  },
+  resolvedAt: {
+    type: Date,
+    default: null
+  },
+  userNotified: {
+    type: Boolean,
+    default: false
+  },
   createdAt: {
     type: Date,
     default: Date.now

@@ -66,6 +66,12 @@
         <img [src]="feedback.image" alt="Feedback screenshot" (click)="openImage(feedback.image)">
       </div>
 
+      <!-- Admin response display -->
+      <div *ngIf="feedback.adminResponse && feedback.status === 'resolved'" class="admin-response">
+        <span class="admin-response-label">{{ t('notifications.feedbackResolved') }}:</span>
+        <p class="admin-response-text">{{ feedback.adminResponse }}</p>
+      </div>
+
       <div class="feedback-actions">
         <div class="status-buttons">
           <button
@@ -81,9 +87,9 @@
             {{ t('admin.markRead') }}
           </button>
           <button
-            *ngIf="feedback.status !== 'resolved'"
+            *ngIf="feedback.status !== 'resolved' && !feedback.showResponseInput"
             class="btn-status btn-resolved"
-            (click)="updateStatus(feedback._id, 'resolved')">
+            (click)="feedback.showResponseInput = true">
             {{ t('admin.markResolved') }}
           </button>
         </div>
@@ -93,6 +99,25 @@
             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
           </svg>
         </button>
+      </div>
+
+      <!-- Resolve with response input -->
+      <div *ngIf="feedback.showResponseInput" class="resolve-input-wrapper">
+        <textarea
+          [(ngModel)]="feedback.responseText"
+          [placeholder]="t('admin.responsePlaceholder')"
+          class="resolve-textarea"
+          rows="2"
+          maxlength="1000">
+        </textarea>
+        <div class="resolve-actions">
+          <button class="btn-status btn-resolved" (click)="resolveWithResponse(feedback)">
+            {{ t('admin.sendAndResolve') }}
+          </button>
+          <button class="btn-status btn-new" (click)="feedback.showResponseInput = false; feedback.responseText = ''">
+            {{ t('groups.cancel') }}
+          </button>
+        </div>
       </div>
     </div>
   </div>

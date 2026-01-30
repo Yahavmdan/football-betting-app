@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { TranslationService } from '../../../services/translation.service';
@@ -15,13 +16,16 @@ interface Feedback {
     email: string;
   } | null;
   status: 'new' | 'read' | 'resolved';
+  adminResponse?: string | null;
   createdAt: string;
+  showResponseInput?: boolean;
+  responseText?: string;
 }
 
 @Component({
   selector: 'app-admin-feedback',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './admin-feedback.component.html',
   styleUrls: ['./admin-feedback.component.css']
 })
@@ -73,6 +77,21 @@ export class AdminFeedbackComponent implements OnInit {
           // Silently fail
         }
       });
+  }
+
+  resolveWithResponse(feedback: Feedback): void {
+    this.http.patch<{ success: boolean }>(
+      `${environment.apiUrl}/feedback/${feedback._id}`,
+      { status: 'resolved', adminResponse: feedback.responseText || null }
+    ).subscribe({
+      next: () => {
+        feedback.status = 'resolved';
+        feedback.adminResponse = feedback.responseText || null;
+        feedback.showResponseInput = false;
+        feedback.responseText = '';
+      },
+      error: () => {}
+    });
   }
 
   deleteFeedback(feedbackId: string): void {

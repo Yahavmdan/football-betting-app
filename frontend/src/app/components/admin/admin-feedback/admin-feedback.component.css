@@ -334,7 +334,80 @@
   color: var(--error);
 }
 
+/* Admin response display */
+.admin-response {
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    background: rgba(74, 222, 128, 0.08);
+    border-left: 3px solid #4ade80;
+    border-radius: 0 8px 8px 0;
+}
+
+.admin-response-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #4ade80;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.admin-response-text {
+    margin: 0.25rem 0 0 0;
+    font-size: 0.85rem;
+    color: #374151;
+}
+
+/* Resolve with response */
+.resolve-input-wrapper {
+    margin-top: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.resolve-textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    resize: vertical;
+    background: #fff;
+    color: #1f2937;
+    box-sizing: border-box;
+}
+
+.resolve-textarea:focus {
+    outline: none;
+    border-color: #4ade80;
+    box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.15);
+}
+
+.resolve-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
 /* Dark theme */
+:host-context(html.dark-theme) .admin-response {
+    background: rgba(74, 222, 128, 0.1);
+}
+
+:host-context(html.dark-theme) .admin-response-text {
+    color: #e5e7eb;
+}
+
+:host-context(html.dark-theme) .resolve-textarea {
+    background: #1f2937;
+    border-color: #374151;
+    color: #f9fafb;
+}
+
+:host-context(html.dark-theme) .resolve-textarea:focus {
+    border-color: #4ade80;
+}
+
 :host-context(html.dark-theme) .page-header h1 {
   color: #f9fafb;
 }
