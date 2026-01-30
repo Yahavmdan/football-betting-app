@@ -25,8 +25,8 @@ const corsOptions = {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
 
-    // Allow all localhost origins for development
-    if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+    // Allow all localhost and local network origins for development
+    if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:') || origin.match(/^http:\/\/(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.)/)) {
       return callback(null, true);
     }
 

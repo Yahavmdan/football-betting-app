@@ -13,7 +13,7 @@ import { MemberBet, Bet } from '../../../models/bet.model';
 import { UserStatistics } from '../../../services/bet.service';
 import { TranslatePipe } from '../../../services/translate.pipe';
 import { TeamTranslatePipe } from '../../../pipes/team-translate.pipe';
-import { getTeamByName, getAllTeams, Team } from '../../../data/teams.data';
+import { getTeamByName, getAllTeams, getTranslatedTeamName, Team } from '../../../data/teams.data';
 import { environment } from '../../../../environments/environment';
 import { AppSelectComponent, SelectOption } from '../../shared/app-select/app-select.component';
 
@@ -80,6 +80,9 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   awayTeamRecentMatches: Match[] = [];
   loadingHeadToHead = false;
   loadingTeamForm = false;
+  showBetting = true;
+  showHeadToHead = false;
+  showTeamForm = false;
 
   // Member bets viewer
   viewingBetsForMatch: string | null = null;
@@ -196,17 +199,18 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   }
 
   private initTeamSelectOptions(): void {
+    const lang = this.translationService.getCurrentLanguage();
     // For automatic groups, use API teams; for manual groups, use local teams
     if (this.isAutomaticGroup() && this.apiTeams.length > 0) {
       this.teamSelectOptions = this.apiTeams.map(team => ({
         value: team.id.toString(), // Use team ID for API filtering
-        label: team.name,
+        label: getTranslatedTeamName(team.name, lang),
         image: team.logo || undefined
       }));
     } else {
       this.teamSelectOptions = this.allTeams.map(team => ({
         value: team.name,
-        label: team.name,
+        label: getTranslatedTeamName(team.name, lang),
         image: team.logo || undefined
       }));
     }
@@ -485,9 +489,13 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     } else {
       this.expandedMatchId = matchId;
       this.expandedMatch = match;
-      // Fetch head-to-head history and team form
-      this.loadHeadToHead(match);
-      this.loadTeamForm(match);
+      // Reset collapsible sections - data fetched on demand
+      this.showBetting = true;
+      this.showHeadToHead = false;
+      this.showTeamForm = false;
+      this.headToHeadMatches = [];
+      this.homeTeamRecentMatches = [];
+      this.awayTeamRecentMatches = [];
     }
   }
 
@@ -549,6 +557,20 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
         this.loadingTeamForm = false;
       }
     });
+  }
+
+  toggleHeadToHead(): void {
+    this.showHeadToHead = !this.showHeadToHead;
+    if (this.showHeadToHead && this.expandedMatch && this.headToHeadMatches.length === 0 && !this.loadingHeadToHead) {
+      this.loadHeadToHead(this.expandedMatch);
+    }
+  }
+
+  toggleTeamForm(): void {
+    this.showTeamForm = !this.showTeamForm;
+    if (this.showTeamForm && this.expandedMatch && this.homeTeamRecentMatches.length === 0 && this.awayTeamRecentMatches.length === 0 && !this.loadingTeamForm) {
+      this.loadTeamForm(this.expandedMatch);
+    }
   }
 
   getTeamResult(match: Match, team: string): 'W' | 'D' | 'L' {
@@ -1111,33 +1133,17 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
           });
         }
 
-        // Merge local DB matches (for matches with status updated locally, like LIVE)
-        const localMatches = this.matches.filter(localMatch => {
-          // Include local matches that don't exist in API results or have different status
-          const apiMatch = fixtures.find(f =>
-            f.externalApiId === localMatch.externalApiId || f._id === localMatch._id
-          );
-          // If not in API results, include it if it passes the status filter
-          if (!apiMatch) {
-            if (statusFilters.length === 0) return true;
-            return statusFilters.includes(localMatch.status);
-          }
-          // If in API but local has LIVE status (manually set), prefer local
-          if (localMatch.status === 'LIVE' && apiMatch.status !== 'LIVE') {
-            return true;
-          }
-          return false;
-        });
+        // Merge local DB matches only for LIVE status overrides
+        // Only replace API matches with local versions that have LIVE status set manually
+        this.matches.forEach(localMatch => {
+          if (localMatch.status !== 'LIVE') return;
 
-        // Add local matches to fixtures, replacing API version if exists
-        localMatches.forEach(localMatch => {
           const existingIndex = fixtures.findIndex(f =>
             f.externalApiId === localMatch.externalApiId || f._id === localMatch._id
           );
-          if (existingIndex !== -1) {
+          // Only replace existing API match, never add new ones
+          if (existingIndex !== -1 && fixtures[existingIndex].status !== 'LIVE') {
             fixtures[existingIndex] = localMatch;
-          } else {
-            fixtures.push(localMatch);
           }
         });
 

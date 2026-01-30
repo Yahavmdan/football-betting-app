@@ -557,6 +557,9 @@
     border-radius: 20px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.leaderboard-section {
     overflow: hidden;
 }
 
@@ -1170,11 +1173,13 @@ h2 {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    width: 100%;
-    padding: 0.35rem 0.75rem;
+    width: calc(100% + 3.5rem);
+    margin-left: -1.75rem;
+    margin-right: -1.75rem;
+    padding: 0.5rem 1.75rem;
     background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-    border-radius: 6px;
-    border: 1px solid rgba(34, 197, 94, 0.15);
+    border-top: 1px solid rgba(34, 197, 94, 0.15);
+    border-bottom: 1px solid rgba(34, 197, 94, 0.15);
     margin-bottom: 0.5rem;
     position: sticky;
     top: 70px;
@@ -1205,10 +1210,6 @@ h2 {
 }
 
 @media (max-width: 640px) {
-    .round-separator {
-        padding: 0.3rem 0.6rem;
-    }
-
     .round-name {
         font-size: 0.7rem;
     }
@@ -1643,6 +1644,67 @@ h2 {
 }
 
 /* Head-to-Head Section */
+/* Collapsible sections */
+.collapsible-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+    padding: 0.5rem 0;
+    margin: 0;
+    transition: color 0.2s ease;
+}
+
+.collapsible-header:hover {
+    color: #4ade80;
+}
+
+:host-context(.dark-theme) .collapsible-header:hover {
+    color: #4ade80;
+}
+
+.collapse-arrow {
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+}
+
+.collapse-arrow.open {
+    transform: rotate(180deg);
+}
+
+.collapsible-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.collapsible-content.open {
+    max-height: 2000px;
+}
+
+.betting-section {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #f1f5f9;
+    position: relative;
+    z-index: 1;
+}
+
+.betting-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #475569;
+}
+
+:host-context(.dark-theme) .betting-section {
+    border-top-color: #334155;
+}
+
+:host-context(.dark-theme) .betting-title {
+    color: #94a3b8;
+}
+
 .head-to-head-section {
     margin-top: 1rem;
     padding-top: 1rem;
@@ -1655,7 +1717,6 @@ h2 {
     font-size: 0.85rem;
     font-weight: 600;
     color: #475569;
-    margin: 0 0 0.75rem 0;
 }
 
 .h2h-loading, .h2h-empty {
@@ -1864,7 +1925,6 @@ h2 {
     font-size: 0.85rem;
     font-weight: 600;
     color: #475569;
-    margin: 0 0 0.75rem 0;
 }
 
 .team-form-loading {
@@ -3066,7 +3126,7 @@ h2 {
 
 .date-range {
     display: flex;
-    align-items: flex-end;
+    flex-direction: column;
     gap: 0.75rem;
 }
 
@@ -3084,15 +3144,38 @@ h2 {
 }
 
 .date-range .form-control {
-    flex: 1;
-    padding: 0.6rem 0.75rem;
+    width: 100%;
+    padding: 0.85rem 1rem;
     font-size: 0.9rem;
 }
 
+.date-input.date-empty::-webkit-datetime-edit {
+    color: transparent;
+}
+
+.date-input.date-empty::before {
+    content: attr(data-placeholder);
+    color: #9ca3af;
+    width: 100%;
+}
+
+.date-input {
+    position: relative;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.date-input::-webkit-calendar-picker-indicator {
+    padding: 0;
+    margin: 0;
+}
+
+.date-input::-webkit-date-and-time-value {
+    text-align: start;
+}
+
 .date-separator {
-    color: #94a3b8;
-    font-weight: 500;
-    padding-bottom: 0.6rem;
+    display: none;
 }
 
 .multi-select-dropdown {
@@ -3239,14 +3322,6 @@ h2 {
 
     .checkbox-group {
         flex-direction: column;
-    }
-
-    .date-range {
-        flex-direction: column;
-    }
-
-    .date-separator {
-        display: none;
     }
 
     .score-filter {
@@ -4015,6 +4090,13 @@ h2 {
 
     .group-header {
         padding: 1rem;
+    }
+
+    .round-separator {
+        width: calc(100% + 2rem);
+        margin-left: -1rem;
+        margin-right: -1rem;
+        padding: 0.5rem 1rem;
     }
 
     .group-header h1 {
@@ -4917,7 +4999,7 @@ h2 {
     color: #e5e7eb;
 }
 
-:host-context(.dark-theme) .date-separator {
+:host-context(.dark-theme) .date-input.date-empty::before {
     color: #6b7280;
 }
 

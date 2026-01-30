@@ -37,6 +37,12 @@
     object-fit: contain;
 }
 
+.app-logo-svg {
+    height: 52px;
+    width: auto;
+    display: block;
+}
+
 .nav-menu {
     display: flex;
     align-items: center;
@@ -417,6 +423,10 @@
     }
 
     .app-logo {
+        height: 60px;
+    }
+
+    .app-logo-svg {
         height: 60px;
     }
 }
