@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Group, CreateGroupData, JoinGroupData, GroupMember, PendingMember } from '../models/group.model';
 import { environment } from '../../environments/environment';
+
+const SILENT_HEADERS = new HttpHeaders().set('X-Skip-Loading', 'true');
 
 @Injectable({
   providedIn: 'root'
@@ -24,12 +26,12 @@ export class GroupService {
     return this.http.get<{ success: boolean; data: Group[] }>(`${this.apiUrl}`);
   }
 
-  getGroupById(id: string): Observable<{ success: boolean; data: Group }> {
-    return this.http.get<{ success: boolean; data: Group }>(`${this.apiUrl}/${id}`);
+  getGroupById(id: string, silent = false): Observable<{ success: boolean; data: Group }> {
+    return this.http.get<{ success: boolean; data: Group }>(`${this.apiUrl}/${id}`, silent ? { headers: SILENT_HEADERS } : {});
   }
 
-  getLeaderboard(groupId: string): Observable<{ success: boolean; data: GroupMember[] }> {
-    return this.http.get<{ success: boolean; data: GroupMember[] }>(`${this.apiUrl}/${groupId}/leaderboard`);
+  getLeaderboard(groupId: string, silent = false): Observable<{ success: boolean; data: GroupMember[] }> {
+    return this.http.get<{ success: boolean; data: GroupMember[] }>(`${this.apiUrl}/${groupId}/leaderboard`, silent ? { headers: SILENT_HEADERS } : {});
   }
 
   editGroup(groupId: string, data: { name?: string; description?: string }): Observable<{ success: boolean; message: string; data: Group }> {

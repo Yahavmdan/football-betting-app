@@ -511,3 +511,35 @@
         margin-bottom: 1rem;
       }
     }
+
+    .section-loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4rem;
+    }
+
+    .inline-spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid rgba(74, 222, 128, 0.2);
+      border-top-color: #4ade80;
+      border-radius: 50%;
+      animation: btn-spin 0.7s linear infinite;
+    }
+
+    .btn-spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: btn-spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+
+    @keyframes btn-spin {
+      to { transform: rotate(360deg); }
+    }

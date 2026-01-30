@@ -128,6 +128,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   inlineBetSuccess = '';
   inlineExistingBet: any = null;
   inlineUserCredits = 0;
+  inlineOddsNotAvailable = false;
 
   // Filter state
   showFilterDialog = false;
@@ -219,8 +220,8 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     }
   }
 
-  loadGroupDetails(): void {
-    this.groupService.getGroupById(this.groupId).subscribe({
+  loadGroupDetails(silent = false): void {
+    this.groupService.getGroupById(this.groupId, silent).subscribe({
       next: (response) => {
         this.group = response.data;
         // Load pending members after group is loaded (needs group data for canManageGroup check)
@@ -293,16 +294,26 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
 
     this.matchService.refreshSingleMatch(match._id).subscribe({
       next: (response) => {
+        const updatedMatch = response.data;
+
+        // Preserve the original round to avoid re-categorizing the match
+        if (match.round) {
+          updatedMatch.round = match.round;
+        }
+
         // Update the match in the local array
         const index = this.matches.findIndex(m => m._id === match._id);
         if (index !== -1) {
-          this.matches[index] = response.data;
+          if (!match.round && this.matches[index].round) {
+            updatedMatch.round = this.matches[index].round;
+          }
+          this.matches[index] = updatedMatch;
         }
 
         // Also update in filtered matches
         const filteredIndex = this.filteredMatches.findIndex(m => m._id === match._id);
         if (filteredIndex !== -1) {
-          this.filteredMatches[filteredIndex] = response.data;
+          this.filteredMatches[filteredIndex] = updatedMatch;
         }
 
         this.groupMatchesByRound();
@@ -383,8 +394,8 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  loadLeaderboard(): void {
-    this.groupService.getLeaderboard(this.groupId).subscribe({
+  loadLeaderboard(silent = false): void {
+    this.groupService.getLeaderboard(this.groupId, silent).subscribe({
       next: (response) => {
         this.leaderboard = response.data;
         this.loadingLeaderboard = false;
@@ -672,7 +683,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
         this.loadingScoreUpdate = false;
         this.editingMatchId = null;
         this.loadMatches();
-        this.loadLeaderboard();
+        this.loadLeaderboard(true);
       },
       error: (error) => {
         this.scoreUpdateError = error.error?.message || 'Failed to update score';
@@ -817,8 +828,8 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     this.groupService.approveMember(this.groupId, userId).subscribe({
       next: () => {
         this.loadPendingMembers();
-        this.loadLeaderboard();
-        this.loadGroupDetails();
+        this.loadLeaderboard(true);
+        this.loadGroupDetails(true);
       },
       error: (error) => {
         console.error('Failed to approve member:', error);
@@ -847,8 +858,8 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
       next: () => {
         this.loadingKickMember = false;
         this.kickingMemberId = null;
-        this.loadLeaderboard();
-        this.loadGroupDetails();
+        this.loadLeaderboard(true);
+        this.loadGroupDetails(true);
       },
       error: (error) => {
         console.error('Failed to kick member:', error);
@@ -1488,6 +1499,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     this.inlineBetError = '';
     this.inlineBetSuccess = '';
     this.inlineExistingBet = null;
+    this.inlineOddsNotAvailable = false;
 
     // Load user credits for relative betting
     this.loadUserCredits();
@@ -1508,8 +1520,18 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
         // Update the match in local arrays with fresh data
         const updatedMatch = response.data;
 
+        // Preserve the original round to avoid re-categorizing the match
+        const originalRound = match.round;
+        if (originalRound) {
+          updatedMatch.round = originalRound;
+        }
+
         const matchIndex = this.matches.findIndex(m => m._id === match._id || m.externalApiId === match.externalApiId);
         if (matchIndex !== -1) {
+          // Preserve existing round if updated match has a different one
+          if (!originalRound && this.matches[matchIndex].round) {
+            updatedMatch.round = this.matches[matchIndex].round;
+          }
           this.matches[matchIndex] = updatedMatch;
         }
 
@@ -1523,7 +1545,10 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('Failed to refresh match odds:', error);
-        // Don't show error to user - just use existing odds
+        // If match not found (404), odds are not available yet for this future match
+        if (error.status === 404) {
+          this.inlineOddsNotAvailable = true;
+        }
       }
     });
   }
@@ -1535,6 +1560,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     this.inlineBetError = '';
     this.inlineBetSuccess = '';
     this.inlineExistingBet = null;
+    this.inlineOddsNotAvailable = false;
   }
 
   loadUserCredits(): void {
@@ -1663,10 +1689,10 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
         this.inlineLoadingBet = false;
         // Immediately mark this match as having a bet (instant feedback)
         this.matchesWithBets.add(this.inlineBetData.matchId);
-        // Refresh data
+        // Refresh data silently
         this.loadMyBets();
-        this.loadLeaderboard();
-        this.loadGroupDetails();
+        this.loadLeaderboard(true);
+        this.loadGroupDetails(true);
         // Close form after short delay
         setTimeout(() => {
           this.closeInlineBetForm();

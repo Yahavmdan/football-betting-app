@@ -730,7 +730,9 @@
                       </svg>
                     </button>
                   </div>
-                  <div *ngIf="loadingMemberBets" class="loading-bets">{{ 'auth.loading' | translate }}</div>
+                  <div *ngIf="loadingMemberBets" class="section-loading">
+                    <div class="inline-spinner"></div>
+                  </div>
                   <div *ngIf="!loadingMemberBets && memberBets.length > 0" class="member-bets-list">
                     <div *ngFor="let memberBet of memberBets" class="member-bet-item">
                       <span class="member-name">{{ memberBet.user.username }}</span>
@@ -850,6 +852,9 @@
                       </div>
                     </div>
                   </div>
+                  <div *ngIf="inlineOddsNotAvailable" class="inline-odds-not-available">
+                    {{ 'bets.oddsNotAvailable' | translate }}
+                  </div>
                   <div *ngIf="group.betType === 'relative'" class="inline-wager-section">
                     <label class="inline-bet-label">{{ 'bets.wager' | translate }}</label>
                     <div class="inline-credits-display">
@@ -885,6 +890,7 @@
                       (click)="submitInlineBet()"
                       [disabled]="!inlineBetData.outcome || inlineLoadingBet || (group.betType === 'relative' && (!inlineWagerAmount || inlineEffectiveCredits <= 0))"
                       class="btn-primary btn-small">
+                      <span *ngIf="inlineLoadingBet" class="inline-spinner btn-spinner"></span>
                       {{ inlineLoadingBet ? ('bets.placingBet' | translate) : (inlineExistingBet ? ('bets.updateBet' | translate) : ('matches.placeBet' | translate)) }}
                     </button>
                   </div>
@@ -900,7 +906,9 @@
                 </svg>
               </h4>
               <div class="collapsible-content" [class.open]="showHeadToHead">
-                <div *ngIf="loadingHeadToHead" class="h2h-loading">{{ 'auth.loading' | translate }}</div>
+                <div *ngIf="loadingHeadToHead" class="section-loading">
+                  <div class="inline-spinner"></div>
+                </div>
                 <div *ngIf="!loadingHeadToHead && headToHeadMatches.length === 0" class="h2h-empty">
                   {{ 'matches.noHeadToHead' | translate }}
                 </div>
@@ -925,7 +933,9 @@
                 </svg>
               </h4>
               <div class="collapsible-content" [class.open]="showTeamForm">
-                <div *ngIf="loadingTeamForm" class="team-form-loading">{{ 'auth.loading' | translate }}</div>
+                <div *ngIf="loadingTeamForm" class="section-loading">
+                  <div class="inline-spinner"></div>
+                </div>
                 <div *ngIf="!loadingTeamForm" class="team-form-container">
                   <!-- Home Team Form -->
                   <div class="team-form-column">

@@ -1719,11 +1719,43 @@ h2 {
     color: #475569;
 }
 
-.h2h-loading, .h2h-empty {
+.h2h-empty {
     font-size: 0.8rem;
     color: #94a3b8;
     text-align: center;
     padding: 0.5rem;
+}
+
+.section-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+}
+
+.inline-spinner {
+    width: 28px;
+    height: 28px;
+    border: 3px solid rgba(74, 222, 128, 0.2);
+    border-top-color: #4ade80;
+    border-radius: 50%;
+    animation: inline-spin 0.7s linear infinite;
+}
+
+.btn-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: inline-spin 0.7s linear infinite;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 6px;
+}
+
+@keyframes inline-spin {
+    to { transform: rotate(360deg); }
 }
 
 .h2h-list {
@@ -1925,13 +1957,6 @@ h2 {
     font-size: 0.85rem;
     font-weight: 600;
     color: #475569;
-}
-
-.team-form-loading {
-    font-size: 0.8rem;
-    color: #94a3b8;
-    text-align: center;
-    padding: 0.5rem;
 }
 
 .team-form-container {
@@ -3871,6 +3896,17 @@ h2 {
     margin-bottom: 1rem;
 }
 
+.inline-odds-not-available {
+    color: #d97706;
+    padding: 0.75rem;
+    background: #fef3c7;
+    border-radius: 8px;
+    border-left: 3px solid #f59e0b;
+    font-weight: 500;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+}
+
 .inline-bet-section {
     margin-bottom: 1rem;
     min-width: 0;
@@ -5234,6 +5270,12 @@ h2 {
     background: rgba(59, 130, 246, 0.15);
     color: #93c5fd;
     border-left-color: #3b82f6;
+}
+
+:host-context(.dark-theme) .inline-odds-not-available {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fcd34d;
+    border-left-color: #f59e0b;
 }
 
 :host-context(.dark-theme) .inline-bet-label {

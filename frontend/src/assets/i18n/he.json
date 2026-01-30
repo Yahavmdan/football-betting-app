@@ -208,7 +208,8 @@
     "availableCredits": "נקודות זכות זמינות",
     "insufficientCredits": "אין מספיק נקודות זכות",
     "potentialWin": "ניצחון פוטנציאלי",
-    "oddsFromApi": "יחסים חיים"
+    "oddsFromApi": "יחסים חיים",
+    "oddsNotAvailable": "היחסים עדיין לא זמינים למשחק הזה ויעודכנו קרוב יותר לתחילת המשחק."
   },
   "common": {
     "required": "חובה",

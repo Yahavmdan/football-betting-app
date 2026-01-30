@@ -4,8 +4,14 @@ import { finalize } from 'rxjs/operators';
 import { LoadingService } from '../services/loading.service';
 
 export const loadingInterceptor: HttpInterceptorFn = (req, next) => {
-  const loadingService = inject(LoadingService);
+  const skipLoading = req.headers.has('X-Skip-Loading');
 
+  if (skipLoading) {
+    const cleanReq = req.clone({ headers: req.headers.delete('X-Skip-Loading') });
+    return next(cleanReq);
+  }
+
+  const loadingService = inject(LoadingService);
   loadingService.show();
 
   return next(req).pipe(

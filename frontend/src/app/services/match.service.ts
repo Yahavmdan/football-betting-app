@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Match } from '../models/match.model';
 import { League } from '../models/league.model';
 import { environment } from '../../environments/environment';
+
+const SILENT_HEADERS = new HttpHeaders().set('X-Skip-Loading', 'true');
 
 @Injectable({
   providedIn: 'root'
@@ -18,8 +20,8 @@ export class MatchService {
     return this.http.get<{ success: boolean; data: Match[] }>(`${this.apiUrl}`, options);
   }
 
-  getMatchById(id: string): Observable<{ success: boolean; data: Match }> {
-    return this.http.get<{ success: boolean; data: Match }>(`${this.apiUrl}/${id}`);
+  getMatchById(id: string, silent = false): Observable<{ success: boolean; data: Match }> {
+    return this.http.get<{ success: boolean; data: Match }>(`${this.apiUrl}/${id}`, silent ? { headers: SILENT_HEADERS } : {});
   }
 
   addMatchToGroup(matchId: string, groupId: string): Observable<{ success: boolean; data: Match }> {
@@ -104,13 +106,13 @@ export class MatchService {
     const params: any = { homeTeam, awayTeam };
     if (homeTeamId) params.homeTeamId = homeTeamId.toString();
     if (awayTeamId) params.awayTeamId = awayTeamId.toString();
-    return this.http.get<{ success: boolean; data: Match[] }>(`${this.apiUrl}/head-to-head`, { params });
+    return this.http.get<{ success: boolean; data: Match[] }>(`${this.apiUrl}/head-to-head`, { params, headers: SILENT_HEADERS });
   }
 
   getTeamRecentMatches(team: string, teamId?: number): Observable<{ success: boolean; data: Match[] }> {
     const params: any = { team };
     if (teamId) params.teamId = teamId.toString();
-    return this.http.get<{ success: boolean; data: Match[] }>(`${this.apiUrl}/team-recent`, { params });
+    return this.http.get<{ success: boolean; data: Match[] }>(`${this.apiUrl}/team-recent`, { params, headers: SILENT_HEADERS });
   }
 
   // Get all currently live fixtures worldwide
@@ -135,7 +137,7 @@ export class MatchService {
   // If groupId is provided, also fetches fresh odds for relative betting
   refreshSingleMatch(matchId: string, groupId?: string): Observable<{ success: boolean; message: string; data: Match }> {
     const params = groupId ? `?groupId=${groupId}` : '';
-    return this.http.post<{ success: boolean; message: string; data: Match }>(`${this.apiUrl}/${matchId}/refresh${params}`, {});
+    return this.http.post<{ success: boolean; message: string; data: Match }>(`${this.apiUrl}/${matchId}/refresh${params}`, {}, { headers: SILENT_HEADERS });
   }
 
   // Get teams for a specific league (for automatic groups)

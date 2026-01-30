@@ -1,6 +1,10 @@
 <div class="container">
   <button class="back-btn" (click)="goBack()">← {{ 'bets.back' | translate }}</button>
 
+  <div *ngIf="!match && !errorMessage" class="section-loading">
+    <div class="inline-spinner"></div>
+  </div>
+
   <div class="bet-card" *ngIf="match">
     <h2>{{ hasExistingBet ? ('bets.yourBet' | translate) : ('bets.placeYourBet' | translate) }}</h2>
 
@@ -133,6 +137,7 @@
           [disabled]="!betData.outcome || loading || (group?.betType === 'relative' && (!wagerAmount || effectiveCredits <= 0))"
           class="btn-primary"
         >
+          <span *ngIf="loading" class="btn-spinner"></span>
           {{ loading ? ('bets.placingBet' | translate) : (hasExistingBet ? ('bets.updateBet' | translate) : ('matches.placeBet' | translate)) }}
         </button>
       </div>

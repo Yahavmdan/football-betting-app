@@ -73,7 +73,7 @@ export class PlaceBetComponent implements OnInit {
   }
 
   loadMatch(): void {
-    this.matchService.getMatchById(this.betData.matchId).subscribe({
+    this.matchService.getMatchById(this.betData.matchId, true).subscribe({
       next: (response) => {
         this.match = response.data;
         // Check if match is in the past
@@ -106,7 +106,7 @@ export class PlaceBetComponent implements OnInit {
   }
 
   loadGroup(): void {
-    this.groupService.getGroupById(this.betData.groupId).subscribe({
+    this.groupService.getGroupById(this.betData.groupId, true).subscribe({
       next: (response) => {
         this.group = response.data;
         // Calculate user's current credits from group members
