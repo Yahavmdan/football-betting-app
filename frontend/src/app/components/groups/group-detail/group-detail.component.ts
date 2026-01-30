@@ -460,14 +460,34 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
 
     const joinUrl = `${window.location.origin}/join/${this.group.inviteCode}`;
 
-    navigator.clipboard.writeText(joinUrl).then(() => {
+    const onSuccess = () => {
       this.linkCopied = true;
       setTimeout(() => {
         this.linkCopied = false;
       }, 2000);
-    }).catch(err => {
+    };
+
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(joinUrl).then(onSuccess).catch(() => this.fallbackCopy(joinUrl, onSuccess));
+    } else {
+      this.fallbackCopy(joinUrl, onSuccess);
+    }
+  }
+
+  private fallbackCopy(text: string, onSuccess: () => void): void {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    try {
+      document.execCommand('copy');
+      onSuccess();
+    } catch (err) {
       console.error('Failed to copy link:', err);
-    });
+    }
+    document.body.removeChild(textarea);
   }
 
   isMatchInPast(matchDate: Date | string): boolean {
