@@ -1,4 +1,4 @@
 <app-loading-spinner></app-loading-spinner>
 <app-navbar></app-navbar>
 <router-outlet></router-outlet>
-<app-feedback-button></app-feedback-button>
+<app-feedback-button *ngIf="authService.isAuthenticated()"></app-feedback-button>

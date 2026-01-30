@@ -177,7 +177,7 @@ export class MatchService {
   getLeagueStandings(leagueId: string, season?: number): Observable<{ success: boolean; data: LeagueStandings }> {
     const params: any = { leagueId };
     if (season) params.season = season.toString();
-    return this.http.get<{ success: boolean; data: LeagueStandings }>(`${this.apiUrl}/leagues/standings`, { params });
+    return this.http.get<{ success: boolean; data: LeagueStandings }>(`${this.apiUrl}/leagues/standings`, { params, headers: SILENT_HEADERS });
   }
 }
 

@@ -264,7 +264,13 @@
     color: #1e293b;
 }
 
-.standings-loading,
+.standings-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+}
+
 .standings-error {
     text-align: center;
     padding: 2rem;

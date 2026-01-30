@@ -1,19 +1,21 @@
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { NavbarComponent } from './components/layout/navbar.component';
 import { LoadingSpinnerComponent } from './components/shared/loading-spinner/loading-spinner.component';
 import { FeedbackButtonComponent } from './components/shared/feedback-button/feedback-button.component';
 import { TranslationService } from './services/translation.service';
+import { AuthService } from './services/auth.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, NavbarComponent, LoadingSpinnerComponent, FeedbackButtonComponent],
+  imports: [RouterOutlet, NavbarComponent, LoadingSpinnerComponent, FeedbackButtonComponent, CommonModule],
   templateUrl: './app.component.html',
   styles: []
 })
 export class AppComponent implements OnInit {
-  constructor(private translationService: TranslationService) {}
+  constructor(private translationService: TranslationService, public authService: AuthService) {}
 
   ngOnInit(): void {
     const savedLang = localStorage.getItem('language') || 'en';

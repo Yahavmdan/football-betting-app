@@ -98,7 +98,7 @@
       </div>
 
       <div *ngIf="loadingStandings" class="standings-loading">
-        {{ 'auth.loading' | translate }}
+        <div class="inline-spinner"></div>
       </div>
 
       <div *ngIf="standingsError" class="standings-error">
