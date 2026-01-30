@@ -202,11 +202,14 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     const lang = this.translationService.getCurrentLanguage();
     // For automatic groups, use API teams; for manual groups, use local teams
     if (this.isAutomaticGroup() && this.apiTeams.length > 0) {
-      this.teamSelectOptions = this.apiTeams.map(team => ({
-        value: team.id.toString(), // Use team ID for API filtering
-        label: getTranslatedTeamName(team.name, lang),
-        image: team.logo || undefined
-      }));
+      this.teamSelectOptions = this.apiTeams.map(team => {
+        const localTeam = getTeamByName(team.name);
+        return {
+          value: team.id.toString(), // Use team ID for API filtering
+          label: getTranslatedTeamName(team.name, lang),
+          image: (localTeam ? localTeam.logo : team.logo) || undefined
+        };
+      });
     } else {
       this.teamSelectOptions = this.allTeams.map(team => ({
         value: team.name,
@@ -892,7 +895,11 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
 
   // Team logo helpers
   getTeamLogo(teamName: string, match?: Match): string | null {
-    // For automatic groups with API data, use the logo from the match
+    // Always prefer local logo if available
+    const localTeam = getTeamByName(teamName);
+    if (localTeam) return localTeam.logo;
+
+    // For automatic groups with API data, fall back to API logo
     if (this.isAutomaticGroup() && match) {
       if (match.homeTeam === teamName && match.homeTeamLogo) {
         return match.homeTeamLogo;
@@ -900,13 +907,10 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
       if (match.awayTeam === teamName && match.awayTeamLogo) {
         return match.awayTeamLogo;
       }
-      // Try to find in API teams list
       const apiTeam = this.apiTeams.find(t => t.name === teamName);
       if (apiTeam) return apiTeam.logo;
     }
-    // Fall back to local team data
-    const team = getTeamByName(teamName);
-    return team ? team.logo : null;
+    return null;
   }
 
   onImageError(event: Event): void {
