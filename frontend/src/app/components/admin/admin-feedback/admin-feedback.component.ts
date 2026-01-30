@@ -14,6 +14,7 @@ interface Feedback {
     _id: string;
     username: string;
     email: string;
+    profilePicture?: string | null;
   } | null;
   status: 'new' | 'read' | 'resolved';
   adminResponse?: string | null;
