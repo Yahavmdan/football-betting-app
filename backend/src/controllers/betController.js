@@ -477,7 +477,7 @@ exports.calculateBetPoints = async (req, res) => {
 
         if (memberIndex !== -1) {
           group.members[memberIndex].points += points;
-          await group.save();
+          await group.save({ validateModifiedOnly: true });
         }
 
         totalCalculated++;

@@ -697,7 +697,7 @@ exports.updateTrashTalk = async (req, res) => {
 
     // Update trash talk (replaces previous message)
     group.members[memberIndex].trashTalk = {
-      message: message ? message.trim().substring(0, 100) : null,
+      message: message ? message.trim().substring(0, 40) : null,
       teamLogo: teamLogo || null,
       bgColor: bgColor || null,
       textColor: textColor || null,

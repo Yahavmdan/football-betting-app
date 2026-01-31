@@ -419,21 +419,24 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   loadMatches(): void {
     this.matchService.getMatches(this.groupId).subscribe({
       next: (response) => {
-        // Sort matches: upcoming (SCHEDULED) first by date, then finished by date descending
+        // Sort matches based on group type
+        const isAutomatic = this.isAutomaticGroup();
         const sorted = response.data.sort((a, b) => {
-          // SCHEDULED matches come first
+          if (isAutomatic) {
+            // Automatic groups: most recent first (all statuses)
+            return new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime();
+          }
+
+          // Manual groups: SCHEDULED first by date, then finished by date descending
           if (a.status === 'SCHEDULED' && b.status !== 'SCHEDULED') return -1;
           if (a.status !== 'SCHEDULED' && b.status === 'SCHEDULED') return 1;
 
-          // Within same status, sort by date
           const dateA = new Date(a.matchDate).getTime();
           const dateB = new Date(b.matchDate).getTime();
 
           if (a.status === 'SCHEDULED') {
-            // Upcoming: earliest first
             return dateA - dateB;
           } else {
-            // Finished: most recent first
             return dateB - dateA;
           }
         });
