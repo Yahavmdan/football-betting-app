@@ -38,6 +38,7 @@ exports.getMatches = async (req, res) => {
             match.elapsed = freshData.elapsed;
             match.extraTime = freshData.extraTime;
             match.statusShort = freshData.statusShort;
+            if (freshData.round) match.round = freshData.round;
             await match.save();
           } else if (match.status === 'LIVE') {
             // Match was LIVE but no longer in live API - it likely finished
@@ -50,6 +51,7 @@ exports.getMatches = async (req, res) => {
                 match.elapsed = finalData.elapsed;
                 match.extraTime = finalData.extraTime;
                 match.statusShort = finalData.statusShort;
+                if (finalData.round) match.round = finalData.round;
                 await match.save();
               }
             } catch (err) {
@@ -549,6 +551,10 @@ exports.getFilteredFixtures = async (req, res) => {
         // Always replace API fixture with local version for LIVE matches (to get elapsed time)
         // or if status is different
         if (localMatch.status === 'LIVE' || localMatch.status !== fixtures[existingIndex].status) {
+          // Preserve the API fixture's round if local match doesn't have one
+          if (!localAsFixture.round || localAsFixture.round === 'Unknown') {
+            localAsFixture.round = fixtures[existingIndex].round || localAsFixture.round;
+          }
           fixtures[existingIndex] = localAsFixture;
         }
       } else {
@@ -1547,6 +1553,7 @@ exports.refreshLiveMatches = async (req, res) => {
         match.elapsed = freshData.elapsed;
         match.extraTime = freshData.extraTime;
         match.statusShort = freshData.statusShort;
+        if (freshData.round) match.round = freshData.round;
         await match.save();
         updatedMatches.push(match);
       } else if (match.status === 'LIVE') {
