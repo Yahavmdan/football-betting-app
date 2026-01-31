@@ -81,70 +81,72 @@
       </div>
     </div>
 
-    <!-- League Standings Table -->
-    <div *ngIf="showStandings && isAutomaticGroup()" class="standings-section">
-      <div class="standings-header">
-        <div class="standings-title">
-          <img *ngIf="leagueStandings?.league?.logo" [src]="leagueStandings?.league?.logo" class="league-logo" alt="">
-          <h3>{{ leagueStandings?.league?.name || ('standings.leagueTable' | translate) }}</h3>
-          <span *ngIf="leagueStandings?.league?.season" class="season-badge">{{ leagueStandings?.league?.season }}/{{ (leagueStandings?.league?.season || 0) + 1 }}</span>
+    <!-- League Standings Modal Overlay -->
+    <div *ngIf="showStandings && isAutomaticGroup()" class="standings-overlay" (click)="toggleStandings()">
+      <div class="standings-modal" (click)="$event.stopPropagation()">
+        <div class="standings-header">
+          <div class="standings-title">
+            <img *ngIf="leagueStandings?.league?.logo" [src]="leagueStandings?.league?.logo" class="league-logo" alt="">
+            <h3>{{ leagueStandings?.league?.name || ('standings.leagueTable' | translate) }}</h3>
+            <span *ngIf="leagueStandings?.league?.season" class="season-badge">{{ leagueStandings?.league?.season }}/{{ (leagueStandings?.league?.season || 0) + 1 }}</span>
+          </div>
+          <button class="btn-close-standings" (click)="toggleStandings()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
         </div>
-        <button class="btn-close-standings" (click)="toggleStandings()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-      </div>
 
-      <div *ngIf="loadingStandings" class="standings-loading">
-        <div class="inline-spinner"></div>
-      </div>
+        <div *ngIf="loadingStandings" class="standings-loading">
+          <div class="inline-spinner"></div>
+        </div>
 
-      <div *ngIf="standingsError" class="standings-error">
-        {{ standingsError }}
-      </div>
+        <div *ngIf="standingsError" class="standings-error">
+          {{ standingsError }}
+        </div>
 
-      <div *ngIf="!loadingStandings && !standingsError && leagueStandings" class="standings-table-wrapper">
-        <table class="standings-table">
-          <thead>
-            <tr>
-              <th class="col-rank">#</th>
-              <th class="col-team">{{ 'standings.team' | translate }}</th>
-              <th class="col-played">{{ 'standings.played' | translate }}</th>
-              <th class="col-won">{{ 'standings.won' | translate }}</th>
-              <th class="col-drawn">{{ 'standings.drawn' | translate }}</th>
-              <th class="col-lost">{{ 'standings.lost' | translate }}</th>
-              <th class="col-gf">{{ 'standings.gf' | translate }}</th>
-              <th class="col-ga">{{ 'standings.ga' | translate }}</th>
-              <th class="col-gd">{{ 'standings.gd' | translate }}</th>
-              <th class="col-points">{{ 'standings.pts' | translate }}</th>
-              <th class="col-form">{{ 'standings.form' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let team of leagueStandings.standings" [class.champions-league]="team.description?.includes('Champions')" [class.europa-league]="team.description?.includes('Europa') || team.description?.includes('Confederation')" [class.relegation]="team.description?.includes('Relegation')">
-              <td class="col-rank">{{ team.rank }}</td>
-              <td class="col-team">
-                <img [src]="team.team.logo" [alt]="team.team.name | teamTranslate" class="team-logo-tiny">
-                <span class="team-name">{{ team.team.name | teamTranslate }}</span>
-              </td>
-              <td class="col-played">{{ team.played }}</td>
-              <td class="col-won">{{ team.won }}</td>
-              <td class="col-drawn">{{ team.drawn }}</td>
-              <td class="col-lost">{{ team.lost }}</td>
-              <td class="col-gf">{{ team.goalsFor }}</td>
-              <td class="col-ga">{{ team.goalsAgainst }}</td>
-              <td class="col-gd" [class.positive]="team.goalsDiff > 0" [class.negative]="team.goalsDiff < 0">{{ team.goalsDiff > 0 ? '+' : '' }}{{ team.goalsDiff }}</td>
-              <td class="col-points"><strong>{{ team.points }}</strong></td>
-              <td class="col-form">
-                <div class="form-badges">
-                  <span *ngFor="let result of team.form.split('')" class="form-badge" [class.win]="result === 'W'" [class.draw]="result === 'D'" [class.loss]="result === 'L'">{{ result }}</span>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <div *ngIf="!loadingStandings && !standingsError && leagueStandings" class="standings-table-wrapper">
+          <table class="standings-table">
+            <thead>
+              <tr>
+                <th class="col-rank">#</th>
+                <th class="col-team">{{ 'standings.team' | translate }}</th>
+                <th class="col-played">{{ 'standings.played' | translate }}</th>
+                <th class="col-won">{{ 'standings.won' | translate }}</th>
+                <th class="col-drawn">{{ 'standings.drawn' | translate }}</th>
+                <th class="col-lost">{{ 'standings.lost' | translate }}</th>
+                <th class="col-gf">{{ 'standings.gf' | translate }}</th>
+                <th class="col-ga">{{ 'standings.ga' | translate }}</th>
+                <th class="col-gd">{{ 'standings.gd' | translate }}</th>
+                <th class="col-points">{{ 'standings.pts' | translate }}</th>
+                <th class="col-form">{{ 'standings.form' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let team of leagueStandings.standings" [class.champions-league]="team.description?.includes('Champions')" [class.europa-league]="team.description?.includes('Europa') || team.description?.includes('Confederation')" [class.relegation]="team.description?.includes('Relegation')">
+                <td class="col-rank">{{ team.rank }}</td>
+                <td class="col-team">
+                  <img [src]="team.team.logo" [alt]="team.team.name | teamTranslate" class="team-logo-tiny">
+                  <span class="team-name">{{ team.team.name | teamTranslate }}</span>
+                </td>
+                <td class="col-played">{{ team.played }}</td>
+                <td class="col-won">{{ team.won }}</td>
+                <td class="col-drawn">{{ team.drawn }}</td>
+                <td class="col-lost">{{ team.lost }}</td>
+                <td class="col-gf">{{ team.goalsFor }}</td>
+                <td class="col-ga">{{ team.goalsAgainst }}</td>
+                <td class="col-gd" [class.positive]="team.goalsDiff > 0" [class.negative]="team.goalsDiff < 0">{{ team.goalsDiff > 0 ? '+' : '' }}{{ team.goalsDiff }}</td>
+                <td class="col-points"><strong>{{ team.points }}</strong></td>
+                <td class="col-form">
+                  <div class="form-badges">
+                    <span *ngFor="let result of team.form.split('')" class="form-badge" [class.win]="result === 'W'" [class.draw]="result === 'D'" [class.loss]="result === 'L'">{{ result }}</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -587,12 +589,27 @@
 
         <div *ngFor="let roundGroup of matchesByRound" class="round-group">
           <div class="round-separator">
+            <div class="round-separator-left">
+              <span class="round-dates">{{ formatRoundDateRange(roundGroup.startDate, roundGroup.endDate) }}</span>
+              <button class="btn-sticky-standings" [class.visible]="isRoundStuck && isAutomaticGroup()" [class.active]="showStandings" (click)="toggleStandings(); $event.stopPropagation()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="20" x2="18" y2="10"></line>
+                  <line x1="12" y1="20" x2="12" y2="4"></line>
+                  <line x1="6" y1="20" x2="6" y2="14"></line>
+                </svg>
+                <span>{{ 'standings.leagueTable' | translate }}</span>
+              </button>
+            </div>
             <span class="round-name">{{ 'matches.round' | translate }} {{ roundGroup.roundNumber }}</span>
-            <span class="round-dates">{{ formatRoundDateRange(roundGroup.startDate, roundGroup.endDate) }}</span>
           </div>
           <div class="round-matches">
-            <div *ngFor="let match of roundGroup.matches" class="match-card compact" [class.has-bet]="hasBetOnMatch(match._id)" [class.expanded]="expandedMatchId === match._id">
-              <ng-container *ngTemplateOutlet="matchCardTemplate; context: { $implicit: match }"></ng-container>
+            <div *ngFor="let dateGroup of roundGroup.dateGroups" class="date-group">
+              <div class="date-separator-sticky">
+                <span class="date-label">{{ formatMatchDate(dateGroup.date) }}</span>
+              </div>
+              <div *ngFor="let match of dateGroup.matches" class="match-card compact" [class.has-bet]="hasBetOnMatch(match._id)" [class.expanded]="expandedMatchId === match._id">
+                <ng-container *ngTemplateOutlet="matchCardTemplate; context: { $implicit: match }"></ng-container>
+              </div>
             </div>
           </div>
         </div>
@@ -622,17 +639,7 @@
   <ng-template #matchCardTemplate let-match>
     <!-- Compact view - always visible -->
           <div class="match-compact-row" (click)="toggleMatchExpand(match)">
-            <div class="match-compact-teams">
-              <span class="team-name">{{ match.homeTeam | teamTranslate }}</span>
-              <img *ngIf="getTeamLogo(match.homeTeam, match)" [src]="getTeamLogo(match.homeTeam, match)" [alt]="match.homeTeam | teamTranslate" class="team-logo-small" (error)="onImageError($event)">
-              <span *ngIf="match.status === 'FINISHED' || (match.result && match.result.homeScore !== null)" class="score-inline">{{ match.result?.homeScore }}</span>
-              <span class="vs-compact">-</span>
-              <span *ngIf="match.status === 'FINISHED' || (match.result && match.result.awayScore !== null)" class="score-inline">{{ match.result?.awayScore }}</span>
-              <img *ngIf="getTeamLogo(match.awayTeam, match)" [src]="getTeamLogo(match.awayTeam, match)" [alt]="match.awayTeam | teamTranslate" class="team-logo-small" (error)="onImageError($event)">
-              <span class="team-name">{{ match.awayTeam | teamTranslate }}</span>
-            </div>
-            <div class="match-compact-info">
-              <span class="date-compact">{{ match.matchDate | date:'dd/MM HH:mm' }}</span>
+            <div class="match-corner-info">
               <span class="status-compact" [class.finished]="match.status === 'FINISHED'" [class.started]="match.status === 'SCHEDULED' && isMatchInPast(match.matchDate)" [class.live]="match.status === 'LIVE'">
                 <span *ngIf="match.status === 'LIVE'" class="live-indicator"></span>
                 <ng-container *ngIf="match.status === 'LIVE'">
@@ -644,22 +651,39 @@
                 </ng-container>
               </span>
               <span *ngIf="hasBetOnMatch(match._id)" class="bet-indicator">✓</span>
-              <!-- Per-match refresh button for live/started API matches -->
               <button *ngIf="canRefreshMatch(match)"
                       class="btn-refresh-match"
                       [class.refreshing]="refreshingMatchId === match._id"
                       (click)="refreshSingleMatch(match, $event)"
                       [disabled]="refreshingMatchId !== null"
                       [title]="'common.refresh' | translate">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
                 </svg>
               </button>
-              <button class="btn-expand" [class.expanded]="expandedMatchId === match._id">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
-              </button>
+            </div>
+            <div class="match-compact-teams">
+              <div class="team-block">
+                <img *ngIf="getTeamLogo(match.homeTeam, match)" [src]="getTeamLogo(match.homeTeam, match)" [alt]="match.homeTeam | teamTranslate" class="team-logo-small" (error)="onImageError($event)">
+                <span class="team-name">{{ match.homeTeam | teamTranslate }}</span>
+              </div>
+              <div class="score-block">
+                <ng-container *ngIf="match.status === 'FINISHED' || match.status === 'LIVE' || (match.result && match.result.homeScore !== null); else noScoreYet">
+                  <div class="score-row">
+                    <span class="score-inline">{{ match.result?.homeScore }}</span>
+                    <span class="vs-compact">-</span>
+                    <span class="score-inline">{{ match.result?.awayScore }}</span>
+                  </div>
+                  <span class="time-under-score">{{ match.matchDate | date:'HH:mm' }}</span>
+                </ng-container>
+                <ng-template #noScoreYet>
+                  <span class="time-instead-score">{{ match.matchDate | date:'HH:mm' }}</span>
+                </ng-template>
+              </div>
+              <div class="team-block">
+                <img *ngIf="getTeamLogo(match.awayTeam, match)" [src]="getTeamLogo(match.awayTeam, match)" [alt]="match.awayTeam | teamTranslate" class="team-logo-small" (error)="onImageError($event)">
+                <span class="team-name">{{ match.awayTeam | teamTranslate }}</span>
+              </div>
             </div>
           </div>
 

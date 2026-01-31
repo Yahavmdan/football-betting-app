@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -25,6 +25,15 @@ import { AppSelectComponent, SelectOption } from '../../shared/app-select/app-se
   styleUrls: ['./group-detail.component.css']
 })
 export class GroupDetailComponent implements OnInit, OnDestroy {
+  @HostListener('window:scroll')
+  onWindowScroll(): void {
+    const separator = this.el.nativeElement.querySelector('.round-separator');
+    if (separator) {
+      const rect = separator.getBoundingClientRect();
+      this.isRoundStuck = rect.top <= 71;
+    }
+  }
+
   @HostListener('document:click')
   onDocumentClick(): void {
     this.showGroupMenu = false;
@@ -145,6 +154,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   leagueStandings: LeagueStandings | null = null;
   loadingStandings = false;
   standingsError = '';
+  isRoundStuck = false;
 
   // Round grouping for automatic groups
   matchesByRound: RoundGroup[] = [];
@@ -177,7 +187,8 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     private matchService: MatchService,
     private betService: BetService,
     public authService: AuthService,
-    private translationService: TranslationService
+    private translationService: TranslationService,
+    private el: ElementRef
   ) {}
 
   ngOnInit(): void {
@@ -362,7 +373,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
 
   toggleStandings(): void {
     this.showStandings = !this.showStandings;
-    if (this.showStandings && !this.leagueStandings && !this.loadingStandings) {
+    if (this.showStandings && !this.loadingStandings) {
       this.loadStandings();
     }
   }
@@ -1735,12 +1746,25 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
       const minDate = new Date(Math.min(...dates.map(d => d.getTime())));
       const maxDate = new Date(Math.max(...dates.map(d => d.getTime())));
 
+      // Group matches by date
+      const dateMap: { [key: string]: Match[] } = {};
+      for (const match of matches) {
+        const dateKey = new Date(match.matchDate).toDateString();
+        if (!dateMap[dateKey]) dateMap[dateKey] = [];
+        dateMap[dateKey].push(match);
+      }
+      const dateGroups: DateGroup[] = Object.keys(dateMap).map(key => ({
+        date: key,
+        matches: dateMap[key]
+      }));
+
       return {
         round: round,
         roundNumber: this.extractRoundNumber(round),
         startDate: minDate,
         endDate: maxDate,
-        matches: matches
+        matches: matches,
+        dateGroups: dateGroups
       };
     });
 
@@ -1829,6 +1853,13 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     return match ? parseInt(match[1], 10) : 0;
   }
 
+  formatMatchDate(dateStr: string): string {
+    const d = new Date(dateStr);
+    const day = d.getDate().toString().padStart(2, '0');
+    const month = (d.getMonth() + 1).toString().padStart(2, '0');
+    return `${day}/${month}`;
+  }
+
   formatRoundDateRange(startDate: Date, endDate: Date): string {
     const formatDate = (d: Date) => {
       const day = d.getDate().toString().padStart(2, '0');
@@ -1845,10 +1876,16 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
 }
 
 // Interface for round grouping
+export interface DateGroup {
+  date: string;
+  matches: Match[];
+}
+
 export interface RoundGroup {
   round: string;
   roundNumber: number;
   startDate: Date;
   endDate: Date;
   matches: Match[];
+  dateGroups: DateGroup[];
 }
