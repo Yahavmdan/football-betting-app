@@ -577,12 +577,12 @@
 
       <!-- Automatic groups: Show matches grouped by round -->
       <div *ngIf="!loadingMatches && filteredMatches.length > 0 && isAutomaticGroup() && matchesByRound.length > 0" class="matches-list matches-by-round">
-        <!-- Load previous rounds button -->
-        <button *ngIf="hasMorePastRounds" class="btn-load-rounds btn-load-previous" (click)="loadPreviousRounds()">
+        <!-- Load future rounds button (top - loads newer/higher round numbers) -->
+        <button *ngIf="hasMoreFutureRounds" class="btn-load-rounds btn-load-future" (click)="loadFutureRounds()">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="18 15 12 9 6 15"></polyline>
           </svg>
-          {{ 'matches.loadPreviousRounds' | translate }}
+          {{ 'matches.loadFutureRounds' | translate }}
         </button>
 
         <div *ngFor="let roundGroup of matchesByRound" class="round-group">
@@ -597,9 +597,9 @@
           </div>
         </div>
 
-        <!-- Load future rounds button -->
-        <button *ngIf="hasMoreFutureRounds" class="btn-load-rounds btn-load-future" (click)="loadFutureRounds()">
-          {{ 'matches.loadFutureRounds' | translate }}
+        <!-- Load previous rounds button (bottom - loads older/lower round numbers) -->
+        <button *ngIf="hasMorePastRounds" class="btn-load-rounds btn-load-previous" (click)="loadPreviousRounds()">
+          {{ 'matches.loadPreviousRounds' | translate }}
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="6 9 12 15 18 9"></polyline>
           </svg>

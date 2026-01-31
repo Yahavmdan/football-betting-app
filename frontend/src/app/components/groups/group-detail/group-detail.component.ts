@@ -149,8 +149,8 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   // Round grouping for automatic groups
   matchesByRound: RoundGroup[] = [];
   allRounds: RoundGroup[] = []; // All rounds before pagination
-  visiblePastRounds = 1; // Number of past rounds to show (default: last played round)
-  visibleFutureRounds = 1; // Number of future rounds to show (default: next round)
+  visiblePastRounds = 1; // Number of past rounds to show below current round
+  visibleFutureRounds = 0; // Number of future rounds to show above current round
   hasMorePastRounds = false;
   hasMoreFutureRounds = false;
   currentRoundIndex = 0; // Index of the "current" round (first with upcoming matches)
@@ -229,6 +229,10 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
         // For automatic groups, load teams from API and rebuild round options
         if (this.isAutomaticGroup()) {
           this.loadApiTeams();
+          // Re-apply filters now that we know it's automatic (fixes sort order if matches loaded first)
+          if (this.matches.length > 0) {
+            this.applyFilters();
+          }
         }
       },
       error: (error) => {
@@ -260,8 +264,12 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     this.matchService.refreshLiveMatches(this.groupId).subscribe({
       next: (response) => {
         // Update matches with fresh data
+        const isAutomatic = this.isAutomaticGroup();
         this.matches = response.data.sort((a, b) => {
-          // SCHEDULED/LIVE matches come first
+          if (isAutomatic) {
+            return new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime();
+          }
+          // Manual groups: SCHEDULED/LIVE first, then FINISHED
           if ((a.status === 'SCHEDULED' || a.status === 'LIVE') && b.status === 'FINISHED') return -1;
           if (a.status === 'FINISHED' && (b.status === 'SCHEDULED' || b.status === 'LIVE')) return 1;
 
@@ -1071,6 +1079,11 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
       });
     }
 
+    // Sort most recent first for automatic groups
+    if (this.isAutomaticGroup()) {
+      filtered.sort((a, b) => new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime());
+    }
+
     this.filteredMatches = filtered;
     this.groupMatchesByRound();
     this.closeFilterDialog();
@@ -1185,23 +1198,9 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
           }
         });
 
-        // Sort matches: LIVE first, then upcoming, then finished
+        // Sort matches: most recent first
         fixtures.sort((a, b) => {
-          // LIVE matches come first
-          if (a.status === 'LIVE' && b.status !== 'LIVE') return -1;
-          if (a.status !== 'LIVE' && b.status === 'LIVE') return 1;
-          // Then SCHEDULED
-          if (a.status === 'SCHEDULED' && b.status !== 'SCHEDULED') return -1;
-          if (a.status !== 'SCHEDULED' && b.status === 'SCHEDULED') return 1;
-
-          const dateA = new Date(a.matchDate).getTime();
-          const dateB = new Date(b.matchDate).getTime();
-
-          if (a.status === 'SCHEDULED') {
-            return dateA - dateB;
-          } else {
-            return dateB - dateA;
-          }
+          return new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime();
         });
 
         this.filteredMatches = fixtures;
@@ -1745,11 +1744,11 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
       };
     });
 
-    // Sort rounds by their number (extract number from round string)
+    // Sort rounds by their number descending (most recent rounds first)
     this.allRounds.sort((a, b) => {
       const numA = this.extractRoundNumber(a.round);
       const numB = this.extractRoundNumber(b.round);
-      return numA - numB;
+      return numB - numA;
     });
 
     // Apply pagination only when no filters are active
@@ -1765,6 +1764,9 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   }
 
   // Find the current round and apply pagination
+  // Rounds are sorted descending (most recent first), so:
+  //   - "future" rounds (upcoming) are at lower indices (top of list)
+  //   - "past" rounds (older) are at higher indices (bottom of list)
   private applyRoundPagination(): void {
     if (this.allRounds.length === 0) {
       this.matchesByRound = [];
@@ -1773,32 +1775,35 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const now = new Date();
+    // Find the round closest to today's date
+    // For each round, calculate the absolute distance from now to the round's date range
+    const now = new Date().getTime();
+    let closestIndex = 0;
+    let closestDistance = Infinity;
 
-    // Find the "current" round: first round that has upcoming matches (not all finished)
-    // If all rounds are finished, use the last round
-    this.currentRoundIndex = this.allRounds.findIndex(round => {
-      // A round is "current" if it has at least one match that is not finished
-      return round.matches.some(match => match.status !== 'FINISHED');
+    this.allRounds.forEach((round, index) => {
+      // Use the midpoint between start and end date of the round
+      const roundMid = (round.startDate.getTime() + round.endDate.getTime()) / 2;
+      const distance = Math.abs(now - roundMid);
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestIndex = index;
+      }
     });
 
-    // If all rounds are finished, set current to the last round
-    if (this.currentRoundIndex === -1) {
-      this.currentRoundIndex = this.allRounds.length - 1;
-    }
+    this.currentRoundIndex = closestIndex;
 
-    // Calculate visible range
-    // Past rounds: from (currentRoundIndex - visiblePastRounds) to (currentRoundIndex - 1)
-    // Future rounds: from currentRoundIndex to (currentRoundIndex + visibleFutureRounds - 1)
-    const startIndex = Math.max(0, this.currentRoundIndex - this.visiblePastRounds);
-    const endIndex = Math.min(this.allRounds.length - 1, this.currentRoundIndex + this.visibleFutureRounds - 1);
+    // Calculate visible range (rounds are descending)
+    // Start at the current round, expand upward for future and downward for past
+    const startIndex = Math.max(0, this.currentRoundIndex - this.visibleFutureRounds);
+    const endIndex = Math.min(this.allRounds.length - 1, this.currentRoundIndex + this.visiblePastRounds);
 
     // Slice the visible rounds
     this.matchesByRound = this.allRounds.slice(startIndex, endIndex + 1);
 
     // Check if there are more rounds to load
-    this.hasMorePastRounds = startIndex > 0;
-    this.hasMoreFutureRounds = endIndex < this.allRounds.length - 1;
+    this.hasMoreFutureRounds = startIndex > 0;
+    this.hasMorePastRounds = endIndex < this.allRounds.length - 1;
   }
 
   // Load more previous rounds (3 at a time)
@@ -1816,7 +1821,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   // Reset pagination when filters change
   resetRoundPagination(): void {
     this.visiblePastRounds = 1;
-    this.visibleFutureRounds = 1;
+    this.visibleFutureRounds = 0;
   }
 
   extractRoundNumber(round: string): number {
