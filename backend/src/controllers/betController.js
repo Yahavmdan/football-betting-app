@@ -452,12 +452,25 @@ exports.calculateBetPoints = async (req, res) => {
       const bets = await Bet.find({ match: match._id, calculated: false });
 
       for (const bet of bets) {
-        const points = calculatePoints(bet.prediction, match.result);
+        const group = await Group.findById(bet.group);
+        if (!group) continue;
+
+        // Get relative points for this match and group (if applicable)
+        const matchRelativePoints = match.relativePoints
+          ? match.relativePoints.find(rp => rp.group && rp.group.toString() === bet.group.toString())
+          : null;
+
+        const points = calculatePoints(
+          bet.prediction,
+          match.result,
+          group.betType,
+          matchRelativePoints,
+          bet.wagerAmount
+        );
         bet.points = points;
         bet.calculated = true;
         await bet.save();
 
-        const group = await Group.findById(bet.group);
         const memberIndex = group.members.findIndex(
           m => m.user.toString() === bet.user.toString()
         );

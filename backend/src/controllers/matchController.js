@@ -1,7 +1,67 @@
 const Match = require('../models/Match');
 const Group = require('../models/Group');
+const Bet = require('../models/Bet');
 const axios = require('axios');
 const apiFootballService = require('../services/apiFootballService');
+const calculatePoints = require('../utils/calculatePoints');
+
+// Helper: Calculate bet points for a match that just finished
+// Handles all groups the match belongs to, with correct betType/relativePoints/wagerAmount
+async function calculateBetsForFinishedMatch(match) {
+  if (!match || match.status !== 'FINISHED' || !match.result || match.result.outcome === null) {
+    return 0;
+  }
+
+  const bets = await Bet.find({ match: match._id, calculated: false });
+  if (bets.length === 0) return 0;
+
+  // Load all groups this match belongs to (for betType and relativePoints)
+  const groups = await Group.find({ _id: { $in: match.groups } });
+  const groupMap = {};
+  groups.forEach(g => { groupMap[g._id.toString()] = g; });
+
+  let totalCalculated = 0;
+
+  for (const bet of bets) {
+    const group = groupMap[bet.group.toString()];
+    if (!group) continue;
+
+    // Get relative points for this match and group (if applicable)
+    const matchRelativePoints = match.relativePoints
+      ? match.relativePoints.find(rp => rp.group && rp.group.toString() === bet.group.toString())
+      : null;
+
+    const points = calculatePoints(
+      bet.prediction,
+      match.result,
+      group.betType,
+      matchRelativePoints,
+      bet.wagerAmount
+    );
+
+    bet.points = points;
+    bet.calculated = true;
+    await bet.save();
+
+    // Update user points/credits in group
+    const memberIndex = group.members.findIndex(
+      m => m.user.toString() === bet.user.toString()
+    );
+
+    if (memberIndex !== -1) {
+      group.members[memberIndex].points += points;
+      await group.save();
+    }
+
+    totalCalculated++;
+  }
+
+  if (totalCalculated > 0) {
+    console.log(`[AutoCalc] Calculated points for ${totalCalculated} bets on match ${match.externalApiId || match._id}`);
+  }
+
+  return totalCalculated;
+}
 
 exports.getMatches = async (req, res) => {
   try {
@@ -39,6 +99,10 @@ exports.getMatches = async (req, res) => {
             match.extraTime = freshData.extraTime;
             match.statusShort = freshData.statusShort;
             if (freshData.round) match.round = freshData.round;
+            if (freshData.homeTeamId) match.homeTeamId = freshData.homeTeamId;
+            if (freshData.awayTeamId) match.awayTeamId = freshData.awayTeamId;
+            if (freshData.homeTeamLogo) match.homeTeamLogo = freshData.homeTeamLogo;
+            if (freshData.awayTeamLogo) match.awayTeamLogo = freshData.awayTeamLogo;
             await match.save();
           } else if (match.status === 'LIVE') {
             // Match was LIVE but no longer in live API - it likely finished
@@ -52,7 +116,16 @@ exports.getMatches = async (req, res) => {
                 match.extraTime = finalData.extraTime;
                 match.statusShort = finalData.statusShort;
                 if (finalData.round) match.round = finalData.round;
+                if (finalData.homeTeamId) match.homeTeamId = finalData.homeTeamId;
+                if (finalData.awayTeamId) match.awayTeamId = finalData.awayTeamId;
+                if (finalData.homeTeamLogo) match.homeTeamLogo = finalData.homeTeamLogo;
+                if (finalData.awayTeamLogo) match.awayTeamLogo = finalData.awayTeamLogo;
                 await match.save();
+
+                // Auto-calculate bet points when match transitions to FINISHED
+                if (match.status === 'FINISHED' && match.result && match.result.outcome) {
+                  await calculateBetsForFinishedMatch(match);
+                }
               }
             } catch (err) {
               console.error(`Failed to fetch final data for match ${match.externalApiId}:`, err.message);
@@ -1107,9 +1180,6 @@ exports.markMatchAsFinished = async (req, res) => {
     await match.save();
 
     // Calculate points for all bets on this match in this group
-    const Bet = require('../models/Bet');
-    const calculatePoints = require('../utils/calculatePoints');
-
     const bets = await Bet.find({ match: matchId, group: groupId, calculated: false });
     let totalCalculated = 0;
 
@@ -1215,7 +1285,6 @@ exports.deleteMatch = async (req, res) => {
     }
 
     // Delete all bets associated with this match in this group
-    const Bet = require('../models/Bet');
     await Bet.deleteMany({ match: matchId, group: groupId });
 
     // Remove group from match's groups array
@@ -1554,6 +1623,10 @@ exports.refreshLiveMatches = async (req, res) => {
         match.extraTime = freshData.extraTime;
         match.statusShort = freshData.statusShort;
         if (freshData.round) match.round = freshData.round;
+        if (freshData.homeTeamId) match.homeTeamId = freshData.homeTeamId;
+        if (freshData.awayTeamId) match.awayTeamId = freshData.awayTeamId;
+        if (freshData.homeTeamLogo) match.homeTeamLogo = freshData.homeTeamLogo;
+        if (freshData.awayTeamLogo) match.awayTeamLogo = freshData.awayTeamLogo;
         await match.save();
         updatedMatches.push(match);
       } else if (match.status === 'LIVE') {
@@ -1576,6 +1649,12 @@ exports.refreshLiveMatches = async (req, res) => {
         }
 
         await match.save();
+
+        // Auto-calculate bet points when match transitions to FINISHED
+        if (match.result && match.result.outcome) {
+          await calculateBetsForFinishedMatch(match);
+        }
+
         updatedMatches.push(match);
       }
       // Note: If match is SCHEDULED but not in live API, leave it as SCHEDULED
@@ -1642,6 +1721,11 @@ exports.refreshSingleMatch = async (req, res) => {
     match.statusShort = freshData.statusShort;
     match.elapsed = freshData.elapsed;
     match.extraTime = freshData.extraTime;
+    if (freshData.round) match.round = freshData.round;
+    if (freshData.homeTeamId) match.homeTeamId = freshData.homeTeamId;
+    if (freshData.awayTeamId) match.awayTeamId = freshData.awayTeamId;
+    if (freshData.homeTeamLogo) match.homeTeamLogo = freshData.homeTeamLogo;
+    if (freshData.awayTeamLogo) match.awayTeamLogo = freshData.awayTeamLogo;
 
     // Update result if available
     if (freshData.result && (freshData.result.homeScore !== null || freshData.result.awayScore !== null)) {
@@ -1687,6 +1771,11 @@ exports.refreshSingleMatch = async (req, res) => {
     }
 
     await match.save();
+
+    // Auto-calculate bet points when match transitions to FINISHED
+    if (match.status === 'FINISHED' && match.result && match.result.outcome) {
+      await calculateBetsForFinishedMatch(match);
+    }
 
     res.status(200).json({
       success: true,
@@ -1748,6 +1837,11 @@ exports.addLiveFixturesToGroup = async (req, res) => {
         match.elapsed = fixture.elapsed;
         match.extraTime = fixture.extraTime;
         match.statusShort = fixture.statusShort;
+        if (fixture.round) match.round = fixture.round;
+        if (fixture.homeTeamId) match.homeTeamId = fixture.homeTeamId;
+        if (fixture.awayTeamId) match.awayTeamId = fixture.awayTeamId;
+        if (fixture.homeTeamLogo) match.homeTeamLogo = fixture.homeTeamLogo;
+        if (fixture.awayTeamLogo) match.awayTeamLogo = fixture.awayTeamLogo;
         if (!match.groups.includes(groupId)) {
           match.groups.push(groupId);
         }
