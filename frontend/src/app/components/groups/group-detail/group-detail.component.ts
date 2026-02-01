@@ -463,6 +463,13 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
         this.matches = sorted;
         this.applyFilters();
         this.loadingMatches = false;
+
+        // Reload leaderboard after matches load for automatic groups,
+        // because the matches endpoint may have calculated points for
+        // newly finished matches
+        if (this.isAutomaticGroup()) {
+          this.loadLeaderboard(true);
+        }
       },
       error: (error) => {
         console.error('Failed to load matches:', error);

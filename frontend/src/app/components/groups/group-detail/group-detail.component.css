@@ -1264,7 +1264,7 @@ h2 {
     background: rgba(241, 245, 249, 0.82);
     border-bottom: 1px solid #e2e8f0;
     position: sticky;
-    top: 108px;
+    top: 111px;
     z-index: 9;
     margin-bottom: 0.25rem;
 }
@@ -1390,6 +1390,7 @@ h2 {
     cursor: pointer;
     transition: all 0.2s ease;
     margin-bottom: 1rem;
+    margin-top: 1rem;
 }
 
 .btn-load-rounds:hover {
