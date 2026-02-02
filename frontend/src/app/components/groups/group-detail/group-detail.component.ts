@@ -16,6 +16,7 @@ import { TeamTranslatePipe } from '../../../pipes/team-translate.pipe';
 import { getTeamByName, getAllTeams, getTranslatedTeamName, Team } from '../../../data/teams.data';
 import { environment } from '../../../../environments/environment';
 import { AppSelectComponent, SelectOption } from '../../shared/app-select/app-select.component';
+import { ToastService } from '../../shared/toast/toast.service';
 
 @Component({
   selector: 'app-group-detail',
@@ -47,7 +48,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   allBets: Bet[] = [];
   loadingLeaderboard = true;
   loadingMatches = true;
-  matchesWithBets: Set<string> = new Set();
+  matchesWithBets: Map<string, string> = new Map();
   refreshingLive = false;
   refreshingMatchId: string | null = null; // Track which individual match is being refreshed
   syncingMatches = false;
@@ -188,7 +189,8 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     private betService: BetService,
     public authService: AuthService,
     private translationService: TranslationService,
-    private el: ElementRef
+    private el: ElementRef,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -559,6 +561,14 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
       this.headToHeadMatches = [];
       this.homeTeamRecentMatches = [];
       this.awayTeamRecentMatches = [];
+
+      // Auto-open bet form if match can be bet on
+      if (this.canPlaceBet(match)) {
+        this.openInlineBetForm(match);
+      }
+
+      // Auto-load member bets
+      this.loadMemberBets(matchId);
     }
   }
 
@@ -653,19 +663,19 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   loadMyBets(): void {
     this.betService.getMyBets(this.groupId).subscribe({
       next: (response) => {
-        const betMatchIds: string[] = [];
+        const betMap = new Map<string, string>();
         response.data.forEach(bet => {
           const match = bet.match;
+          const outcome = bet.prediction?.outcome || '';
           if (match) {
-            // Add the MongoDB _id
-            betMatchIds.push(match._id || match);
-            // Also add externalApiId if present (for API matches)
+            const matchId = match._id || match;
+            betMap.set(matchId, outcome);
             if (match.externalApiId) {
-              betMatchIds.push(match.externalApiId);
+              betMap.set(match.externalApiId, outcome);
             }
           }
         });
-        this.matchesWithBets = new Set(betMatchIds);
+        this.matchesWithBets = betMap;
       },
       error: (error) => {
         console.error('Failed to load bets:', error);
@@ -675,6 +685,10 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
 
   hasBetOnMatch(matchId: string): boolean {
     return this.matchesWithBets.has(matchId);
+  }
+
+  getBetOutcome(matchId: string): string {
+    return this.matchesWithBets.get(matchId) || '';
   }
 
   canUpdateScore(match: Match): boolean {
@@ -906,12 +920,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   }
 
   // Member bets methods
-  toggleMemberBets(matchId: string): void {
-    if (this.viewingBetsForMatch === matchId) {
-      this.closeMemberBets();
-      return;
-    }
-
+  loadMemberBets(matchId: string): void {
     this.viewingBetsForMatch = matchId;
     this.loadingMemberBets = true;
     this.memberBets = [];
@@ -926,6 +935,14 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
         this.loadingMemberBets = false;
       }
     });
+  }
+
+  toggleMemberBets(matchId: string): void {
+    if (this.viewingBetsForMatch === matchId) {
+      this.closeMemberBets();
+      return;
+    }
+    this.loadMemberBets(matchId);
   }
 
   closeMemberBets(): void {
@@ -1504,9 +1521,14 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   }
 
   // Inline bet form methods
+  canPlaceBet(match: Match): boolean {
+    return match.status === 'SCHEDULED' && !this.isMatchInPast(match.matchDate);
+  }
+
   openInlineBetForm(match: Match): void {
+    if (!this.canPlaceBet(match)) return;
+
     // Close any other open panels
-    this.closeMemberBets();
     this.cancelScoreUpdate();
 
     this.placingBetForMatch = match._id;
@@ -1619,6 +1641,10 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
 
   selectInlineOutcome(outcome: '1' | 'X' | '2'): void {
     this.inlineBetData.outcome = outcome;
+    // Auto-submit for non-relative groups
+    if (this.group?.betType !== 'relative') {
+      this.submitInlineBet();
+    }
   }
 
   getMatchRelativePoints(match: Match): { homeWin: number; draw: number; awayWin: number; fromApi?: boolean } | null {
@@ -1668,6 +1694,17 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   }
 
   submitInlineBet(): void {
+    // Prevent betting on started/finished matches
+    const match = this.filteredMatches.find(m => m._id === this.inlineBetData.matchId) ||
+                  this.matches.find(m => m._id === this.inlineBetData.matchId);
+    if (match && !this.canPlaceBet(match)) {
+      this.toastService.show(
+        this.translationService.translate('bets.matchStarted'),
+        'error'
+      );
+      return;
+    }
+
     this.inlineLoadingBet = true;
     this.inlineBetError = '';
     this.inlineBetSuccess = '';
@@ -1705,21 +1742,22 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
 
     this.betService.placeBet(betDataToSubmit).subscribe({
       next: (response) => {
-        this.inlineBetSuccess = response.message || this.translationService.translate('bets.betPlacedSuccess');
+        this.toastService.show(
+          this.translationService.translate('bets.betPlacedSuccess'),
+          'success'
+        );
         this.inlineLoadingBet = false;
         // Immediately mark this match as having a bet (instant feedback)
-        this.matchesWithBets.add(this.inlineBetData.matchId);
-        // Refresh data silently
+        this.matchesWithBets.set(this.inlineBetData.matchId, this.inlineBetData.outcome);
+        // Refresh data silently (no group details reload to avoid global spinner)
         this.loadMyBets();
         this.loadLeaderboard(true);
-        this.loadGroupDetails(true);
-        // Close form after short delay
-        setTimeout(() => {
-          this.closeInlineBetForm();
-        }, 1500);
       },
       error: (error) => {
-        this.inlineBetError = error.error?.message || this.translationService.translate('bets.placeBetFailed');
+        this.toastService.show(
+          error.error?.message || this.translationService.translate('bets.placeBetFailed'),
+          'error'
+        );
         this.inlineLoadingBet = false;
       }
     });

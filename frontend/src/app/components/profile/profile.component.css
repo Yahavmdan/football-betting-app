@@ -460,6 +460,17 @@
     }
 }
 
+@media (max-width: 450px) {
+    .profile-card {
+        border-radius: 0;
+        margin-left: -1rem;
+        margin-right: -1rem;
+        width: calc(100% + 2rem);
+        border-left: none;
+        border-right: none;
+    }
+}
+
 /* ========================================
    DARK MODE STYLES
    ======================================== */

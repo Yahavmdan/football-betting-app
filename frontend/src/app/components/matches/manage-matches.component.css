@@ -485,7 +485,22 @@
         text-align: center;
       }
     }
+    @media (max-width: 450px) {
+      .section {
+        border-radius: 0;
+        margin-left: -1rem;
+        margin-right: -1rem;
+        width: calc(100% + 2rem);
+        border-left: none;
+        border-right: none;
+      }
+    }
     @media (max-width: 400px) {
+      .section {
+        margin-left: -0.75rem;
+        margin-right: -0.75rem;
+        width: calc(100% + 1.5rem);
+      }
       .container {
         padding: 0.75rem;
       }
@@ -502,7 +517,7 @@
       }
       .section {
         padding: 0.85rem;
-        border-radius: 14px;
+        border-radius: 0;
         margin-bottom: 1.25rem;
       }
       .btn-secondary {

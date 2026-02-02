@@ -4,13 +4,14 @@ import { RouterOutlet } from '@angular/router';
 import { NavbarComponent } from './components/layout/navbar.component';
 import { LoadingSpinnerComponent } from './components/shared/loading-spinner/loading-spinner.component';
 import { FeedbackButtonComponent } from './components/shared/feedback-button/feedback-button.component';
+import { ToastComponent } from './components/shared/toast/toast.component';
 import { TranslationService } from './services/translation.service';
 import { AuthService } from './services/auth.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, NavbarComponent, LoadingSpinnerComponent, FeedbackButtonComponent, CommonModule],
+  imports: [RouterOutlet, NavbarComponent, LoadingSpinnerComponent, FeedbackButtonComponent, ToastComponent, CommonModule],
   templateUrl: './app.component.html',
   styles: []
 })
