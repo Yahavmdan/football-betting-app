@@ -88,6 +88,11 @@ export class FootballGameComponent implements OnInit, OnDestroy {
   // Kick effect
   private kickEffect: { x: number; y: number; frame: number } | null = null;
 
+  // Bounce animation (squash & stretch)
+  private bounceScale = 1;
+  private bounceAngle = 0;
+  private bounceDecay = 0.9;
+
   // Cached background elements (generated once per level)
   private cachedStars: { x: number; y: number; size: number; brightness: number }[] = [];
   private cachedBubbles: { x: number; y: number; size: number; speed: number }[] = [];
@@ -221,6 +226,9 @@ export class FootballGameComponent implements OnInit, OnDestroy {
 
     // Add slight air resistance (scaled by delta time)
     this.ballVelocityX *= Math.pow(0.99, clampedDelta);
+
+    // Decay bounce animation back to normal
+    this.bounceScale = 1 + (this.bounceScale - 1) * Math.pow(this.bounceDecay, clampedDelta);
   }
 
   private draw(): void {
@@ -1027,6 +1035,16 @@ export class FootballGameComponent implements OnInit, OnDestroy {
     ctx.arc(x + 3, y + 3, r, 0, Math.PI * 2);
     ctx.fill();
 
+    // Apply squash & stretch transform
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(this.bounceAngle);
+    // Squash in Y, stretch in X (or vice versa based on bounceScale)
+    const scaleX = this.bounceScale;
+    const scaleY = 1 / this.bounceScale; // Inverse to maintain volume
+    ctx.scale(scaleX, scaleY);
+    ctx.translate(-x, -y);
+
     // Base ball color (changes for some levels)
     let ballColor = 'white';
     let patchColor = 'black';
@@ -1111,6 +1129,9 @@ export class FootballGameComponent implements OnInit, OnDestroy {
 
     // Draw themed accessories based on level
     this.drawBallAccessories(x, y, r);
+
+    // Restore transform after squash & stretch
+    ctx.restore();
   }
 
   private drawPentagon(cx: number, cy: number, radius: number, color: string): void {
@@ -1852,8 +1873,20 @@ export class FootballGameComponent implements OnInit, OnDestroy {
     const kickPower = 10 + (this.level - 1) * 0.3;
     const magnitude = Math.sqrt(dx * dx + dy * dy) || 1;
 
-    this.ballVelocityX += (dx / magnitude) * kickPower * 0.3;
-    this.ballVelocityY = -kickPower; // Always kick upward
+    // Normalized direction
+    const dirX = dx / magnitude;
+    const dirY = dy / magnitude;
+
+    // Much more sensitive to kick angle - kicks from the side send ball sideways
+    // The horizontal component is now 0.8x the kick power (was 0.3x)
+    this.ballVelocityX += dirX * kickPower * 0.8;
+    // Vertical kick is also direction-based but always ensures upward movement
+    this.ballVelocityY = Math.min(-kickPower * 0.7, dirY * kickPower - kickPower * 0.5);
+
+    // Bouncy squash & stretch effect
+    // Squash in the direction of the kick (makes ball look like it's being hit)
+    this.bounceScale = 1.35; // Stretch horizontally, squash vertically
+    this.bounceAngle = Math.atan2(dy, dx) + Math.PI / 2; // Perpendicular to kick direction
 
     // Increment score
     this.score++;
@@ -1867,7 +1900,7 @@ export class FootballGameComponent implements OnInit, OnDestroy {
     }
 
     // Add some randomness
-    this.ballVelocityX += (Math.random() - 0.5) * 2;
+    this.ballVelocityX += (Math.random() - 0.5) * 1.5;
   }
 
   private endGame(): void {
