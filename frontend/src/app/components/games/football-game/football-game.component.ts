@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, HostListener, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { TranslationService } from '../../../services/translation.service';
 import { environment } from '../../../../environments/environment';
@@ -1895,8 +1895,10 @@ export class FootballGameComponent implements OnInit, OnDestroy {
 
   private loadLeaderboard(): void {
     this.isLoadingLeaderboard = true;
+    const headers = new HttpHeaders().set('X-Skip-Loading', 'true');
     this.http.get<{ success: boolean; data: LeaderboardEntry[] }>(
-      `${environment.apiUrl}/game/leaderboard`
+      `${environment.apiUrl}/game/leaderboard`,
+      { headers }
     ).subscribe({
       next: (response) => {
         this.leaderboard = response.data;
@@ -1911,9 +1913,11 @@ export class FootballGameComponent implements OnInit, OnDestroy {
   private submitScore(): void {
     if (this.score === 0) return;
 
+    const headers = new HttpHeaders().set('X-Skip-Loading', 'true');
     this.http.post<{ success: boolean; data: LeaderboardEntry }>(
       `${environment.apiUrl}/game/score`,
-      { score: this.score }
+      { score: this.score },
+      { headers }
     ).subscribe({
       next: () => {
         this.loadLeaderboard();
