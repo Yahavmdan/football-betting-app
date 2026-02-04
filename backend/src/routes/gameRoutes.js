@@ -3,11 +3,11 @@ const router = express.Router();
 const GameScore = require('../models/GameScore');
 const { protect } = require('../middleware/auth');
 
-// Get leaderboard (top 20 scores - best score per user)
-router.get('/leaderboard', async (req, res) => {
+// Get leaderboard (global top 10 + personal top 10)
+router.get('/leaderboard', protect, async (req, res) => {
   try {
-    // Aggregate to get the best score for each user
-    const leaderboard = await GameScore.aggregate([
+    // Get global top 10 (best score per user)
+    const globalLeaderboard = await GameScore.aggregate([
       {
         $group: {
           _id: '$user',
@@ -19,7 +19,7 @@ router.get('/leaderboard', async (req, res) => {
         $sort: { score: -1 }
       },
       {
-        $limit: 20
+        $limit: 10
       },
       {
         $lookup: {
@@ -46,9 +46,18 @@ router.get('/leaderboard', async (req, res) => {
       }
     ]);
 
+    // Get personal top 10 scores for the current user
+    const personalScores = await GameScore.find({ user: req.user._id })
+      .sort({ score: -1 })
+      .limit(10)
+      .select('score createdAt');
+
     res.json({
       success: true,
-      data: leaderboard
+      data: {
+        global: globalLeaderboard,
+        personal: personalScores
+      }
     });
   } catch (error) {
     console.error('Error fetching leaderboard:', error);
@@ -59,7 +68,7 @@ router.get('/leaderboard', async (req, res) => {
   }
 });
 
-// Submit a score
+// Submit a score (only keeps top 10 per user)
 router.post('/score', protect, async (req, res) => {
   try {
     const { score } = req.body;
@@ -77,6 +86,26 @@ router.post('/score', protect, async (req, res) => {
         success: false,
         message: 'Score must be at least 1'
       });
+    }
+
+    // Get user's current scores count and lowest score
+    const userScores = await GameScore.find({ user: req.user._id })
+      .sort({ score: 1 }) // Sort ascending to get lowest first
+      .limit(10);
+
+    // If user has 10 scores, check if new score is better than lowest
+    if (userScores.length >= 10) {
+      const lowestScore = userScores[0];
+      if (score <= lowestScore.score) {
+        // New score isn't better than user's top 10, don't save
+        return res.status(200).json({
+          success: true,
+          data: null,
+          message: 'Score not in top 10'
+        });
+      }
+      // Delete the lowest score to make room
+      await GameScore.findByIdAndDelete(lowestScore._id);
     }
 
     const gameScore = await GameScore.create({

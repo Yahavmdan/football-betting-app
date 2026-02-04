@@ -384,6 +384,9 @@
     "newRecord": "New Record!",
     "playAgain": "Play Again",
     "leaderboard": "Leaderboard",
-    "noScores": "No scores yet. Be the first!"
+    "noScores": "No scores yet. Be the first!",
+    "yourBest": "Your Best Scores",
+    "globalBest": "Global Top 10",
+    "noPersonalScores": "Play to set your first score!"
   }
 }

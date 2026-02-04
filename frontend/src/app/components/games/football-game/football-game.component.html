@@ -7,10 +7,6 @@
       </svg>
     </button>
     <h1>{{ t('game.title') }}</h1>
-    <div class="high-score">
-      <span class="label">{{ t('game.best') }}</span>
-      <span class="value">{{ highScore }}</span>
-    </div>
   </div>
 
   <!-- Game Area -->
@@ -50,6 +46,12 @@
     </div>
   </div>
 
+  <!-- High Score (below game) -->
+  <div *ngIf="highScore > 0" class="high-score-below">
+    <span class="label">{{ t('game.best') }}:</span>
+    <span class="value">{{ highScore }}</span>
+  </div>
+
   <!-- Leaderboard Toggle -->
   <button class="leaderboard-toggle" (click)="toggleLeaderboard()">
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -67,31 +69,56 @@
       <div class="spinner"></div>
     </div>
 
-    <div *ngIf="!isLoadingLeaderboard && leaderboard.length === 0" class="empty-state">
-      {{ t('game.noScores') }}
-    </div>
-
-    <div *ngIf="!isLoadingLeaderboard && leaderboard.length > 0" class="leaderboard-list">
-      <div
-        *ngFor="let entry of leaderboard; let i = index"
-        class="leaderboard-entry"
-        [class.top-three]="i < 3">
-        <div class="rank" [class.gold]="i === 0" [class.silver]="i === 1" [class.bronze]="i === 2">
-          <span *ngIf="i < 3" class="medal">{{ i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉' }}</span>
-          <span *ngIf="i >= 3">{{ i + 1 }}</span>
+    <div *ngIf="!isLoadingLeaderboard">
+      <!-- Global Leaderboard Section -->
+      <div class="leaderboard-section">
+        <h3 class="section-title">{{ t('game.globalBest') }}</h3>
+        <div *ngIf="globalLeaderboard.length === 0" class="empty-state">
+          {{ t('game.noScores') }}
         </div>
-        <div class="player">
-          <img
-            *ngIf="entry.user.profilePicture"
-            [src]="entry.user.profilePicture"
-            [alt]="entry.user.username"
-            class="avatar">
-          <div *ngIf="!entry.user.profilePicture" class="avatar-placeholder">
-            {{ entry.user.username.charAt(0).toUpperCase() }}
+        <div *ngIf="globalLeaderboard.length > 0" class="leaderboard-list">
+          <div
+            *ngFor="let entry of globalLeaderboard; let i = index"
+            class="leaderboard-entry"
+            [class.top-three]="i < 3">
+            <div class="rank" [class.gold]="i === 0" [class.silver]="i === 1" [class.bronze]="i === 2">
+              <span *ngIf="i < 3" class="medal">{{ i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉' }}</span>
+              <span *ngIf="i >= 3">{{ i + 1 }}</span>
+            </div>
+            <div class="player">
+              <img
+                *ngIf="entry.user.profilePicture"
+                [src]="entry.user.profilePicture"
+                [alt]="entry.user.username"
+                class="avatar">
+              <div *ngIf="!entry.user.profilePicture" class="avatar-placeholder">
+                {{ entry.user.username.charAt(0).toUpperCase() }}
+              </div>
+              <span class="username">{{ entry.user.username }}</span>
+            </div>
+            <div class="entry-score">{{ entry.score }}</div>
           </div>
-          <span class="username">{{ entry.user.username }}</span>
         </div>
-        <div class="entry-score">{{ entry.score }}</div>
+      </div>
+
+      <!-- Personal Scores Section -->
+      <div class="leaderboard-section">
+        <h3 class="section-title">{{ t('game.yourBest') }}</h3>
+        <div *ngIf="personalScores.length === 0" class="empty-state">
+          {{ t('game.noPersonalScores') }}
+        </div>
+        <div *ngIf="personalScores.length > 0" class="leaderboard-list personal-list">
+          <div
+            *ngFor="let score of personalScores; let i = index"
+            class="leaderboard-entry personal-entry"
+            [class.top-three]="i < 3">
+            <div class="rank" [class.gold]="i === 0" [class.silver]="i === 1" [class.bronze]="i === 2">
+              <span *ngIf="i < 3" class="medal">{{ i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉' }}</span>
+              <span *ngIf="i >= 3">{{ i + 1 }}</span>
+            </div>
+            <div class="entry-score">{{ score.score }}</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

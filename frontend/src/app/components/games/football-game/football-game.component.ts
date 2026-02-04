@@ -16,6 +16,12 @@ interface LeaderboardEntry {
   createdAt: string;
 }
 
+interface PersonalScore {
+  _id: string;
+  score: number;
+  createdAt: string;
+}
+
 @Component({
   selector: 'app-football-game',
   standalone: true,
@@ -101,7 +107,8 @@ export class FootballGameComponent implements OnInit, OnDestroy {
   private lastCachedLevel = 0;
 
   // Leaderboard
-  leaderboard: LeaderboardEntry[] = [];
+  globalLeaderboard: LeaderboardEntry[] = [];
+  personalScores: PersonalScore[] = [];
   isLoadingLeaderboard = false;
   showLeaderboard = true;
 
@@ -112,8 +119,10 @@ export class FootballGameComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    // Clean up old localStorage high score (now using DB only)
+    localStorage.removeItem('footballGameHighScore');
+
     this.loadLeaderboard();
-    this.loadHighScore();
     this.initCanvas();
   }
 
@@ -1823,32 +1832,30 @@ export class FootballGameComponent implements OnInit, OnDestroy {
       cancelAnimationFrame(this.animationId);
     }
 
-    // Update high score
+    // Update high score display immediately if this is a new record
     if (this.score > this.highScore) {
       this.highScore = this.score;
-      localStorage.setItem('footballGameHighScore', this.highScore.toString());
     }
 
-    // Submit score to leaderboard
+    // Submit score to leaderboard (will update personal scores from DB)
     this.submitScore();
   }
 
-  private loadHighScore(): void {
-    const saved = localStorage.getItem('footballGameHighScore');
-    if (saved) {
-      this.highScore = parseInt(saved, 10);
-    }
-  }
 
   private loadLeaderboard(): void {
     this.isLoadingLeaderboard = true;
     const headers = new HttpHeaders().set('X-Skip-Loading', 'true');
-    this.http.get<{ success: boolean; data: LeaderboardEntry[] }>(
+    this.http.get<{ success: boolean; data: { global: LeaderboardEntry[]; personal: PersonalScore[] } }>(
       `${environment.apiUrl}/game/leaderboard`,
       { headers }
     ).subscribe({
       next: (response) => {
-        this.leaderboard = response.data;
+        this.globalLeaderboard = response.data.global;
+        this.personalScores = response.data.personal;
+        // Update high score from personal scores
+        if (this.personalScores.length > 0) {
+          this.highScore = this.personalScores[0].score;
+        }
         this.isLoadingLeaderboard = false;
       },
       error: () => {
