@@ -6,6 +6,7 @@ import { GroupService } from '../../../services/group.service';
 import { JoinGroupData } from '../../../models/group.model';
 import { TranslatePipe } from '../../../services/translate.pipe';
 import { TranslationService } from '../../../services/translation.service';
+import { ToastService } from '../../shared/toast/toast.service';
 
 @Component({
   selector: 'app-join-group',
@@ -18,8 +19,6 @@ export class JoinGroupComponent implements OnInit {
   joinData: JoinGroupData = {
     inviteCode: ''
   };
-  errorMessage = '';
-  successMessage = '';
   loading = false;
   codeFromUrl = false; // Track if code came from URL (for auto-submit)
 
@@ -27,7 +26,8 @@ export class JoinGroupComponent implements OnInit {
     private groupService: GroupService,
     private router: Router,
     private route: ActivatedRoute,
-    private translationService: TranslationService
+    private translationService: TranslationService,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -43,15 +43,13 @@ export class JoinGroupComponent implements OnInit {
 
   onSubmit(): void {
     this.loading = true;
-    this.errorMessage = '';
-    this.successMessage = '';
 
     this.joinData.inviteCode = this.joinData.inviteCode.toUpperCase();
 
     this.groupService.joinGroup(this.joinData).subscribe({
       next: (response) => {
         // Show pending approval message
-        this.successMessage = response.message || this.translationService.translate('groups.joinRequestPending');
+        this.toastService.show(response.message || this.translationService.translate('groups.joinRequestPending'), 'success');
         this.loading = false;
         // Navigate back to groups after a delay
         setTimeout(() => {
@@ -59,7 +57,7 @@ export class JoinGroupComponent implements OnInit {
         }, 2000);
       },
       error: (error) => {
-        this.errorMessage = error.error?.message || this.translationService.translate('groups.joinFailed');
+        this.toastService.show(error.error?.message || this.translationService.translate('groups.joinFailed'), 'error');
         this.loading = false;
       }
     });

@@ -1528,3 +1528,4 @@ input[type="number"]::-webkit-outer-spin-button {
 .animate-scale-in {
   animation: scaleIn var(--transition-slow) ease-out;
 }
+

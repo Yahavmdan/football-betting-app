@@ -111,25 +111,53 @@
       transform: scaleX(1);
     }
     .group-card.pending {
-      opacity: 0.7;
-      background: #f8fafc;
-      border: 2px dashed #94a3b8;
+      background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+      border: 1px solid #fcd34d;
+      cursor: default;
     }
     .group-card.pending::before {
       background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
       transform: scaleX(1);
     }
+    .group-card.pending:hover {
+      transform: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
     .pending-badge {
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
       background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
       color: white;
-      padding: 0.35rem 0.75rem;
-      border-radius: 8px;
-      font-size: 0.75rem;
+      padding: 0.4rem 0.85rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
       font-weight: 600;
-      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.25);
+      margin-bottom: 0.75rem;
+    }
+    .pending-badge::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: white;
+      border-radius: 50%;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .group-card.pending .group-info {
+      border-top-color: rgba(251, 191, 36, 0.4);
+      background: rgba(255, 255, 255, 0.5);
+      margin: 0 -1.5rem -1.5rem -1.5rem;
+      padding: 1rem 1.5rem;
+      border-radius: 0 0 16px 16px;
+    }
+    .group-card.pending .invite-code {
+      background: rgba(245, 158, 11, 0.15);
+      color: #b45309;
     }
     .group-card h3 {
       margin: 0 0 0.75rem 0;
@@ -207,8 +235,16 @@
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
     }
     :host-context(.dark-theme) .group-card.pending {
-      background: #111827;
-      border-color: #4b5563;
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(217, 119, 6, 0.15) 100%);
+      border-color: rgba(251, 191, 36, 0.4);
+    }
+    :host-context(.dark-theme) .group-card.pending .group-info {
+      border-top-color: rgba(251, 191, 36, 0.25);
+      background: rgba(0, 0, 0, 0.2);
+    }
+    :host-context(.dark-theme) .group-card.pending .invite-code {
+      background: rgba(245, 158, 11, 0.2);
+      color: #fbbf24;
     }
     :host-context(.dark-theme) .group-card h3 {
       color: #f9fafb;
@@ -223,4 +259,58 @@
     :host-context(.dark-theme) .invite-code {
       background: rgba(34, 197, 94, 0.15);
       color: #4ade80;
+    }
+
+    /* Cancel request button */
+    .btn-cancel-request {
+      position: absolute;
+      top: 0.75rem;
+      inset-inline-end: 0.75rem;
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      border: none;
+      border-radius: 50%;
+      font-size: 1.25rem;
+      font-weight: 400;
+      line-height: 1;
+      cursor: pointer;
+      background: rgba(239, 68, 68, 0.15);
+      color: #dc2626;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-cancel-request:hover:not(:disabled) {
+      background: #ef4444;
+      color: white;
+      transform: scale(1.1);
+    }
+    .btn-cancel-request:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+    .btn-cancel-request .loading-spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(220, 38, 38, 0.3);
+      border-top-color: #dc2626;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    :host-context(.dark-theme) .btn-cancel-request {
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+    }
+    :host-context(.dark-theme) .btn-cancel-request:hover:not(:disabled) {
+      background: #dc2626;
+      color: white;
+    }
+    :host-context(.dark-theme) .btn-cancel-request .loading-spinner {
+      border-color: rgba(248, 113, 113, 0.3);
+      border-top-color: #f87171;
     }

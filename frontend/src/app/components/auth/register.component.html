@@ -50,9 +50,6 @@
           class="form-control"
         />
       </div>
-      <div *ngIf="errorMessage" class="error-message">
-        {{ errorMessage }}
-      </div>
       <button type="submit" [disabled]="!registerForm.valid || loading" class="btn-primary">
         {{ loading ? ('auth.loading' | translate) : ('auth.register' | translate) }}
       </button>

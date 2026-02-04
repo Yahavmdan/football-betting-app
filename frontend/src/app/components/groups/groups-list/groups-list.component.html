@@ -20,9 +20,17 @@
          [class.pending]="group.isPending"
          [routerLink]="group.isPending ? null : ['/groups', group._id]"
          [style.cursor]="group.isPending ? 'default' : 'pointer'">
-      <div *ngIf="group.isPending" class="pending-badge">
-        {{ 'groups.joinRequestPending' | translate }}
-      </div>
+      <button *ngIf="group.isPending"
+              class="btn-cancel-request"
+              [disabled]="cancellingGroupId === group._id"
+              (click)="cancelJoinRequest(group._id, $event)"
+              title="{{ 'groups.cancelRequest' | translate }}">
+        <span *ngIf="cancellingGroupId !== group._id">×</span>
+        <span *ngIf="cancellingGroupId === group._id" class="loading-spinner"></span>
+      </button>
+      <span *ngIf="group.isPending" class="pending-badge">
+        {{ 'groups.pendingApproval' | translate }}
+      </span>
       <h3>{{ group.name }}</h3>
       <p class="description">{{ group.description || ('groups.noDescription' | translate) }}</p>
       <div class="group-info">

@@ -6,6 +6,7 @@ import { MatchService } from '../../services/match.service';
 import { GroupService } from '../../services/group.service';
 import { AuthService } from '../../services/auth.service';
 import { TranslationService } from '../../services/translation.service';
+import { ToastService } from '../shared/toast/toast.service';
 import { Match } from '../../models/match.model';
 import { Group } from '../../models/group.model';
 import { TranslatePipe } from '../../services/translate.pipe';
@@ -40,8 +41,6 @@ export class ManageMatchesComponent implements OnInit {
 
   // Manual match creation
   loadingManual = false;
-  manualMatchMessage = '';
-  manualMatchError = '';
   manualMatch: {
     homeTeam: string;
     awayTeam: string;
@@ -76,7 +75,6 @@ export class ManageMatchesComponent implements OnInit {
     awayScore: null
   };
   loadingScoreUpdate = false;
-  scoreUpdateError = '';
 
   // Edit match
   editMatchData: {
@@ -93,7 +91,6 @@ export class ManageMatchesComponent implements OnInit {
     relativePoints: { homeWin: 1, draw: 1, awayWin: 1 }
   };
   loadingEditMatch = false;
-  editMatchError = '';
 
   // Delete match
   deletingMatchId: string | null = null;
@@ -101,8 +98,6 @@ export class ManageMatchesComponent implements OnInit {
 
   // Sync matches (for automatic groups)
   loadingSync = false;
-  syncMessage = '';
-  syncError = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -110,7 +105,8 @@ export class ManageMatchesComponent implements OnInit {
     private matchService: MatchService,
     private groupService: GroupService,
     private authService: AuthService,
-    private translationService: TranslationService
+    private translationService: TranslationService,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -197,8 +193,6 @@ export class ManageMatchesComponent implements OnInit {
 
   createManualMatch(): void {
     this.loadingManual = true;
-    this.manualMatchMessage = '';
-    this.manualMatchError = '';
 
     // Create a proper Date object from local date/time inputs
     // This ensures the correct UTC time is sent to the server
@@ -227,7 +221,7 @@ export class ManageMatchesComponent implements OnInit {
 
     this.matchService.createManualMatch(data).subscribe({
       next: (response) => {
-        this.manualMatchMessage = response.message;
+        this.toastService.show(response.message, 'success');
         this.loadingManual = false;
         // Reset form
         this.manualMatch = {
@@ -247,7 +241,7 @@ export class ManageMatchesComponent implements OnInit {
         this.loadMatches();
       },
       error: (error) => {
-        this.manualMatchError = error.error?.message || 'Failed to create match';
+        this.toastService.show(error.error?.message || 'Failed to create match', 'error');
         this.loadingManual = false;
       }
     });
@@ -271,18 +265,19 @@ export class ManageMatchesComponent implements OnInit {
     if (!this.groupId) return;
 
     this.loadingSync = true;
-    this.syncMessage = '';
-    this.syncError = '';
 
     this.matchService.syncLeagueToGroup(this.groupId).subscribe({
       next: (response) => {
-        this.syncMessage = this.translationService.translate('groups.matchesSynced') +
-          ` (${response.data.added} ${this.translationService.translate('matches.added')})`;
+        this.toastService.show(
+          this.translationService.translate('groups.matchesSynced') +
+          ` (${response.data.added} ${this.translationService.translate('matches.added')})`,
+          'success'
+        );
         this.loadingSync = false;
         this.loadMatches();
       },
       error: (error) => {
-        this.syncError = error.error?.message || 'Failed to sync matches';
+        this.toastService.show(error.error?.message || 'Failed to sync matches', 'error');
         this.loadingSync = false;
       }
     });
@@ -305,7 +300,6 @@ export class ManageMatchesComponent implements OnInit {
       homeScore: match.result?.homeScore ?? null,
       awayScore: match.result?.awayScore ?? null
     };
-    this.scoreUpdateError = '';
   }
 
   submitScoreUpdate(matchId: string): void {
@@ -314,7 +308,6 @@ export class ManageMatchesComponent implements OnInit {
     }
 
     this.loadingScoreUpdate = true;
-    this.scoreUpdateError = '';
 
     this.matchService.updateMatchScore({
       matchId,
@@ -328,7 +321,7 @@ export class ManageMatchesComponent implements OnInit {
         this.loadMatches();
       },
       error: (error) => {
-        this.scoreUpdateError = error.error?.message || 'Failed to update score';
+        this.toastService.show(error.error?.message || 'Failed to update score', 'error');
         this.loadingScoreUpdate = false;
       }
     });
@@ -337,7 +330,6 @@ export class ManageMatchesComponent implements OnInit {
   cancelScoreUpdate(): void {
     this.editingMatchId = null;
     this.updateScoreData = { homeScore: null, awayScore: null };
-    this.scoreUpdateError = '';
   }
 
   markAsFinished(matchId: string): void {
@@ -353,7 +345,7 @@ export class ManageMatchesComponent implements OnInit {
         this.loadMatches();
       },
       error: (error) => {
-        alert(error.error?.message || 'Failed to mark match as finished');
+        this.toastService.show(error.error?.message || 'Failed to mark match as finished', 'error');
       }
     });
   }
@@ -384,12 +376,10 @@ export class ManageMatchesComponent implements OnInit {
         awayWin: matchRelativePoints?.awayWin || 1
       }
     };
-    this.editMatchError = '';
   }
 
   submitEditMatch(matchId: string): void {
     this.loadingEditMatch = true;
-    this.editMatchError = '';
 
     // Create a proper Date object from local date/time inputs
     const localDateTime = new Date(`${this.editMatchData.matchDate}T${this.editMatchData.matchHour}`);
@@ -415,7 +405,7 @@ export class ManageMatchesComponent implements OnInit {
         this.loadMatches();
       },
       error: (error) => {
-        this.editMatchError = error.error?.message || 'Failed to edit match';
+        this.toastService.show(error.error?.message || 'Failed to edit match', 'error');
         this.loadingEditMatch = false;
       }
     });
@@ -431,7 +421,6 @@ export class ManageMatchesComponent implements OnInit {
       matchHour: '',
       relativePoints: { homeWin: 1, draw: 1, awayWin: 1 }
     };
-    this.editMatchError = '';
   }
 
   // Delete match methods

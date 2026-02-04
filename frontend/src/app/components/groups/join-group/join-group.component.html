@@ -16,12 +16,6 @@
           maxlength="8"
         />
       </div>
-      <div *ngIf="errorMessage" class="error-message">
-        {{ errorMessage }}
-      </div>
-      <div *ngIf="successMessage" class="success-message">
-        {{ successMessage }}
-      </div>
       <div class="button-group">
         <button type="button" (click)="goBack()" class="btn-secondary">{{ 'groups.cancel' | translate }}</button>
         <button type="submit" [disabled]="!joinGroupForm.valid || loading" class="btn-primary">

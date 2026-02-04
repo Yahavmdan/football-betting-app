@@ -72,6 +72,10 @@ export class GroupService {
     return this.http.post<{ success: boolean; message: string }>(`${this.apiUrl}/${groupId}/reject/${userId}`, {});
   }
 
+  cancelJoinRequest(groupId: string): Observable<{ success: boolean; message: string }> {
+    return this.http.post<{ success: boolean; message: string }>(`${this.apiUrl}/${groupId}/cancel-join`, {});
+  }
+
   kickMember(groupId: string, userId: string): Observable<{ success: boolean; message: string }> {
     return this.http.post<{ success: boolean; message: string }>(`${this.apiUrl}/${groupId}/kick/${userId}`, {});
   }

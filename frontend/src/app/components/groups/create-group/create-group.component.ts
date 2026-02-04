@@ -8,6 +8,7 @@ import {CreateGroupData} from '../../../models/group.model';
 import {League} from '../../../models/league.model';
 import {TranslatePipe} from '../../../services/translate.pipe';
 import {TranslationService} from '../../../services/translation.service';
+import {ToastService} from '../../shared/toast/toast.service';
 import {AppToggleComponent} from '../../shared/app-toggle/app-toggle.component';
 import {AppSelectComponent, SelectGroup} from '../../shared/app-select/app-select.component';
 
@@ -29,7 +30,6 @@ export class CreateGroupComponent implements OnInit {
         matchType: 'manual',
         selectedLeague: undefined
     };
-    errorMessage = '';
     loading = false;
     leagues: League[] = [];
     leagueGroups: SelectGroup[] = [];
@@ -39,7 +39,8 @@ export class CreateGroupComponent implements OnInit {
         private groupService: GroupService,
         private matchService: MatchService,
         private router: Router,
-        private translationService: TranslationService
+        private translationService: TranslationService,
+        private toastService: ToastService
     ) {
     }
 
@@ -131,7 +132,6 @@ export class CreateGroupComponent implements OnInit {
 
     onSubmit(): void {
         this.loading = true;
-        this.errorMessage = '';
 
         this.groupService.createGroup(this.groupData).subscribe({
             next: (response) => {
@@ -153,7 +153,7 @@ export class CreateGroupComponent implements OnInit {
                 }
             },
             error: (error) => {
-                this.errorMessage = error.error?.message || this.translationService.translate('groups.createFailed');
+                this.toastService.show(error.error?.message || this.translationService.translate('groups.createFailed'), 'error');
                 this.loading = false;
             }
         });

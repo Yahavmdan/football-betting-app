@@ -37,8 +37,6 @@
           {{ 'profile.removePicture' | translate }}
         </button>
       </div>
-      <div *ngIf="pictureError" class="error-message small">{{ pictureError }}</div>
-      <div *ngIf="pictureSuccess" class="success-message small">{{ pictureSuccess }}</div>
     </div>
 
     <!-- Profile Info Section -->
@@ -67,8 +65,6 @@
             [placeholder]="'auth.email' | translate"
           />
         </div>
-        <div *ngIf="profileError" class="error-message">{{ profileError }}</div>
-        <div *ngIf="profileSuccess" class="success-message">{{ profileSuccess }}</div>
         <button type="submit" [disabled]="loadingProfile" class="btn-primary">
           {{ loadingProfile ? ('auth.loading' | translate) : ('common.save' | translate) }}
         </button>
@@ -110,8 +106,6 @@
             [placeholder]="'profile.confirmPassword' | translate"
           />
         </div>
-        <div *ngIf="passwordError" class="error-message">{{ passwordError }}</div>
-        <div *ngIf="passwordSuccess" class="success-message">{{ passwordSuccess }}</div>
         <button type="submit" [disabled]="loadingPassword" class="btn-primary">
           {{ loadingPassword ? ('auth.loading' | translate) : ('profile.changePassword' | translate) }}
         </button>
@@ -153,8 +147,6 @@
         </app-toggle>
       </div>
 
-      <div *ngIf="settingsError" class="error-message">{{ settingsError }}</div>
-      <div *ngIf="settingsSuccess" class="success-message">{{ settingsSuccess }}</div>
       <button
         (click)="saveSettings()"
         [disabled]="loadingSettings || !settingsChanged"
@@ -230,9 +222,6 @@
           </app-select>
         </div>
 
-        <div *ngIf="telegramError" class="error-message">{{ telegramError }}</div>
-        <div *ngIf="telegramSuccess" class="success-message">{{ telegramSuccess }}</div>
-
         <div class="telegram-actions">
           <button
             *ngIf="telegramSettingsChanged"
@@ -277,7 +266,6 @@
             [placeholder]="'auth.password' | translate"
           />
         </div>
-        <div *ngIf="deleteError" class="error-message">{{ deleteError }}</div>
         <div class="button-row">
           <button
             (click)="deleteAccount()"

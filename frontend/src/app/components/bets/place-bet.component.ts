@@ -11,6 +11,7 @@ import { PlaceBetData } from '../../models/bet.model';
 import { TranslatePipe } from '../../services/translate.pipe';
 import { TeamTranslatePipe } from '../../pipes/team-translate.pipe';
 import { TranslationService } from '../../services/translation.service';
+import { ToastService } from '../shared/toast/toast.service';
 import { AuthService } from '../../services/auth.service';
 import { getTeamByName } from '../../data/teams.data';
 
@@ -31,12 +32,11 @@ export class PlaceBetComponent implements OnInit {
   };
   wagerAmount: number | null = null;
   userCredits: number = 0;
-  errorMessage = '';
-  successMessage = '';
   loading = false;
   hasExistingBet = false;
   existingBet: any = null;
   isMatchInPast = false;
+  loadingMatch = true;
 
   // Effective credits = current credits + existing bet wager (if editing)
   get effectiveCredits(): number {
@@ -53,7 +53,8 @@ export class PlaceBetComponent implements OnInit {
     private matchService: MatchService,
     private groupService: GroupService,
     private authService: AuthService,
-    private translationService: TranslationService
+    private translationService: TranslationService,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -73,15 +74,18 @@ export class PlaceBetComponent implements OnInit {
   }
 
   loadMatch(): void {
+    this.loadingMatch = true;
     this.matchService.getMatchById(this.betData.matchId, true).subscribe({
       next: (response) => {
         this.match = response.data;
         // Check if match is in the past
         this.isMatchInPast = new Date(this.match.matchDate) <= new Date();
+        this.loadingMatch = false;
       },
       error: (error) => {
         console.error('Failed to load match:', error);
-        this.errorMessage = this.translationService.translate('bets.loadMatchFailed');
+        this.toastService.show(this.translationService.translate('bets.loadMatchFailed'), 'error');
+        this.loadingMatch = false;
       }
     });
   }
@@ -165,8 +169,6 @@ export class PlaceBetComponent implements OnInit {
 
   onSubmit(): void {
     this.loading = true;
-    this.errorMessage = '';
-    this.successMessage = '';
 
     // Include wagerAmount for relative betting groups
     const betDataToSubmit: PlaceBetData = {
@@ -179,13 +181,13 @@ export class PlaceBetComponent implements OnInit {
 
     this.betService.placeBet(betDataToSubmit).subscribe({
       next: (response) => {
-        this.successMessage = response.message || this.translationService.translate('bets.betPlacedSuccess');
+        this.toastService.show(response.message || this.translationService.translate('bets.betPlacedSuccess'), 'success');
         setTimeout(() => {
           void this.router.navigate(['/groups', this.betData.groupId]);
         }, 1500);
       },
       error: (error) => {
-        this.errorMessage = error.error?.message || this.translationService.translate('bets.placeBetFailed');
+        this.toastService.show(error.error?.message || this.translationService.translate('bets.placeBetFailed'), 'error');
         this.loading = false;
       }
     });

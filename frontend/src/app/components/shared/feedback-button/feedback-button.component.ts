@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { TranslationService } from '../../../services/translation.service';
+import { ToastService } from '../toast/toast.service';
 import { environment } from '../../../../environments/environment';
 
 @Component({
@@ -19,8 +20,6 @@ export class FeedbackButtonComponent {
   isMinimized = false;
   message = '';
   isSubmitting = false;
-  successMessage = '';
-  errorMessage = '';
 
   // Image upload
   selectedImage: File | null = null;
@@ -28,7 +27,8 @@ export class FeedbackButtonComponent {
 
   constructor(
     private http: HttpClient,
-    private translationService: TranslationService
+    private translationService: TranslationService,
+    private toastService: ToastService
   ) {
     // Load minimized state from localStorage
     this.isMinimized = localStorage.getItem('feedbackMinimized') === 'true';
@@ -44,12 +44,10 @@ export class FeedbackButtonComponent {
       localStorage.setItem('feedbackMinimized', 'false');
     }
     this.isDialogOpen = !this.isDialogOpen;
-    this.clearMessages();
   }
 
   closeDialog(): void {
     this.isDialogOpen = false;
-    this.clearMessages();
     this.clearImage();
   }
 
@@ -57,12 +55,6 @@ export class FeedbackButtonComponent {
     this.isMinimized = true;
     this.isDialogOpen = false;
     localStorage.setItem('feedbackMinimized', 'true');
-    this.clearMessages();
-  }
-
-  clearMessages(): void {
-    this.successMessage = '';
-    this.errorMessage = '';
   }
 
   triggerFileInput(): void {
@@ -76,18 +68,17 @@ export class FeedbackButtonComponent {
 
       // Check if it's an image
       if (!file.type.startsWith('image/')) {
-        this.errorMessage = this.t('feedback.invalidFileType');
+        this.toastService.show(this.t('feedback.invalidFileType'), 'error');
         return;
       }
 
       // Check file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        this.errorMessage = this.t('profile.fileTooLarge');
+        this.toastService.show(this.t('profile.fileTooLarge'), 'error');
         return;
       }
 
       this.selectedImage = file;
-      this.clearMessages();
 
       // Create preview
       const reader = new FileReader();
@@ -112,7 +103,6 @@ export class FeedbackButtonComponent {
     }
 
     this.isSubmitting = true;
-    this.clearMessages();
 
     const formData = new FormData();
     formData.append('message', this.message.trim());
@@ -125,19 +115,17 @@ export class FeedbackButtonComponent {
       formData
     ).subscribe({
         next: () => {
-          this.successMessage = this.t('feedback.successMessage');
+          this.toastService.show(this.t('feedback.successMessage'), 'success');
           this.message = '';
           this.clearImage();
           this.isSubmitting = false;
-          setTimeout(() => {
-            this.closeDialog();
-          }, 2000);
+          this.closeDialog();
         },
         error: (err) => {
           if (err.status === 429) {
-            this.errorMessage = this.t('feedback.rateLimitError');
+            this.toastService.show(this.t('feedback.rateLimitError'), 'error');
           } else {
-            this.errorMessage = this.t('feedback.errorMessage');
+            this.toastService.show(this.t('feedback.errorMessage'), 'error');
           }
           this.isSubmitting = false;
         }

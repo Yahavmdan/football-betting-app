@@ -6,6 +6,7 @@ import { AuthService } from '../../services/auth.service';
 import { RegisterCredentials } from '../../models/user.model';
 import { TranslatePipe } from '../../services/translate.pipe';
 import { TranslationService } from '../../services/translation.service';
+import { ToastService } from '../shared/toast/toast.service';
 import { REDIRECT_URL_KEY } from '../../guards/auth.guard';
 
 @Component({
@@ -21,18 +22,17 @@ export class RegisterComponent {
     email: '',
     password: ''
   };
-  errorMessage = '';
   loading = false;
 
   constructor(
     private authService: AuthService,
     private router: Router,
-    private translationService: TranslationService
+    private translationService: TranslationService,
+    private toastService: ToastService
   ) {}
 
   onSubmit(): void {
     this.loading = true;
-    this.errorMessage = '';
 
     this.authService.register(this.credentials).subscribe({
       next: () => {
@@ -46,7 +46,7 @@ export class RegisterComponent {
         }
       },
       error: (error) => {
-        this.errorMessage = error.error?.message || this.translationService.translate('auth.registerFailed');
+        this.toastService.show(error.error?.message || this.translationService.translate('auth.registerFailed'), 'error');
         this.loading = false;
       }
     });

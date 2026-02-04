@@ -15,6 +15,7 @@ const {
   getPendingMembers,
   approveMember,
   rejectMember,
+  cancelJoinRequest,
   kickMember,
   updateTrashTalk
 } = require('../controllers/groupController');
@@ -36,6 +37,7 @@ router.delete('/:id/filter-preferences', protect, clearFilterPreferences);
 router.get('/:id/pending', protect, getPendingMembers);
 router.post('/:id/approve/:userId', protect, approveMember);
 router.post('/:id/reject/:userId', protect, rejectMember);
+router.post('/:id/cancel-join', protect, cancelJoinRequest);
 router.post('/:id/kick/:userId', protect, kickMember);
 
 // Trash talk

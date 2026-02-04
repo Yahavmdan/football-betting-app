@@ -14,8 +14,6 @@
       class="btn-primary sync-btn">
       {{ loadingSync ? ('groups.syncingMatches' | translate) : ('groups.syncMatches' | translate) }}
     </button>
-    <div *ngIf="syncMessage" class="info-message" style="margin-top: 1rem;">{{ syncMessage }}</div>
-    <div *ngIf="syncError" class="error-message" style="margin-top: 1rem;">{{ syncError }}</div>
   </div>
 
   <div class="section" *ngIf="canManageGroup() && !isAutomaticGroup()">
@@ -149,8 +147,6 @@
         [disabled]="loadingManual || !isFormValid()">
         {{ loadingManual ? ('matches.creatingMatch' | translate) : ('matches.createMatch' | translate) }}
       </button>
-      <div *ngIf="manualMatchMessage" class="info-message" style="margin-top: 1rem;">{{ manualMatchMessage }}</div>
-      <div *ngIf="manualMatchError" class="error-message" style="margin-top: 1rem;">{{ manualMatchError }}</div>
     </form>
   </div>
 
@@ -245,7 +241,6 @@
               {{ 'groups.cancel' | translate }}
             </button>
           </div>
-          <div *ngIf="scoreUpdateError" class="error-message" style="margin-top: 0.5rem;">{{ scoreUpdateError }}</div>
         </div>
         <!-- Edit match form -->
         <div *ngIf="editingMatchId === match._id && editingMatchDetails" class="edit-match-form">
@@ -339,7 +334,6 @@
               {{ 'groups.cancel' | translate }}
             </button>
           </div>
-          <div *ngIf="editMatchError" class="error-message" style="margin-top: 0.5rem;">{{ editMatchError }}</div>
         </div>
         <!-- Delete confirmation -->
         <div *ngIf="deletingMatchId === match._id" class="delete-confirm">

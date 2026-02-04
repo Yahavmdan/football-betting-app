@@ -52,7 +52,6 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   refreshingLive = false;
   refreshingMatchId: string | null = null; // Track which individual match is being refreshed
   syncingMatches = false;
-  linkCopied = false;
   showGroupMenu = false;
 
   // Score update
@@ -62,13 +61,11 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     awayScore: null
   };
   loadingScoreUpdate = false;
-  scoreUpdateError = '';
 
   // Group management
   editingGroup = false;
   editGroupData: { name: string; description: string } = { name: '', description: '' };
   loadingEditGroup = false;
-  editGroupError = '';
 
   deletingGroup = false;
   loadingDeleteGroup = false;
@@ -506,10 +503,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     const joinUrl = `${window.location.origin}/join/${this.group.inviteCode}`;
 
     const onSuccess = () => {
-      this.linkCopied = true;
-      setTimeout(() => {
-        this.linkCopied = false;
-      }, 2000);
+      this.toastService.show(this.translationService.translate('groups.linkCopied'), 'success');
     };
 
     if (navigator.clipboard && window.isSecureContext) {
@@ -705,7 +699,6 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
       homeScore: match.result?.homeScore ?? null,
       awayScore: match.result?.awayScore ?? null
     };
-    this.scoreUpdateError = '';
   }
 
   submitScoreUpdate(matchId: string): void {
@@ -714,7 +707,6 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     }
 
     this.loadingScoreUpdate = true;
-    this.scoreUpdateError = '';
 
     this.matchService.updateMatchScore({
       matchId,
@@ -729,7 +721,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
         this.loadLeaderboard(true);
       },
       error: (error) => {
-        this.scoreUpdateError = error.error?.message || 'Failed to update score';
+        this.toastService.show(error.error?.message || 'Failed to update score', 'error');
         this.loadingScoreUpdate = false;
       }
     });
@@ -738,7 +730,6 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   cancelScoreUpdate(): void {
     this.editingMatchId = null;
     this.updateScoreData = { homeScore: null, awayScore: null };
-    this.scoreUpdateError = '';
   }
 
   markAsFinished(matchId: string): void {
@@ -755,7 +746,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
         this.loadLeaderboard();
       },
       error: (error) => {
-        alert(error.error?.message || 'Failed to mark match as finished');
+        this.toastService.show(error.error?.message || 'Failed to mark match as finished', 'error');
       }
     });
   }
@@ -769,12 +760,10 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
       name: this.group?.name || '',
       description: this.group?.description || ''
     };
-    this.editGroupError = '';
   }
 
   submitEditGroup(): void {
     this.loadingEditGroup = true;
-    this.editGroupError = '';
 
     this.groupService.editGroup(this.groupId, {
       name: this.editGroupData.name,
@@ -786,7 +775,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
         this.editingGroup = false;
       },
       error: (error) => {
-        this.editGroupError = error.error?.message || 'Failed to update group';
+        this.toastService.show(error.error?.message || 'Failed to update group', 'error');
         this.loadingEditGroup = false;
       }
     });
@@ -795,7 +784,6 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   cancelEditGroup(): void {
     this.editingGroup = false;
     this.editGroupData = { name: '', description: '' };
-    this.editGroupError = '';
   }
 
   // Group delete methods

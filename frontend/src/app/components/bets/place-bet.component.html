@@ -1,7 +1,7 @@
 <div class="container">
   <button class="back-btn" (click)="goBack()">← {{ 'bets.back' | translate }}</button>
 
-  <div *ngIf="!match && !errorMessage" class="section-loading">
+  <div *ngIf="loadingMatch" class="section-loading">
     <div class="inline-spinner"></div>
   </div>
 
@@ -119,14 +119,6 @@
         <div *ngIf="effectiveCredits <= 0" class="error-message" style="margin-top: 1rem;">
           {{ 'groups.eliminated' | translate }} - {{ 'bets.insufficientCredits' | translate }}
         </div>
-      </div>
-
-      <div *ngIf="errorMessage" class="error-message">
-        {{ errorMessage }}
-      </div>
-
-      <div *ngIf="successMessage" class="success-message">
-        {{ successMessage }}
       </div>
 
       <div class="button-group">

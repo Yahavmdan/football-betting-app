@@ -37,9 +37,6 @@
           class="form-control"
         />
       </div>
-      <div *ngIf="errorMessage" class="error-message">
-        {{ errorMessage }}
-      </div>
       <button type="submit" [disabled]="!loginForm.valid || loading" class="btn-primary">
         {{ loading ? ('auth.loading' | translate) : ('auth.login' | translate) }}
       </button>

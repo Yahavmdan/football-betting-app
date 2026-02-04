@@ -6,6 +6,7 @@ import { AuthService } from '../../services/auth.service';
 import { UserService } from '../../services/user.service';
 import { TranslatePipe } from '../../services/translate.pipe';
 import { TranslationService } from '../../services/translation.service';
+import { ToastService } from '../shared/toast/toast.service';
 import { User, TelegramSettings } from '../../models/user.model';
 import { AppSelectComponent, SelectOption } from '../shared/app-select/app-select.component';
 import { AppToggleComponent } from '../shared/app-toggle/app-toggle.component';
@@ -67,9 +68,6 @@ export class ProfileComponent implements OnInit {
   botUsername = '';
   codeExpiresAt: Date | null = null;
   loadingTelegram = false;
-  telegramError = '';
-  telegramSuccess = '';
-
 
   deletePassword = '';
   showDeleteConfirm = false;
@@ -80,21 +78,12 @@ export class ProfileComponent implements OnInit {
   loadingSettings = false;
   loadingDelete = false;
 
-  profileError = '';
-  profileSuccess = '';
-  passwordError = '';
-  passwordSuccess = '';
-  pictureError = '';
-  pictureSuccess = '';
-  settingsError = '';
-  settingsSuccess = '';
-  deleteError = '';
-
   constructor(
     private authService: AuthService,
     private userService: UserService,
     private router: Router,
-    private translationService: TranslationService
+    private translationService: TranslationService,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -103,18 +92,33 @@ export class ProfileComponent implements OnInit {
       if (user) {
         this.profileData.username = user.username;
         this.profileData.email = user.email;
+      }
+    });
+    // Fetch full profile from API to get accurate settings from the database
+    this.loadProfileSettings();
+    this.loadTelegramStatus();
+  }
+
+  loadProfileSettings(): void {
+    this.userService.getProfile().subscribe({
+      next: (response) => {
+        const user = response.data;
         if (user.settings) {
           this.settingsData = {
             language: user.settings.language || 'en',
             theme: user.settings.theme || 'system',
-            autoBet: user.settings.autoBet || false
+            autoBet: user.settings.autoBet === true
           };
           this.originalSettings = JSON.stringify(this.settingsData);
           this.settingsChanged = false;
+          // Update the cached user with settings
+          this.authService.updateCurrentUser({ settings: user.settings });
         }
+      },
+      error: (error) => {
+        console.error('Failed to load profile settings:', error);
       }
     });
-    this.loadTelegramStatus();
   }
 
   loadTelegramStatus(): void {
@@ -151,7 +155,7 @@ export class ProfileComponent implements OnInit {
 
       // Validate file size (5MB)
       if (file.size > 5 * 1024 * 1024) {
-        this.pictureError = this.translationService.translate('profile.fileTooLarge');
+        this.toastService.show(this.translationService.translate('profile.fileTooLarge'), 'error');
         return;
       }
 
@@ -161,17 +165,15 @@ export class ProfileComponent implements OnInit {
 
   uploadProfilePicture(file: File): void {
     this.loadingPicture = true;
-    this.pictureError = '';
-    this.pictureSuccess = '';
 
     this.userService.uploadProfilePicture(file).subscribe({
       next: (response) => {
         this.authService.updateCurrentUser({ profilePicture: response.data.profilePicture });
-        this.pictureSuccess = this.translationService.translate('profile.pictureUpdated');
+        this.toastService.show(this.translationService.translate('profile.pictureUpdated'), 'success');
         this.loadingPicture = false;
       },
       error: (error) => {
-        this.pictureError = error.error?.message || this.translationService.translate('profile.pictureUploadFailed');
+        this.toastService.show(error.error?.message || this.translationService.translate('profile.pictureUploadFailed'), 'error');
         this.loadingPicture = false;
       }
     });
@@ -179,17 +181,15 @@ export class ProfileComponent implements OnInit {
 
   deleteProfilePicture(): void {
     this.loadingPicture = true;
-    this.pictureError = '';
-    this.pictureSuccess = '';
 
     this.userService.deleteProfilePicture().subscribe({
       next: () => {
         this.authService.updateCurrentUser({ profilePicture: null });
-        this.pictureSuccess = this.translationService.translate('profile.pictureRemoved');
+        this.toastService.show(this.translationService.translate('profile.pictureRemoved'), 'success');
         this.loadingPicture = false;
       },
       error: (error) => {
-        this.pictureError = error.error?.message || this.translationService.translate('profile.pictureDeleteFailed');
+        this.toastService.show(error.error?.message || this.translationService.translate('profile.pictureDeleteFailed'), 'error');
         this.loadingPicture = false;
       }
     });
@@ -197,8 +197,6 @@ export class ProfileComponent implements OnInit {
 
   updateProfile(): void {
     this.loadingProfile = true;
-    this.profileError = '';
-    this.profileSuccess = '';
 
     this.userService.updateProfile(this.profileData).subscribe({
       next: (response) => {
@@ -206,27 +204,24 @@ export class ProfileComponent implements OnInit {
           username: response.data.username,
           email: response.data.email
         });
-        this.profileSuccess = this.translationService.translate('profile.profileUpdated');
+        this.toastService.show(this.translationService.translate('profile.profileUpdated'), 'success');
         this.loadingProfile = false;
       },
       error: (error) => {
-        this.profileError = error.error?.message || this.translationService.translate('profile.updateFailed');
+        this.toastService.show(error.error?.message || this.translationService.translate('profile.updateFailed'), 'error');
         this.loadingProfile = false;
       }
     });
   }
 
   changePassword(): void {
-    this.passwordError = '';
-    this.passwordSuccess = '';
-
     if (this.passwordData.newPassword !== this.passwordData.confirmPassword) {
-      this.passwordError = this.translationService.translate('profile.passwordMismatch');
+      this.toastService.show(this.translationService.translate('profile.passwordMismatch'), 'error');
       return;
     }
 
     if (this.passwordData.newPassword.length < 6) {
-      this.passwordError = this.translationService.translate('profile.passwordTooShort');
+      this.toastService.show(this.translationService.translate('profile.passwordTooShort'), 'error');
       return;
     }
 
@@ -237,12 +232,12 @@ export class ProfileComponent implements OnInit {
       newPassword: this.passwordData.newPassword
     }).subscribe({
       next: () => {
-        this.passwordSuccess = this.translationService.translate('profile.passwordChanged');
+        this.toastService.show(this.translationService.translate('profile.passwordChanged'), 'success');
         this.passwordData = { currentPassword: '', newPassword: '', confirmPassword: '' };
         this.loadingPassword = false;
       },
       error: (error) => {
-        this.passwordError = error.error?.message || this.translationService.translate('profile.passwordChangeFailed');
+        this.toastService.show(error.error?.message || this.translationService.translate('profile.passwordChangeFailed'), 'error');
         this.loadingPassword = false;
       }
     });
@@ -251,17 +246,15 @@ export class ProfileComponent implements OnInit {
   cancelDelete(): void {
     this.showDeleteConfirm = false;
     this.deletePassword = '';
-    this.deleteError = '';
   }
 
   deleteAccount(): void {
     if (!this.deletePassword) {
-      this.deleteError = this.translationService.translate('profile.passwordRequired');
+      this.toastService.show(this.translationService.translate('profile.passwordRequired'), 'error');
       return;
     }
 
     this.loadingDelete = true;
-    this.deleteError = '';
 
     this.userService.deleteAccount(this.deletePassword).subscribe({
       next: () => {
@@ -269,7 +262,7 @@ export class ProfileComponent implements OnInit {
         void this.router.navigate(['/login']);
       },
       error: (error) => {
-        this.deleteError = error.error?.message || this.translationService.translate('profile.deleteFailed');
+        this.toastService.show(error.error?.message || this.translationService.translate('profile.deleteFailed'), 'error');
         this.loadingDelete = false;
       }
     });
@@ -278,21 +271,17 @@ export class ProfileComponent implements OnInit {
 
   onSettingChange(): void {
     this.settingsChanged = JSON.stringify(this.settingsData) !== this.originalSettings;
-    this.settingsSuccess = '';
-    this.settingsError = '';
   }
 
   saveSettings(): void {
     this.loadingSettings = true;
-    this.settingsError = '';
-    this.settingsSuccess = '';
 
     this.userService.updateSettings(this.settingsData).subscribe({
       next: (response) => {
         this.authService.updateCurrentUser({ settings: response.data.settings });
         this.originalSettings = JSON.stringify(this.settingsData);
         this.settingsChanged = false;
-        this.settingsSuccess = this.translationService.translate('profile.settingsSaved');
+        this.toastService.show(this.translationService.translate('profile.settingsSaved'), 'success');
         this.loadingSettings = false;
 
         // Apply language change immediately
@@ -304,7 +293,7 @@ export class ProfileComponent implements OnInit {
         this.applyTheme(this.settingsData.theme);
       },
       error: (error) => {
-        this.settingsError = error.error?.message || this.translationService.translate('profile.settingsFailed');
+        this.toastService.show(error.error?.message || this.translationService.translate('profile.settingsFailed'), 'error');
         this.loadingSettings = false;
       }
     });
@@ -326,7 +315,6 @@ export class ProfileComponent implements OnInit {
   // Telegram methods
   generateTelegramLinkCode(): void {
     this.loadingTelegram = true;
-    this.telegramError = '';
 
     this.userService.generateTelegramLinkCode().subscribe({
       next: (response) => {
@@ -336,7 +324,7 @@ export class ProfileComponent implements OnInit {
         this.loadingTelegram = false;
       },
       error: (error) => {
-        this.telegramError = error.error?.message || 'Failed to generate link code';
+        this.toastService.show(error.error?.message || 'Failed to generate link code', 'error');
         this.loadingTelegram = false;
       }
     });
@@ -345,8 +333,7 @@ export class ProfileComponent implements OnInit {
   copyCode(): void {
     if (this.linkCode) {
       void navigator.clipboard.writeText(`/start ${this.linkCode}`);
-      this.telegramSuccess = this.translationService.translate('profile.codeCopied');
-      setTimeout(() => this.telegramSuccess = '', 3000);
+      this.toastService.show(this.translationService.translate('profile.codeCopied'), 'success');
     }
   }
 
@@ -356,7 +343,6 @@ export class ProfileComponent implements OnInit {
     }
 
     this.loadingTelegram = true;
-    this.telegramError = '';
 
     this.userService.unlinkTelegram().subscribe({
       next: () => {
@@ -366,11 +352,11 @@ export class ProfileComponent implements OnInit {
           reminderMinutes: 15
         };
         this.linkCode = null;
-        this.telegramSuccess = this.translationService.translate('profile.telegramUnlinked');
+        this.toastService.show(this.translationService.translate('profile.telegramUnlinked'), 'success');
         this.loadingTelegram = false;
       },
       error: (error) => {
-        this.telegramError = error.error?.message || 'Failed to unlink Telegram';
+        this.toastService.show(error.error?.message || 'Failed to unlink Telegram', 'error');
         this.loadingTelegram = false;
       }
     });
@@ -378,8 +364,6 @@ export class ProfileComponent implements OnInit {
 
   onTelegramSettingChange(): void {
     this.telegramSettingsChanged = JSON.stringify(this.telegramSettings) !== this.originalTelegramSettings;
-    this.telegramSuccess = '';
-    this.telegramError = '';
   }
 
 
@@ -387,8 +371,6 @@ export class ProfileComponent implements OnInit {
     if (!this.telegramSettings) return;
 
     this.loadingTelegram = true;
-    this.telegramError = '';
-    this.telegramSuccess = '';
 
     this.userService.updateTelegramSettings({
       reminderEnabled: this.telegramSettings.reminderEnabled,
@@ -398,11 +380,11 @@ export class ProfileComponent implements OnInit {
         this.telegramSettings = response.data.telegram;
         this.originalTelegramSettings = JSON.stringify(this.telegramSettings);
         this.telegramSettingsChanged = false;
-        this.telegramSuccess = this.translationService.translate('profile.telegramSettingsSaved');
+        this.toastService.show(this.translationService.translate('profile.telegramSettingsSaved'), 'success');
         this.loadingTelegram = false;
       },
       error: (error) => {
-        this.telegramError = error.error?.message || 'Failed to save settings';
+        this.toastService.show(error.error?.message || 'Failed to save settings', 'error');
         this.loadingTelegram = false;
       }
     });

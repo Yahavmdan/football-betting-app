@@ -61,7 +61,6 @@
           </svg>
           {{ 'groups.invite' | translate }}
         </button>
-        <span *ngIf="linkCopied" class="link-copied-msg">{{ 'groups.linkCopied' | translate }}</span>
       </span>
       <div *ngIf="isAutomaticGroup()" class="group-toolbar-league">
         <button class="btn-standings" (click)="toggleStandings()" [class.active]="showStandings">
@@ -169,7 +168,6 @@
           {{ 'groups.cancel' | translate }}
         </button>
       </div>
-      <div *ngIf="editGroupError" class="error-message">{{ editGroupError }}</div>
     </div>
 
     <!-- Delete Group Confirmation -->
@@ -369,7 +367,7 @@
             </button>
           </span>
           <span class="points">
-            {{ member.points }}
+            {{ member.points | number:'1.0-1' }}
           </span>
           <button
             *ngIf="canManageGroup() && !isGroupCreatorMember(member.user._id)"
@@ -757,7 +755,6 @@
                       {{ 'groups.cancel' | translate }}
                     </button>
                   </div>
-                  <div *ngIf="scoreUpdateError" class="error-message">{{ scoreUpdateError }}</div>
                 </div>
                 <!-- Inline Bet Outcome Buttons -->
                 <div *ngIf="placingBetForMatch === match._id && canPlaceBet(match)" class="inline-outcome-buttons">
@@ -796,7 +793,7 @@
                   <div class="inline-wager-row">
                     <div class="inline-credits-display">
                       <span class="inline-credits-label">{{ 'bets.availableCredits' | translate }}:</span>
-                      <span class="inline-credits-value">{{ inlineEffectiveCredits }}</span>
+                      <span class="inline-credits-value">{{ inlineEffectiveCredits | number:'1.0-1' }}</span>
                     </div>
                     <div class="inline-wager-input-group" (click)="$event.stopPropagation()">
                       <input
@@ -812,7 +809,7 @@
                   </div>
                   <div *ngIf="inlineWagerAmount && inlineBetData.outcome && getMatchRelativePoints(match)" class="inline-potential-win">
                     <span class="inline-potential-label">{{ 'bets.potentialWin' | translate }}:</span>
-                    <span class="inline-potential-value">{{ calculateInlinePotentialWin(match) }} {{ 'groups.credits' | translate }}</span>
+                    <span class="inline-potential-value">{{ calculateInlinePotentialWin(match) | number:'1.0-1' }} {{ 'groups.credits' | translate }}</span>
                   </div>
                   <button
                     type="button"
@@ -840,7 +837,7 @@
                           {{ memberBet.bet?.outcome === '1' ? (match.homeTeam | teamTranslate) : (memberBet.bet?.outcome === '2' ? (match.awayTeam | teamTranslate) : ('bets.draw' | translate)) }}
                         </span>
                         <span *ngIf="memberBet.hasBet && group.betType === 'relative' && memberBet.bet?.wagerAmount" class="bet-wager">
-                          {{ memberBet.bet?.wagerAmount }} {{ 'groups.credits' | translate }}
+                          {{ memberBet.bet?.wagerAmount | number:'1.0-1' }} {{ 'groups.credits' | translate }}
                         </span>
                         <span *ngIf="!memberBet.hasBet" class="no-bet">{{ 'bets.noBet' | translate }}</span>
                       </div>

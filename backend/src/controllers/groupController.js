@@ -719,6 +719,48 @@ exports.updateTrashTalk = async (req, res) => {
   }
 };
 
+// Cancel join request (user cancels their own pending request)
+exports.cancelJoinRequest = async (req, res) => {
+  try {
+    const groupId = req.params.id;
+
+    const group = await Group.findById(groupId);
+
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        message: 'Group not found'
+      });
+    }
+
+    // Find the user in pending members
+    const pendingIndex = group.pendingMembers.findIndex(
+      p => p.user.toString() === req.user._id.toString()
+    );
+
+    if (pendingIndex === -1) {
+      return res.status(400).json({
+        success: false,
+        message: 'You do not have a pending join request for this group'
+      });
+    }
+
+    // Remove user from pending members
+    group.pendingMembers.splice(pendingIndex, 1);
+    await group.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Join request cancelled successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
 // Kick member from group (admin/creator only)
 exports.kickMember = async (req, res) => {
   try {
