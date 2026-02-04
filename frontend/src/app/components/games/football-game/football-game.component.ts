@@ -81,6 +81,9 @@ export class FootballGameComponent implements OnInit, OnDestroy {
   private canvasHeight = 0;
   private animationId: number | null = null;
   private frameCount = 0;
+  private lastTime = 0;
+  private readonly TARGET_FPS = 60;
+  private readonly FRAME_TIME = 1000 / 60; // 16.67ms per frame at 60fps
 
   // Kick effect
   private kickEffect: { x: number; y: number; frame: number } | null = null;
@@ -162,6 +165,7 @@ export class FootballGameComponent implements OnInit, OnDestroy {
     this.score = 0;
     this.level = 1;
     this.gravity = this.baseGravity;
+    this.lastTime = performance.now();
     // Ensure canvas is sized
     this.resizeCanvas();
     // Start ball at the bottom and bounce up
@@ -175,19 +179,29 @@ export class FootballGameComponent implements OnInit, OnDestroy {
   private gameLoop(): void {
     if (this.gameState !== 'playing') return;
 
+    const currentTime = performance.now();
+    const deltaTime = currentTime - this.lastTime;
+    this.lastTime = currentTime;
+
+    // Calculate how many "frames" worth of time has passed (normalized to 60fps)
+    const deltaMultiplier = deltaTime / this.FRAME_TIME;
+
     this.frameCount++;
-    this.update();
+    this.update(deltaMultiplier);
     this.draw();
     this.animationId = requestAnimationFrame(() => this.gameLoop());
   }
 
-  private update(): void {
-    // Apply gravity
-    this.ballVelocityY += this.gravity;
+  private update(delta: number): void {
+    // Clamp delta to prevent huge jumps (e.g., when tab is inactive)
+    const clampedDelta = Math.min(delta, 3);
 
-    // Update position
-    this.ballX += this.ballVelocityX;
-    this.ballY += this.ballVelocityY;
+    // Apply gravity (scaled by delta time)
+    this.ballVelocityY += this.gravity * clampedDelta;
+
+    // Update position (scaled by delta time)
+    this.ballX += this.ballVelocityX * clampedDelta;
+    this.ballY += this.ballVelocityY * clampedDelta;
 
     // Wall collision (left/right)
     if (this.ballX - this.ballRadius < 0) {
@@ -209,8 +223,8 @@ export class FootballGameComponent implements OnInit, OnDestroy {
       this.ballVelocityY *= -0.5;
     }
 
-    // Add slight air resistance
-    this.ballVelocityX *= 0.99;
+    // Add slight air resistance (scaled by delta time)
+    this.ballVelocityX *= Math.pow(0.99, clampedDelta);
   }
 
   private draw(): void {
