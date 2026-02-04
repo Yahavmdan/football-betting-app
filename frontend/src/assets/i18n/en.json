@@ -371,5 +371,19 @@
     "gd": "GD",
     "pts": "Pts",
     "form": "Last 5"
+  },
+  "game": {
+    "title": "Waiting for the extra time to end? play a little game in the meanwhile!",
+    "best": "Best",
+    "keepItUp": "Keep It Up!",
+    "instructions": "Tap or click on the ball to keep it in the air. Don't let it touch the ground!",
+    "start": "Start Game",
+    "gameOver": "Game Over!",
+    "score": "Score",
+    "level": "Level",
+    "newRecord": "New Record!",
+    "playAgain": "Play Again",
+    "leaderboard": "Leaderboard",
+    "noScores": "No scores yet. Be the first!"
   }
 }

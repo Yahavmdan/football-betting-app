@@ -1,0 +1,102 @@
+<div class="game-container">
+  <!-- Header -->
+  <div class="game-header">
+    <button class="btn-back" (click)="goBack()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+    </button>
+    <h1>{{ t('game.title') }}</h1>
+    <div class="high-score">
+      <span class="label">{{ t('game.best') }}</span>
+      <span class="value">{{ highScore }}</span>
+    </div>
+  </div>
+
+  <!-- Game Area -->
+  <div class="game-area">
+    <canvas #gameCanvas class="game-canvas"></canvas>
+
+    <!-- Idle State Overlay -->
+    <div *ngIf="gameState === 'idle'" class="game-overlay">
+      <div class="overlay-content">
+        <div class="ball-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+            <path d="M2 12h20"></path>
+          </svg>
+        </div>
+        <h2>{{ t('game.keepItUp') }}</h2>
+        <p>{{ t('game.instructions') }}</p>
+        <button class="btn-start" (click)="startGame()">
+          {{ t('game.start') }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Game Over Overlay -->
+    <div *ngIf="gameState === 'gameover'" class="game-overlay gameover">
+      <div class="overlay-content">
+        <h2>{{ t('game.gameOver') }}</h2>
+        <div class="final-score">
+          <span class="label">{{ t('game.score') }}</span>
+          <span class="value">{{ score }}</span>
+          <span *ngIf="score === highScore && score > 0" class="new-record">⭐ {{ t('game.newRecord') }}</span>
+        </div>
+        <div class="final-level">
+          {{ t('game.level') }} {{ level }}
+        </div>
+        <button class="btn-start" (click)="startGame()">
+          {{ t('game.playAgain') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaderboard Toggle -->
+  <button class="leaderboard-toggle" (click)="toggleLeaderboard()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 20v-6M6 20V10M18 20V4"/>
+    </svg>
+    {{ t('game.leaderboard') }}
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [class.rotated]="showLeaderboard">
+      <polyline points="6 9 12 15 18 9"></polyline>
+    </svg>
+  </button>
+
+  <!-- Leaderboard -->
+  <div class="leaderboard" [class.collapsed]="!showLeaderboard">
+    <div *ngIf="isLoadingLeaderboard" class="loading">
+      <div class="spinner"></div>
+    </div>
+
+    <div *ngIf="!isLoadingLeaderboard && leaderboard.length === 0" class="empty-state">
+      {{ t('game.noScores') }}
+    </div>
+
+    <div *ngIf="!isLoadingLeaderboard && leaderboard.length > 0" class="leaderboard-list">
+      <div
+        *ngFor="let entry of leaderboard; let i = index"
+        class="leaderboard-entry"
+        [class.top-three]="i < 3">
+        <div class="rank" [class.gold]="i === 0" [class.silver]="i === 1" [class.bronze]="i === 2">
+          <span *ngIf="i < 3" class="medal">{{ i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉' }}</span>
+          <span *ngIf="i >= 3">{{ i + 1 }}</span>
+        </div>
+        <div class="player">
+          <img
+            *ngIf="entry.user.profilePicture"
+            [src]="entry.user.profilePicture"
+            [alt]="entry.user.username"
+            class="avatar">
+          <div *ngIf="!entry.user.profilePicture" class="avatar-placeholder">
+            {{ entry.user.username.charAt(0).toUpperCase() }}
+          </div>
+          <span class="username">{{ entry.user.username }}</span>
+        </div>
+        <div class="entry-score">{{ entry.score }}</div>
+      </div>
+    </div>
+  </div>
+</div>

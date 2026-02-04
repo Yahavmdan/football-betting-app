@@ -70,6 +70,11 @@ export const routes: Routes = [
     loadComponent: () => import('./components/profile/profile.component').then(m => m.ProfileComponent)
   },
   {
+    path: 'game',
+    canActivate: [authGuard],
+    loadComponent: () => import('./components/games/football-game/football-game.component').then(m => m.FootballGameComponent)
+  },
+  {
     path: 'admin',
     canActivate: [adminGuard],
     children: [

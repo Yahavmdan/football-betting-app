@@ -37,12 +37,12 @@
   white-space: nowrap;
 }
 
-/* Minimized button (fixed to side) */
+/* Minimized button (fixed to side, draggable) */
 .feedback-minimized-btn {
   position: fixed;
-  bottom: 50%;
+  top: 50%;
   right: 0;
-  transform: translateY(50%);
+  transform: translateY(-50%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -53,15 +53,106 @@
   color: white;
   border: none;
   border-radius: var(--radius-md) 0 0 var(--radius-md);
-  cursor: pointer;
+  cursor: grab;
   box-shadow: var(--shadow-md);
-  transition: all var(--transition-base);
+  transition: width var(--transition-base), box-shadow var(--transition-base), top 0.15s ease-out;
   z-index: 1000;
+  user-select: none;
+  touch-action: none;
 }
 
 .feedback-minimized-btn:hover {
   width: 48px;
   box-shadow: var(--shadow-lg);
+}
+
+.feedback-minimized-btn.dragging {
+  cursor: grabbing;
+  width: 48px;
+  box-shadow: var(--shadow-lg);
+  transition: width var(--transition-base), box-shadow var(--transition-base);
+}
+
+/* Football widget button (fixed to side, draggable) */
+.football-widget-btn {
+  position: fixed;
+  top: 40%;
+  right: 0;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+  cursor: grab;
+  box-shadow: var(--shadow-md);
+  transition: width var(--transition-base), box-shadow var(--transition-base), top 0.15s ease-out;
+  z-index: 1000;
+  user-select: none;
+  touch-action: none;
+}
+
+.football-widget-btn:hover {
+  width: 48px;
+  box-shadow: var(--shadow-lg);
+}
+
+.football-widget-btn.dragging {
+  cursor: grabbing;
+  width: 48px;
+  box-shadow: var(--shadow-lg);
+  transition: width var(--transition-base), box-shadow var(--transition-base);
+}
+
+.football-widget-btn span {
+  display: inline-block;
+  animation: ballBounce 4s cubic-bezier(0.25, 0.1, 0.25, 1) infinite;
+}
+
+@keyframes ballBounce {
+  0%, 70% {
+    transform: translateY(0) scaleY(1) scaleX(1);
+  }
+  /* Fall down - accelerating */
+  75% {
+    transform: translateY(4px) scaleY(1) scaleX(1);
+  }
+  /* Hit ground - squash */
+  77% {
+    transform: translateY(6px) scaleY(0.85) scaleX(1.15);
+  }
+  /* Bounce up - fast */
+  80% {
+    transform: translateY(-8px) scaleY(1.1) scaleX(0.95);
+  }
+  /* Peak - slow */
+  83% {
+    transform: translateY(-10px) scaleY(1) scaleX(1);
+  }
+  /* Fall again */
+  86% {
+    transform: translateY(-4px) scaleY(1) scaleX(1);
+  }
+  /* Second hit - smaller squash */
+  88% {
+    transform: translateY(4px) scaleY(0.9) scaleX(1.1);
+  }
+  /* Second bounce - smaller */
+  91% {
+    transform: translateY(-4px) scaleY(1.05) scaleX(0.97);
+  }
+  /* Settle */
+  94% {
+    transform: translateY(2px) scaleY(0.95) scaleX(1.05);
+  }
+  97%, 100% {
+    transform: translateY(0) scaleY(1) scaleX(1);
+  }
 }
 
 /* RTL support */
@@ -71,6 +162,12 @@
 }
 
 :host-context(html[dir="rtl"]) .feedback-minimized-btn {
+  right: auto;
+  left: 0;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+:host-context(html[dir="rtl"]) .football-widget-btn {
   right: auto;
   left: 0;
   border-radius: 0 var(--radius-md) var(--radius-md) 0;
