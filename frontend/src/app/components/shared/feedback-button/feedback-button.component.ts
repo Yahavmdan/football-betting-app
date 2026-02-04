@@ -27,13 +27,21 @@ export class FeedbackButtonComponent {
 
   // Drag functionality
   isDragging: 'feedback' | 'football' | null = null;
+  isReleasing: 'feedback' | 'football' | null = null; // Track bounce-back animation
   hasDragged = false;
   feedbackY = 50; // Percentage from top (default 50% = center)
   footballY = 40; // Slightly above feedback button
+  feedbackSide: 'left' | 'right' = 'right';
+  footballSide: 'left' | 'right' = 'right';
+  feedbackStretch = 0; // Horizontal stretch amount (pixels)
+  footballStretch = 0;
   private dragStartY = 0;
+  private dragStartX = 0;
   private dragStartButtonY = 0;
   private readonly MIN_DISTANCE = 8; // Minimum distance between widgets (percentage)
   private feedbackWasAbove = false; // Track relative position at drag start
+  private readonly MAX_STRETCH = 35; // Max visual stretch (increased for more dramatic effect)
+  private readonly SWITCH_DISTANCE = 80; // Pixels to drag to switch sides
 
   constructor(
     private http: HttpClient,
@@ -41,7 +49,7 @@ export class FeedbackButtonComponent {
     private translationService: TranslationService,
     private toastService: ToastService
   ) {
-    // Load vertical positions from localStorage
+    // Load positions from localStorage
     const savedFeedbackY = localStorage.getItem('feedbackButtonY');
     if (savedFeedbackY) {
       this.feedbackY = parseFloat(savedFeedbackY);
@@ -50,69 +58,125 @@ export class FeedbackButtonComponent {
     if (savedFootballY) {
       this.footballY = parseFloat(savedFootballY);
     }
+    const savedFeedbackSide = localStorage.getItem('feedbackButtonSide');
+    if (savedFeedbackSide) {
+      this.feedbackSide = savedFeedbackSide as 'left' | 'right';
+    }
+    const savedFootballSide = localStorage.getItem('footballWidgetSide');
+    if (savedFootballSide) {
+      this.footballSide = savedFootballSide as 'left' | 'right';
+    }
   }
 
   @HostListener('document:mousemove', ['$event'])
   onMouseMove(event: MouseEvent): void {
     if (!this.isDragging) return;
     event.preventDefault();
-    const deltaY = event.clientY - this.dragStartY;
-    if (Math.abs(deltaY) > 5) {
-      this.hasDragged = true;
-    }
-    const windowHeight = window.innerHeight;
-    const deltaPercent = (deltaY / windowHeight) * 100;
-    let newY = this.dragStartButtonY + deltaPercent;
-    newY = Math.max(10, Math.min(90, newY));
-
-    if (this.isDragging === 'feedback') {
-      this.feedbackY = newY;
-      this.applyRepulsion('feedback');
-    } else if (this.isDragging === 'football') {
-      this.footballY = newY;
-      this.applyRepulsion('football');
-    }
+    this.handleDragMove(event.clientX, event.clientY);
   }
 
   @HostListener('document:mouseup')
   onMouseUp(): void {
-    if (this.isDragging) {
-      if (this.hasDragged) {
-        // Save both positions since repulsion may have moved the other widget
-        localStorage.setItem('feedbackButtonY', this.feedbackY.toString());
-        localStorage.setItem('footballWidgetY', this.footballY.toString());
-      }
-      this.isDragging = null;
-    }
+    this.handleDragEnd();
   }
 
   @HostListener('document:touchmove', ['$event'])
   onTouchMove(event: TouchEvent): void {
     if (!this.isDragging) return;
     const touch = event.touches[0];
-    const deltaY = touch.clientY - this.dragStartY;
-    if (Math.abs(deltaY) > 5) {
+    this.handleDragMove(touch.clientX, touch.clientY);
+  }
+
+  @HostListener('document:touchend')
+  onTouchEnd(): void {
+    this.handleDragEnd();
+  }
+
+  private handleDragMove(clientX: number, clientY: number): void {
+    const deltaY = clientY - this.dragStartY;
+    const deltaX = clientX - this.dragStartX;
+
+    if (Math.abs(deltaY) > 5 || Math.abs(deltaX) > 5) {
       this.hasDragged = true;
     }
+
+    // Vertical movement
     const windowHeight = window.innerHeight;
     const deltaPercent = (deltaY / windowHeight) * 100;
     let newY = this.dragStartButtonY + deltaPercent;
     newY = Math.max(10, Math.min(90, newY));
 
+    // Horizontal stretch (droplet effect) - stretch in direction of drag
+    let rawStretch = Math.abs(deltaX);
+
+    // Track which direction and distance we're dragging for side switch
+    if (this.isDragging === 'feedback') {
+      (this as any)._lastDragDirection = deltaX > 0 ? 'right' : 'left';
+      (this as any)._lastDragDistance = rawStretch;
+    } else {
+      (this as any)._lastDragDirectionFootball = deltaX > 0 ? 'right' : 'left';
+      (this as any)._lastDragDistanceFootball = rawStretch;
+    }
+
+    // Apply elastic resistance for visual stretch - use easing for more natural feel
+    // Starts responsive, then gradually resists more (like stretching rubber)
+    const elasticStretch = rawStretch * (1 - rawStretch / 400); // Diminishing returns
+    const visualStretch = Math.min(this.MAX_STRETCH, elasticStretch * 0.5);
+
     if (this.isDragging === 'feedback') {
       this.feedbackY = newY;
+      this.feedbackStretch = visualStretch;
       this.applyRepulsion('feedback');
     } else if (this.isDragging === 'football') {
       this.footballY = newY;
+      this.footballStretch = visualStretch;
       this.applyRepulsion('football');
     }
   }
 
-  @HostListener('document:touchend')
-  onTouchEnd(): void {
+  private handleDragEnd(): void {
     if (this.isDragging) {
+      const widget = this.isDragging;
+      const dragDirection = widget === 'feedback'
+        ? (this as any)._lastDragDirection
+        : (this as any)._lastDragDirectionFootball;
+      const dragDistance = widget === 'feedback'
+        ? (this as any)._lastDragDistance || 0
+        : (this as any)._lastDragDistanceFootball || 0;
+
+      // Check if should switch sides based on drag distance
+      if (dragDistance >= this.SWITCH_DISTANCE && dragDirection) {
+        // Switch to the direction we were dragging
+        const newSide = dragDirection as 'left' | 'right';
+        if (widget === 'feedback' && this.feedbackSide !== newSide) {
+          this.feedbackSide = newSide;
+          localStorage.setItem('feedbackButtonSide', this.feedbackSide);
+        } else if (widget === 'football' && this.footballSide !== newSide) {
+          this.footballSide = newSide;
+          localStorage.setItem('footballWidgetSide', this.footballSide);
+        }
+      }
+
+      // Set releasing state for bounce-back animation
+      this.isReleasing = widget;
+
+      // Reset stretch with animation (handled by CSS transition)
+      this.feedbackStretch = 0;
+      this.footballStretch = 0;
+
+      // Clear releasing state after animation completes
+      setTimeout(() => {
+        if (this.isReleasing === widget) {
+          this.isReleasing = null;
+        }
+      }, 500); // Match CSS transition duration
+
+      // Clear drag tracking
+      (this as any)._lastDragDistance = 0;
+      (this as any)._lastDragDistanceFootball = 0;
+
       if (this.hasDragged) {
-        // Save both positions since repulsion may have moved the other widget
+        // Save positions
         localStorage.setItem('feedbackButtonY', this.feedbackY.toString());
         localStorage.setItem('footballWidgetY', this.footballY.toString());
       }
@@ -122,13 +186,16 @@ export class FeedbackButtonComponent {
 
   startDrag(event: MouseEvent | TouchEvent, widget: 'feedback' | 'football'): void {
     this.isDragging = widget;
+    this.isReleasing = null; // Clear any releasing animation
     this.hasDragged = false;
     this.dragStartButtonY = widget === 'feedback' ? this.feedbackY : this.footballY;
     this.feedbackWasAbove = this.feedbackY < this.footballY;
     if (event instanceof MouseEvent) {
       this.dragStartY = event.clientY;
+      this.dragStartX = event.clientX;
     } else {
       this.dragStartY = event.touches[0].clientY;
+      this.dragStartX = event.touches[0].clientX;
     }
   }
 

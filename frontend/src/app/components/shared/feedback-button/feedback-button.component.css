@@ -43,6 +43,7 @@
   top: 50%;
   right: 0;
   transform: translateY(-50%);
+  transform-origin: right center;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -55,10 +56,17 @@
   border-radius: var(--radius-md) 0 0 var(--radius-md);
   cursor: grab;
   box-shadow: var(--shadow-md);
-  transition: width var(--transition-base), box-shadow var(--transition-base), top 0.15s ease-out;
+  transition: width var(--transition-base), box-shadow var(--transition-base), top 0.15s ease-out, transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55), left 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55), right 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55), border-radius 0.4s ease;
   z-index: 1000;
   user-select: none;
   touch-action: none;
+}
+
+.feedback-minimized-btn.left-side {
+  right: auto;
+  left: 0;
+  transform-origin: left center;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
 }
 
 .feedback-minimized-btn:hover {
@@ -70,7 +78,15 @@
   cursor: grabbing;
   width: 48px;
   box-shadow: var(--shadow-lg);
-  transition: width var(--transition-base), box-shadow var(--transition-base);
+  transition: width var(--transition-base), box-shadow var(--transition-base), top 0.05s linear, transform 0.05s linear;
+}
+
+.feedback-minimized-btn.stretching {
+  cursor: grabbing;
+  width: 48px;
+  box-shadow: var(--shadow-lg);
+  /* Elastic bounce back when released */
+  transition: width var(--transition-base), box-shadow var(--transition-base), top 0.15s ease-out, transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 /* Football widget button (fixed to side, draggable) */
@@ -79,6 +95,7 @@
   top: 40%;
   right: 0;
   transform: translateY(-50%);
+  transform-origin: right center;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -91,10 +108,17 @@
   border-radius: var(--radius-md) 0 0 var(--radius-md);
   cursor: grab;
   box-shadow: var(--shadow-md);
-  transition: width var(--transition-base), box-shadow var(--transition-base), top 0.15s ease-out;
+  transition: width var(--transition-base), box-shadow var(--transition-base), top 0.15s ease-out, transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55), left 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55), right 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55), border-radius 0.4s ease;
   z-index: 1000;
   user-select: none;
   touch-action: none;
+}
+
+.football-widget-btn.left-side {
+  right: auto;
+  left: 0;
+  transform-origin: left center;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
 }
 
 .football-widget-btn:hover {
@@ -106,7 +130,15 @@
   cursor: grabbing;
   width: 48px;
   box-shadow: var(--shadow-lg);
-  transition: width var(--transition-base), box-shadow var(--transition-base);
+  transition: width var(--transition-base), box-shadow var(--transition-base), top 0.05s linear, transform 0.05s linear;
+}
+
+.football-widget-btn.stretching {
+  cursor: grabbing;
+  width: 48px;
+  box-shadow: var(--shadow-lg);
+  /* Elastic bounce back when released */
+  transition: width var(--transition-base), box-shadow var(--transition-base), top 0.15s ease-out, transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .football-widget-btn span {
@@ -155,23 +187,12 @@
   }
 }
 
-/* RTL support */
+/* RTL support - swap sides */
 :host-context(html[dir="rtl"]) .feedback-floating-btn {
   right: auto;
   left: 24px;
 }
 
-:host-context(html[dir="rtl"]) .feedback-minimized-btn {
-  right: auto;
-  left: 0;
-  border-radius: 0 var(--radius-md) var(--radius-md) 0;
-}
-
-:host-context(html[dir="rtl"]) .football-widget-btn {
-  right: auto;
-  left: 0;
-  border-radius: 0 var(--radius-md) var(--radius-md) 0;
-}
 
 /* Overlay */
 .feedback-overlay {

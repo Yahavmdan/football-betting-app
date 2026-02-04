@@ -1029,124 +1029,38 @@ export class FootballGameComponent implements OnInit, OnDestroy {
     const y = this.ballY;
     const r = this.ballRadius;
 
+    // Save current state
+    ctx.save();
+
     // Shadow
+    ctx.globalAlpha = 0.3;
+    ctx.fillStyle = '#000';
     ctx.beginPath();
-    ctx.fillStyle = 'rgba(0,0,0,0.3)';
-    ctx.arc(x + 3, y + 3, r, 0, Math.PI * 2);
+    ctx.arc(x + 4, y + 4, r * 0.9, 0, Math.PI * 2);
     ctx.fill();
 
+    // Reset for ball drawing
+    ctx.globalAlpha = 1.0;
+
     // Apply squash & stretch transform
-    ctx.save();
     ctx.translate(x, y);
     ctx.rotate(this.bounceAngle);
-    // Squash in Y, stretch in X (or vice versa based on bounceScale)
     const scaleX = this.bounceScale;
-    const scaleY = 1 / this.bounceScale; // Inverse to maintain volume
+    const scaleY = 1 / this.bounceScale;
     ctx.scale(scaleX, scaleY);
     ctx.translate(-x, -y);
 
-    // Base ball color (changes for some levels)
-    let ballColor = 'white';
-    let patchColor = 'black';
-    let lineColor = '#333';
-    if (this.level >= 8 && this.level <= 10) {
-      ballColor = '#ffcccc';
-      patchColor = '#660000';
-      lineColor = '#660000';
-    }
-    if (this.level === 20) {
-      ballColor = '#fff8dc';
-      patchColor = '#ffd700';
-      lineColor = '#daa520';
-    }
-
-    // White ball base
-    ctx.beginPath();
-    ctx.fillStyle = ballColor;
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Black border
-    ctx.beginPath();
-    ctx.strokeStyle = this.level === 20 ? '#ffd700' : 'black';
-    ctx.lineWidth = 2;
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // Draw football pattern - center pentagon
-    const centerPentR = r * 0.3;
-    this.drawPentagon(x, y, centerPentR, patchColor);
-
-    // Draw 5 outer pentagons around the edge
-    const outerDist = r * 0.72;
-    for (let i = 0; i < 5; i++) {
-      const angle = (i * 72 - 90) * Math.PI / 180;
-      const px = x + Math.cos(angle) * outerDist;
-      const py = y + Math.sin(angle) * outerDist;
-      this.drawPentagon(px, py, centerPentR * 0.8, patchColor);
-    }
-
-    // Draw connecting lines (hexagon pattern)
-    ctx.strokeStyle = lineColor;
-    ctx.lineWidth = 1.5;
-
-    // Lines from center pentagon to outer pentagons
-    for (let i = 0; i < 5; i++) {
-      const angle1 = (i * 72 - 90) * Math.PI / 180;
-      const angle2 = ((i + 1) * 72 - 90) * Math.PI / 180;
-
-      // Center pentagon vertex
-      const cx = x + Math.cos(angle1) * centerPentR;
-      const cy = y + Math.sin(angle1) * centerPentR;
-
-      // Outer pentagon position
-      const ox = x + Math.cos(angle1) * outerDist;
-      const oy = y + Math.sin(angle1) * outerDist;
-
-      // Line from center to outer
-      ctx.beginPath();
-      ctx.moveTo(cx, cy);
-      ctx.lineTo(ox - Math.cos(angle1) * centerPentR * 0.8, oy - Math.sin(angle1) * centerPentR * 0.8);
-      ctx.stroke();
-
-      // Lines between outer pentagons (the hexagon edges)
-      const nextOx = x + Math.cos(angle2) * outerDist;
-      const nextOy = y + Math.sin(angle2) * outerDist;
-
-      const midAngle = ((i * 72 + 36) - 90) * Math.PI / 180;
-      const edgeDist = r * 0.55;
-      const edgeX = x + Math.cos(midAngle) * edgeDist;
-      const edgeY = y + Math.sin(midAngle) * edgeDist;
-
-      ctx.beginPath();
-      ctx.moveTo(ox + Math.cos(angle1 + Math.PI / 2.5) * centerPentR * 0.7,
-                 oy + Math.sin(angle1 + Math.PI / 2.5) * centerPentR * 0.7);
-      ctx.lineTo(edgeX, edgeY);
-      ctx.lineTo(nextOx + Math.cos(angle2 - Math.PI / 2.5) * centerPentR * 0.7,
-                 nextOy + Math.sin(angle2 - Math.PI / 2.5) * centerPentR * 0.7);
-      ctx.stroke();
-    }
+    // Draw football emoji
+    const fontSize = r * 2.2;
+    ctx.font = `${fontSize}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('⚽', x, y);
 
     // Draw themed accessories based on level
     this.drawBallAccessories(x, y, r);
 
-    // Restore transform after squash & stretch
     ctx.restore();
-  }
-
-  private drawPentagon(cx: number, cy: number, radius: number, color: string): void {
-    const ctx = this.ctx;
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    for (let i = 0; i < 5; i++) {
-      const angle = (i * 72 - 90) * Math.PI / 180;
-      const px = cx + Math.cos(angle) * radius;
-      const py = cy + Math.sin(angle) * radius;
-      if (i === 0) ctx.moveTo(px, py);
-      else ctx.lineTo(px, py);
-    }
-    ctx.closePath();
-    ctx.fill();
   }
 
   private drawBallAccessories(x: number, y: number, r: number): void {
