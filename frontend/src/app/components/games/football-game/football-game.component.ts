@@ -37,8 +37,8 @@ export class FootballGameComponent implements OnInit, OnDestroy {
   ballVelocityX = 0;
   ballVelocityY = 0;
   ballRadius = 30;
-  baseGravity = 0.12;
-  gravity = 0.12;
+  baseGravity = 0.45;
+  gravity = 0.45;
   bounceFactor = -0.6;
 
   // Level system
@@ -172,7 +172,7 @@ export class FootballGameComponent implements OnInit, OnDestroy {
     this.ballX = this.canvasWidth / 2;
     this.ballY = this.canvasHeight - this.ballRadius - 5;
     this.ballVelocityX = 0;
-    this.ballVelocityY = -7; // Bounce up from ground
+    this.ballVelocityY = -12; // Bounce up from ground
     this.gameLoop();
   }
 
@@ -217,11 +217,7 @@ export class FootballGameComponent implements OnInit, OnDestroy {
       this.endGame();
     }
 
-    // Ceiling bounce
-    if (this.ballY - this.ballRadius < 0) {
-      this.ballY = this.ballRadius;
-      this.ballVelocityY *= -0.5;
-    }
+    // Allow ball to go above the screen (no ceiling bounce)
 
     // Add slight air resistance (scaled by delta time)
     this.ballVelocityX *= Math.pow(0.99, clampedDelta);
@@ -1826,8 +1822,11 @@ export class FootballGameComponent implements OnInit, OnDestroy {
       clientY = event.touches[0].clientY;
     }
 
-    const x = clientX - rect.left;
-    const y = clientY - rect.top;
+    // Account for CSS scaling - convert screen coords to canvas coords
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (clientX - rect.left) * scaleX;
+    const y = (clientY - rect.top) * scaleY;
 
     // Check if click is within canvas bounds
     if (x < 0 || x > this.canvasWidth || y < 0 || y > this.canvasHeight) return;
@@ -1850,7 +1849,7 @@ export class FootballGameComponent implements OnInit, OnDestroy {
     const dy = this.ballY - clickY;
 
     // Normalize and apply kick force (slightly stronger at higher levels to compensate)
-    const kickPower = 6 + (this.level - 1) * 0.15;
+    const kickPower = 10 + (this.level - 1) * 0.3;
     const magnitude = Math.sqrt(dx * dx + dy * dy) || 1;
 
     this.ballVelocityX += (dx / magnitude) * kickPower * 0.3;
@@ -1863,8 +1862,8 @@ export class FootballGameComponent implements OnInit, OnDestroy {
     const newLevel = Math.min(20, Math.floor(this.score / 10) + 1);
     if (newLevel > this.level) {
       this.level = newLevel;
-      // Gradually increase gravity (starts at 0.12, max around 0.30 at level 20)
-      this.gravity = this.baseGravity + (this.level - 1) * 0.01;
+      // Gradually increase gravity
+      this.gravity = this.baseGravity + (this.level - 1) * 0.02;
     }
 
     // Add some randomness
