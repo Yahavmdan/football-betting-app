@@ -160,8 +160,9 @@
       <div *ngFor="let match of groupMatches" class="match-card active">
         <div class="match-header">
           <span class="competition">{{ match.competition }}</span>
-          <span class="status" [class.finished]="match.status === 'FINISHED'">
+          <span class="status" [class.finished]="match.status === 'FINISHED'" [class.scheduled]="match.status === 'SCHEDULED'">
             {{ 'matches.' + match.status.toLowerCase() | translate }}
+            <span *ngIf="match.status === 'SCHEDULED' || match.status === 'FINISHED'" class="status-date">{{ match.matchDate | date:'dd/MM' }}</span>
           </span>
         </div>
         <div class="match-teams">

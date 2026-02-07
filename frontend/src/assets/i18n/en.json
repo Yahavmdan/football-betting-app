@@ -214,7 +214,8 @@
     "insufficientCredits": "Insufficient credits",
     "potentialWin": "Potential Win",
     "oddsFromApi": "Live Odds",
-    "oddsNotAvailable": "Odds are not available yet for this match and will be updated closer to kick-off."
+    "oddsNotAvailable": "Odds are not available yet for this match and will be updated closer to kick-off.",
+    "clickOnYourBet": "Click on your bet option!"
   },
   "common": {
     "required": "required",

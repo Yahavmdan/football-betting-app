@@ -668,6 +668,7 @@
                     </ng-container>
                     <ng-container *ngIf="match.status !== 'LIVE'">
                       {{ (match.status === 'SCHEDULED' && isMatchInPast(match.matchDate)) ? ('matches.started' | translate) : ('matches.' + match.status.toLowerCase() | translate) }}
+                      <span *ngIf="match.status === 'SCHEDULED' || match.status === 'FINISHED'" class="status-date">{{ match.matchDate | date:'dd/MM' }}</span>
                     </ng-container>
                   </span>
                   <button *ngIf="canRefreshMatch(match)"
@@ -757,6 +758,7 @@
                   </div>
                 </div>
                 <!-- Inline Bet Outcome Buttons -->
+                <p *ngIf="placingBetForMatch === match._id && canPlaceBet(match)" class="bet-instruction">{{ 'bets.clickOnYourBet' | translate }}</p>
                 <div *ngIf="placingBetForMatch === match._id && canPlaceBet(match)" class="inline-outcome-buttons">
                   <button
                     type="button"

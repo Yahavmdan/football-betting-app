@@ -214,7 +214,8 @@
     "insufficientCredits": "אין מספיק נקודות זכות",
     "potentialWin": "ניצחון פוטנציאלי",
     "oddsFromApi": "יחסים חיים",
-    "oddsNotAvailable": "היחסים עדיין לא זמינים למשחק הזה ויעודכנו קרוב יותר לתחילת המשחק."
+    "oddsNotAvailable": "היחסים עדיין לא זמינים למשחק הזה ויעודכנו קרוב יותר לתחילת המשחק.",
+    "clickOnYourBet": "לחץ על ההימור שלך!"
   },
   "common": {
     "required": "חובה",
