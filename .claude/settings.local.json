@@ -21,7 +21,8 @@
       "WebFetch(domain:api-sports.io)",
       "Bash(npx ng build:*)",
       "Bash(node src/scripts/setMatchLive.js:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(git config:*)"
     ]
   }
 }

@@ -1,5 +1,8 @@
 [phases.install]
 cmds = ["npm cache clean --force", "npm install --registry https://registry.npmjs.org/"]
 
+[phases.build]
+cmds = []
+
 [start]
 cmd = "npm start"
