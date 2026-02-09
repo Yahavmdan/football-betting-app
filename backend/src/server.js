@@ -34,6 +34,10 @@ const corsOptions = {
     // Allow Vercel production and preview deployments
     const allowedOrigins = [
       'https://football-betting-app-six.vercel.app',
+      'https://www.unodosbet.com',
+      'https://unodosbet.com',
+      'http://www.unodosbet.com',
+      'http://unodosbet.com',
     ];
 
     if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
