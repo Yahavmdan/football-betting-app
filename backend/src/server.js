@@ -40,11 +40,6 @@ const corsOptions = {
       return callback(null, true);
     }
 
-    // Allow unodosbet.com domain
-    if (origin.includes('unodosbet.com')) {
-      return callback(null, true);
-    }
-
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
