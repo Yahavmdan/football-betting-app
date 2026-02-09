@@ -36,6 +36,12 @@ const corsOptions = {
       'https://football-betting-app-six.vercel.app'
     ];
 
+    // Add origins from environment variable
+    const envOrigins = process.env.ALLOWED_ORIGINS;
+    if (envOrigins) {
+      allowedOrigins.push(...envOrigins.split(',').map(o => o.trim()));
+    }
+
     if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
       return callback(null, true);
     }
