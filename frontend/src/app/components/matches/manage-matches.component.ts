@@ -124,11 +124,8 @@ export class ManageMatchesComponent implements OnInit {
     this.groupService.getGroupById(this.groupId).subscribe({
       next: (response) => {
         this.group = response.data;
-        // Redirect if this is an automatic group - no manual match management allowed
-        if (this.group?.matchType === 'automatic') {
-          void this.router.navigate(['/groups', this.groupId]);
-          return;
-        }
+        // All groups are now automatic - redirect to group detail page
+        void this.router.navigate(['/groups', this.groupId]);
       },
       error: (error) => {
         console.error('Failed to load group:', error);
@@ -258,7 +255,8 @@ export class ManageMatchesComponent implements OnInit {
   }
 
   isAutomaticGroup(): boolean {
-    return this.group?.matchType === 'automatic';
+    // All groups are now automatic - manual groups have been removed
+    return true;
   }
 
   syncMatches(): void {

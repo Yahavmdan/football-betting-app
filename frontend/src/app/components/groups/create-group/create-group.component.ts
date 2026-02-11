@@ -27,7 +27,6 @@ export class CreateGroupComponent implements OnInit {
         startingCredits: 100,
         creditsGoal: 10000,
         showBets: true,
-        matchType: 'manual',
         selectedLeague: undefined
     };
     loading = false;
@@ -116,17 +115,9 @@ export class CreateGroupComponent implements OnInit {
         }
     }
 
-    selectMatchType(type: 'manual' | 'automatic'): void {
-        this.groupData.matchType = type;
-        // Clear selectedLeague when switching to manual
-        if (type === 'manual') {
-            this.groupData.selectedLeague = undefined;
-        }
-    }
-
     isFormValid(): boolean {
         if (!this.groupData.name) return false;
-        if (this.groupData.matchType === 'automatic' && !this.groupData.selectedLeague) return false;
+        if (!this.groupData.selectedLeague) return false;
         return true;
     }
 
@@ -137,20 +128,16 @@ export class CreateGroupComponent implements OnInit {
             next: (response) => {
                 const groupId = response.data._id;
 
-                // If automatic group, sync matches before navigating
-                if (this.groupData.matchType === 'automatic') {
-                    this.matchService.syncLeagueToGroup(groupId).subscribe({
-                        next: () => {
-                            void this.router.navigate(['/groups', groupId]);
-                        },
-                        error: () => {
-                            // Even if sync fails, navigate to the group
-                            void this.router.navigate(['/groups', groupId]);
-                        }
-                    });
-                } else {
-                    void this.router.navigate(['/groups', groupId]);
-                }
+                // Sync matches for the new group
+                this.matchService.syncLeagueToGroup(groupId).subscribe({
+                    next: () => {
+                        void this.router.navigate(['/groups', groupId]);
+                    },
+                    error: () => {
+                        // Even if sync fails, navigate to the group
+                        void this.router.navigate(['/groups', groupId]);
+                    }
+                });
             },
             error: (error) => {
                 this.toastService.show(error.error?.message || this.translationService.translate('groups.createFailed'), 'error');

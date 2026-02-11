@@ -261,7 +261,8 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   }
 
   isAutomaticGroup(): boolean {
-    return this.group?.matchType === 'automatic';
+    // All groups are now automatic - manual groups have been removed
+    return true;
   }
 
   hasLiveMatches(): boolean {

@@ -1,0 +1,148 @@
+/**
+ * Migration Script: Migrate betting data from manual group to automatic group
+ *
+ * This script:
+ * 1. Copies member points from source group to target group
+ * 2. Deletes all existing bets in target group
+ * 3. Updates all bets from source group to point to target group
+ * 4. Deletes the source group
+ *
+ * Usage: node migrateGroupData.js
+ *
+ * IMPORTANT: Run this script BEFORE deploying the code that removes manual group support
+ */
+
+require('dotenv').config({ path: require('path').resolve(__dirname, '../../.env') });
+const mongoose = require('mongoose');
+const Group = require('../models/Group');
+const Bet = require('../models/Bet');
+const User = require('../models/User');
+const FilterPreference = require('../models/FilterPreference');
+
+// Source group (manual) - to be deleted after migration
+const SOURCE_GROUP_ID = '693e8fc7a760b0fbdc04c14d';
+// Target group (automatic) - will receive the data
+const TARGET_GROUP_ID = '6978eef55bd9e80c3e7ae0fd';
+
+async function migrate() {
+  try {
+    console.log('Connecting to MongoDB...');
+    await mongoose.connect(process.env.MONGODB_URI);
+    console.log('Connected to MongoDB');
+
+    // Step 1: Load both groups
+    console.log('\n=== Step 1: Loading groups ===');
+    const sourceGroup = await Group.findById(SOURCE_GROUP_ID);
+    const targetGroup = await Group.findById(TARGET_GROUP_ID);
+
+    if (!sourceGroup) {
+      throw new Error(`Source group not found: ${SOURCE_GROUP_ID}`);
+    }
+    if (!targetGroup) {
+      throw new Error(`Target group not found: ${TARGET_GROUP_ID}`);
+    }
+
+    console.log(`Source group: "${sourceGroup.name}" (${sourceGroup.members.length} members)`);
+    console.log(`Target group: "${targetGroup.name}" (${targetGroup.members.length} members)`);
+
+    // Step 2: Count existing data
+    console.log('\n=== Step 2: Counting existing data ===');
+    const sourceBetsCount = await Bet.countDocuments({ group: SOURCE_GROUP_ID });
+    const targetBetsCount = await Bet.countDocuments({ group: TARGET_GROUP_ID });
+    console.log(`Source group bets: ${sourceBetsCount}`);
+    console.log(`Target group bets (will be deleted): ${targetBetsCount}`);
+
+    // Step 3: Delete existing bets in target group
+    console.log('\n=== Step 3: Deleting existing bets in target group ===');
+    const deleteResult = await Bet.deleteMany({ group: TARGET_GROUP_ID });
+    console.log(`Deleted ${deleteResult.deletedCount} bets from target group`);
+
+    // Step 4: Migrate bets from source to target
+    console.log('\n=== Step 4: Migrating bets from source to target ===');
+    const updateResult = await Bet.updateMany(
+      { group: SOURCE_GROUP_ID },
+      { $set: { group: mongoose.Types.ObjectId(TARGET_GROUP_ID) } }
+    );
+    console.log(`Updated ${updateResult.modifiedCount} bets to point to target group`);
+
+    // Step 5: Migrate member points
+    console.log('\n=== Step 5: Migrating member points ===');
+    const sourceMembers = sourceGroup.members;
+
+    for (const sourceMember of sourceMembers) {
+      const userId = sourceMember.user.toString();
+      const points = sourceMember.points || 0;
+      const trashTalk = sourceMember.trashTalk;
+
+      // Find if user exists in target group
+      const targetMemberIndex = targetGroup.members.findIndex(
+        m => m.user.toString() === userId
+      );
+
+      if (targetMemberIndex >= 0) {
+        // Update existing member's points
+        targetGroup.members[targetMemberIndex].points = points;
+        if (trashTalk) {
+          targetGroup.members[targetMemberIndex].trashTalk = trashTalk;
+        }
+        console.log(`  Updated existing member ${userId}: ${points} points`);
+      } else {
+        // Add member to target group
+        targetGroup.members.push({
+          user: sourceMember.user,
+          joinedAt: sourceMember.joinedAt,
+          points: points,
+          trashTalk: trashTalk
+        });
+
+        // Also add target group to user's groups array
+        await User.findByIdAndUpdate(userId, {
+          $addToSet: { groups: TARGET_GROUP_ID }
+        });
+
+        console.log(`  Added new member ${userId}: ${points} points`);
+      }
+    }
+
+    await targetGroup.save();
+    console.log('Member points migrated successfully');
+
+    // Step 6: Delete filter preferences for source group
+    console.log('\n=== Step 6: Cleaning up filter preferences ===');
+    const filterDeleteResult = await FilterPreference.deleteMany({ group: SOURCE_GROUP_ID });
+    console.log(`Deleted ${filterDeleteResult.deletedCount} filter preferences`);
+
+    // Step 7: Remove source group from users' groups array
+    console.log('\n=== Step 7: Removing source group from users ===');
+    const userUpdateResult = await User.updateMany(
+      { groups: SOURCE_GROUP_ID },
+      { $pull: { groups: SOURCE_GROUP_ID } }
+    );
+    console.log(`Updated ${userUpdateResult.modifiedCount} users`);
+
+    // Step 8: Delete the source group
+    console.log('\n=== Step 8: Deleting source group ===');
+    await Group.findByIdAndDelete(SOURCE_GROUP_ID);
+    console.log('Source group deleted');
+
+    // Verification
+    console.log('\n=== Verification ===');
+    const finalBetsCount = await Bet.countDocuments({ group: TARGET_GROUP_ID });
+    const finalTargetGroup = await Group.findById(TARGET_GROUP_ID);
+    console.log(`Target group now has ${finalBetsCount} bets`);
+    console.log(`Target group now has ${finalTargetGroup.members.length} members`);
+
+    console.log('\n✅ Migration completed successfully!');
+
+  } catch (error) {
+    console.error('\n❌ Migration failed:', error.message);
+    console.error(error);
+    process.exit(1);
+  } finally {
+    await mongoose.disconnect();
+    console.log('\nDisconnected from MongoDB');
+  }
+}
+
+// Run migration
+migrate();

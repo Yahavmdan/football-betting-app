@@ -90,11 +90,7 @@ const groupSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
-  matchType: {
-    type: String,
-    enum: ['manual', 'automatic'],
-    default: 'manual'
-  },
+  // matchType field removed - all groups are now automatic
   selectedLeague: {
     type: String,
     default: null

@@ -732,14 +732,6 @@ exports.syncLeagueFixturesToGroup = async (req, res) => {
       });
     }
 
-    // Check if group is automatic type
-    if (group.matchType !== 'automatic') {
-      return res.status(400).json({
-        success: false,
-        message: 'This group is not set to automatic match loading'
-      });
-    }
-
     // Check if group has a selected league
     if (!group.selectedLeague) {
       return res.status(400).json({
@@ -889,13 +881,11 @@ exports.createManualMatch = async (req, res) => {
       });
     }
 
-    // Automatic groups don't allow manual match creation
-    if (group.matchType === 'automatic') {
-      return res.status(403).json({
-        success: false,
-        message: 'Cannot create manual matches for automatic groups. Matches are synced automatically from the API.'
-      });
-    }
+    // Manual match creation is not allowed - matches are synced automatically
+    return res.status(403).json({
+      success: false,
+      message: 'Manual match creation is not supported. Matches are synced automatically from the API.'
+    });
 
     // Check if user is the group creator OR is admin
     const isCreator = group.creator.toString() === req.user._id.toString();
@@ -1031,13 +1021,11 @@ exports.updateMatchScore = async (req, res) => {
       });
     }
 
-    // Automatic groups don't allow manual score updates
-    if (group.matchType === 'automatic') {
-      return res.status(403).json({
-        success: false,
-        message: 'Cannot manually update scores for automatic groups. Scores are updated automatically from the API.'
-      });
-    }
+    // Manual score updates are not allowed - scores are updated automatically
+    return res.status(403).json({
+      success: false,
+      message: 'Manual score updates are not supported. Scores are updated automatically from the API.'
+    });
 
     // Check if user is the group creator OR is admin
     const isCreator = group.creator.toString() === req.user._id.toString();
@@ -1142,13 +1130,11 @@ exports.markMatchAsFinished = async (req, res) => {
       });
     }
 
-    // Automatic groups don't allow manual marking as finished
-    if (group.matchType === 'automatic') {
-      return res.status(403).json({
-        success: false,
-        message: 'Cannot manually mark matches as finished for automatic groups. Match status is updated automatically from the API.'
-      });
-    }
+    // Manual marking as finished is not allowed - match status is updated automatically
+    return res.status(403).json({
+      success: false,
+      message: 'Manual status updates are not supported. Match status is updated automatically from the API.'
+    });
 
     // Check if user is the group creator OR is admin
     const isCreator = group.creator.toString() === req.user._id.toString();
@@ -1267,13 +1253,11 @@ exports.deleteMatch = async (req, res) => {
       });
     }
 
-    // Automatic groups don't allow manual match deletion
-    if (group.matchType === 'automatic') {
-      return res.status(403).json({
-        success: false,
-        message: 'Cannot delete matches for automatic groups. Matches are managed automatically from the API.'
-      });
-    }
+    // Manual match deletion is not allowed - matches are managed automatically
+    return res.status(403).json({
+      success: false,
+      message: 'Manual match deletion is not supported. Matches are managed automatically from the API.'
+    });
 
     // Check if user is the group creator OR is admin
     const isCreator = group.creator.toString() === req.user._id.toString();
@@ -1350,13 +1334,11 @@ exports.editMatch = async (req, res) => {
       });
     }
 
-    // Automatic groups don't allow manual match editing
-    if (group.matchType === 'automatic') {
-      return res.status(403).json({
-        success: false,
-        message: 'Cannot edit matches for automatic groups. Match data is managed automatically from the API.'
-      });
-    }
+    // Manual match editing is not allowed - match data is managed automatically
+    return res.status(403).json({
+      success: false,
+      message: 'Manual match editing is not supported. Match data is managed automatically from the API.'
+    });
 
     // Check if user is the group creator OR is admin
     const isCreator = group.creator.toString() === req.user._id.toString();
