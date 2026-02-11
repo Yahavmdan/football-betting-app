@@ -267,7 +267,9 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
 
   hasLiveMatches(): boolean {
     const now = new Date();
-    return this.filteredMatches.some(match => {
+    // Check all matches, not just filtered ones, to ensure we track live matches
+    // even when filters are applied
+    return this.matches.some(match => {
       // Match is live if status is LIVE OR (status is SCHEDULED and matchDate is in the past)
       const matchDate = new Date(match.matchDate);
       return match.status === 'LIVE' || (match.status === 'SCHEDULED' && matchDate <= now);
@@ -1247,6 +1249,9 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
         if (this.saveFiltersEnabled) {
           this.saveFiltersToServer();
         }
+
+        // Start live refresh if there are live matches
+        this.startLiveRefreshIfNeeded();
       },
       error: (error) => {
         console.error('Failed to load filtered fixtures:', error);
