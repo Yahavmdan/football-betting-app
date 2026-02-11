@@ -52,6 +52,11 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   refreshingLive = false;
   refreshingMatchId: string | null = null; // Track which individual match is being refreshed
   syncingMatches = false;
+
+  // Live match auto-refresh (optimized)
+  private liveRefreshInterval: ReturnType<typeof setInterval> | null = null;
+  private isPageVisible = true;
+  private readonly LIVE_REFRESH_INTERVAL_MS = 60000; // 1 minute
   showGroupMenu = false;
 
   // Score update
@@ -199,6 +204,9 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     this.loadAllBets();
     this.initTeamSelectOptions();
     this.initTeamLogos();
+
+    // Set up page visibility listener for auto-refresh optimization
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
   }
 
   private initTeamLogos(): void {
@@ -462,6 +470,9 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
         this.matches = sorted;
         this.applyFilters();
         this.loadingMatches = false;
+
+        // Start auto-refresh if there are live matches
+        this.startLiveRefreshIfNeeded();
 
         // Reload leaderboard after matches load for automatic groups,
         // because the matches endpoint may have calculated points for
@@ -1506,6 +1517,90 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     if (this.trashTalkInterval) {
       clearTimeout(this.trashTalkInterval);
     }
+    this.stopLiveRefreshInterval();
+    document.removeEventListener('visibilitychange', this.handleVisibilityChange);
+  }
+
+  // Arrow function to preserve 'this' context when used as event listener
+  private handleVisibilityChange = (): void => {
+    this.isPageVisible = !document.hidden;
+    if (this.isPageVisible) {
+      // Page became visible - restart interval if there are live matches
+      this.startLiveRefreshIfNeeded();
+    } else {
+      // Page became hidden - stop interval to save resources
+      this.stopLiveRefreshInterval();
+    }
+  };
+
+  private startLiveRefreshIfNeeded(): void {
+    // Don't start if already running, page not visible, or no live matches
+    if (this.liveRefreshInterval || !this.isPageVisible || !this.hasLiveMatches()) {
+      return;
+    }
+
+    this.liveRefreshInterval = setInterval(() => {
+      // Double-check conditions before each refresh
+      if (!this.isPageVisible || !this.hasLiveMatches()) {
+        this.stopLiveRefreshInterval();
+        return;
+      }
+      this.refreshLiveMatchesSilently();
+    }, this.LIVE_REFRESH_INTERVAL_MS);
+  }
+
+  private stopLiveRefreshInterval(): void {
+    if (this.liveRefreshInterval) {
+      clearInterval(this.liveRefreshInterval);
+      this.liveRefreshInterval = null;
+    }
+  }
+
+  private refreshLiveMatchesSilently(): void {
+    if (this.refreshingLive) return;
+
+    this.refreshingLive = true;
+
+    this.matchService.refreshLiveMatches(this.groupId).subscribe({
+      next: (response) => {
+        // Only update matches that changed (live matches)
+        const updatedMatches = response.data;
+        let hasChanges = false;
+
+        for (const updatedMatch of updatedMatches) {
+          const index = this.matches.findIndex(m => m._id === updatedMatch._id);
+          if (index !== -1) {
+            const existing = this.matches[index];
+            // Check if match data actually changed
+            if (existing.status !== updatedMatch.status ||
+                existing.elapsed !== updatedMatch.elapsed ||
+                existing.result?.homeScore !== updatedMatch.result?.homeScore ||
+                existing.result?.awayScore !== updatedMatch.result?.awayScore) {
+              // Preserve round info
+              if (existing.round) updatedMatch.round = existing.round;
+              this.matches[index] = updatedMatch;
+              hasChanges = true;
+            }
+          }
+        }
+
+        if (hasChanges) {
+          this.applyFilters();
+          this.groupMatchesByRound();
+        }
+
+        this.refreshingLive = false;
+
+        // Check if we still have live matches, stop interval if not
+        if (!this.hasLiveMatches()) {
+          this.stopLiveRefreshInterval();
+        }
+      },
+      error: (error) => {
+        console.error('Failed to auto-refresh live matches:', error);
+        this.refreshingLive = false;
+      }
+    });
   }
 
   // Inline bet form methods

@@ -21,7 +21,10 @@
     "loginHere": "Login here",
     "loading": "Loading...",
     "loginFailed": "Login failed. Please try again.",
-    "registerFailed": "Registration failed. Please try again."
+    "registerFailed": "Registration failed. Please try again.",
+    "or": "or",
+    "continueWithGoogle": "Continue with Google",
+    "continueWithFacebook": "Continue with Facebook"
   },
   "groups": {
     "myGroups": "My Groups",

@@ -20,9 +20,22 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: [true, 'Password is required'],
+    required: function() {
+      // Password is required only if not using OAuth
+      return !this.googleId && !this.facebookId;
+    },
     minlength: [6, 'Password must be at least 6 characters'],
     select: false
+  },
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true  // Allows multiple null values
+  },
+  facebookId: {
+    type: String,
+    unique: true,
+    sparse: true  // Allows multiple null values
   },
   groups: [{
     type: mongoose.Schema.Types.ObjectId,

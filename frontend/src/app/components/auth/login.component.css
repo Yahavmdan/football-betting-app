@@ -142,3 +142,112 @@
       color: #16a34a;
       text-decoration: underline;
     }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      margin: 1.5rem 0;
+      color: #94a3b8;
+      font-size: 0.85rem;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #e2e8f0;
+    }
+
+    .divider span {
+      padding: 0 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .btn-google {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      padding: 0.875rem 1.25rem;
+      background: white;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #1a1a2e;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-google:hover:not(:disabled) {
+      border-color: #4ade80;
+      background: #f0fdf4;
+      box-shadow: 0 0 0 4px rgba(74, 222, 128, 0.1);
+    }
+
+    .btn-google:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-google svg {
+      flex-shrink: 0;
+    }
+
+    :host-context(.dark-theme) .btn-google {
+      background: #1e293b;
+      border-color: #334155;
+      color: #f1f5f9;
+    }
+
+    :host-context(.dark-theme) .btn-google:hover:not(:disabled) {
+      border-color: #4ade80;
+      background: #1a3a2a;
+    }
+
+    .btn-facebook {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      padding: 0.875rem 1.25rem;
+      background: white;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #1a1a2e;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 0.75rem;
+    }
+
+    .btn-facebook:hover:not(:disabled) {
+      border-color: #1877F2;
+      background: #f0f7ff;
+      box-shadow: 0 0 0 4px rgba(24, 119, 242, 0.1);
+    }
+
+    .btn-facebook:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-facebook svg {
+      flex-shrink: 0;
+    }
+
+    :host-context(.dark-theme) .btn-facebook {
+      background: #1e293b;
+      border-color: #334155;
+      color: #f1f5f9;
+    }
+
+    :host-context(.dark-theme) .btn-facebook:hover:not(:disabled) {
+      border-color: #1877F2;
+      background: #1a2a3a;
+    }

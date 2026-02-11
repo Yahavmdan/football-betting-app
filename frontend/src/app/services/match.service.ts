@@ -130,7 +130,7 @@ export class MatchService {
 
   // Refresh live matches in a group with fresh data from API
   refreshLiveMatches(groupId: string): Observable<{ success: boolean; message: string; data: Match[] }> {
-    return this.http.post<{ success: boolean; message: string; data: Match[] }>(`${this.apiUrl}/live/refresh/${groupId}`, {});
+    return this.http.post<{ success: boolean; message: string; data: Match[] }>(`${this.apiUrl}/live/refresh/${groupId}`, {}, { headers: SILENT_HEADERS });
   }
 
   // Refresh a single match with fresh data from API (efficient - 1 API call per data type)

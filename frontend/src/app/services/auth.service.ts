@@ -44,6 +44,26 @@ export class AuthService {
     );
   }
 
+  googleAuth(credential: string): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/google`, { credential }).pipe(
+      tap(response => {
+        if (response.success) {
+          this.setAuthData(response.data);
+        }
+      })
+    );
+  }
+
+  facebookAuth(accessToken: string): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/facebook`, { accessToken }).pipe(
+      tap(response => {
+        if (response.success) {
+          this.setAuthData(response.data);
+        }
+      })
+    );
+  }
+
   logout(): void {
     // Call backend to mark user as offline
     this.http.post(`${this.apiUrl}/logout`, {}).subscribe({

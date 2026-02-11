@@ -21,7 +21,10 @@
     "loginHere": "התחבר כאן",
     "loading": "טוען...",
     "loginFailed": "ההתחברות נכשלה. נסה שוב.",
-    "registerFailed": "ההרשמה נכשלה. נסה שוב."
+    "registerFailed": "ההרשמה נכשלה. נסה שוב.",
+    "or": "או",
+    "continueWithGoogle": "המשך עם Google",
+    "continueWithFacebook": "המשך עם Facebook"
   },
   "groups": {
     "myGroups": "הקבוצות שלי",
