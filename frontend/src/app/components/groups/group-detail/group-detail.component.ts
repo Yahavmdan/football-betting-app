@@ -269,11 +269,12 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     const now = new Date();
     // Check all matches, not just filtered ones, to ensure we track live matches
     // even when filters are applied
-    return this.matches.some(match => {
+    const liveMatches = this.matches.filter(match => {
       // Match is live if status is LIVE OR (status is SCHEDULED and matchDate is in the past)
       const matchDate = new Date(match.matchDate);
       return match.status === 'LIVE' || (match.status === 'SCHEDULED' && matchDate <= now);
     });
+    return liveMatches.length > 0;
   }
 
   refreshLiveMatches(): void {
@@ -481,6 +482,12 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
         this.matches = sorted;
         this.applyFilters();
         this.loadingMatches = false;
+
+        // Log live match detection for debugging
+        const now = new Date();
+        const liveCount = this.matches.filter(m => m.status === 'LIVE').length;
+        const startedCount = this.matches.filter(m => m.status === 'SCHEDULED' && new Date(m.matchDate) <= now).length;
+        console.log(`[LiveRefresh] Loaded ${this.matches.length} matches. Live: ${liveCount}, Started but not marked: ${startedCount}`);
 
         // Start auto-refresh if there are live matches
         this.startLiveRefreshIfNeeded();
@@ -1548,17 +1555,31 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   };
 
   private startLiveRefreshIfNeeded(): void {
-    // Don't start if already running, page not visible, or no live matches
-    if (this.liveRefreshInterval || !this.isPageVisible || !this.hasLiveMatches()) {
+    // Don't start if already running or page not visible
+    if (this.liveRefreshInterval || !this.isPageVisible) {
       return;
     }
 
+    // Check if there are live matches to track
+    if (!this.hasLiveMatches()) {
+      console.log('[LiveRefresh] No live matches to track');
+      return;
+    }
+
+    console.log('[LiveRefresh] Starting auto-refresh interval (every 60 seconds)');
+
+    // Run first refresh immediately
+    this.refreshLiveMatchesSilently();
+
+    // Then set up interval for subsequent refreshes
     this.liveRefreshInterval = setInterval(() => {
       // Double-check conditions before each refresh
       if (!this.isPageVisible || !this.hasLiveMatches()) {
+        console.log('[LiveRefresh] Stopping interval - no more live matches or page hidden');
         this.stopLiveRefreshInterval();
         return;
       }
+      console.log('[LiveRefresh] Auto-refreshing live matches...');
       this.refreshLiveMatchesSilently();
     }, this.LIVE_REFRESH_INTERVAL_MS);
   }
@@ -1574,16 +1595,19 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     if (this.refreshingLive) return;
 
     this.refreshingLive = true;
+    console.log('[LiveRefresh] Fetching live match updates...');
 
     this.matchService.refreshLiveMatches(this.groupId).subscribe({
       next: (response) => {
         // Only update matches that changed (live matches)
         const updatedMatches = response.data;
+        console.log(`[LiveRefresh] Received ${updatedMatches.length} updated matches`);
 
         if (updatedMatches.length === 0) {
           this.refreshingLive = false;
-          // No live matches - stop interval
+          // Only stop if no more potentially live matches
           if (!this.hasLiveMatches()) {
+            console.log('[LiveRefresh] No more live matches, stopping interval');
             this.stopLiveRefreshInterval();
           }
           return;
