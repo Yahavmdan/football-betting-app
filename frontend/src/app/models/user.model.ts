@@ -23,6 +23,7 @@ export interface User {
   settings?: UserSettings;
   lastActive?: Date;
   createdAt?: Date;
+  hasPassword?: boolean;
 }
 
 export interface AuthResponse {

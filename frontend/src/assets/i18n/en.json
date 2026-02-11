@@ -243,6 +243,7 @@
     "deleteAccount": "Delete Account",
     "deleteWarning": "Deleting your account will permanently remove all your data, including bets, group memberships, and any groups you created. This action cannot be undone.",
     "confirmDeleteMessage": "Are you sure you want to delete your account? Enter your password to confirm.",
+    "confirmDeleteOAuth": "Are you sure you want to delete your account? This action cannot be undone.",
     "enterPassword": "Enter your password",
     "confirmDelete": "Yes, Delete My Account",
     "profileUpdated": "Profile updated successfully",

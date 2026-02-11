@@ -20,6 +20,7 @@ import { AppToggleComponent } from '../shared/app-toggle/app-toggle.component';
 })
 export class ProfileComponent implements OnInit {
   currentUser: User | null = null;
+  hasPassword = true; // Assume true until we know otherwise
 
   profileData = {
     username: '',
@@ -103,6 +104,8 @@ export class ProfileComponent implements OnInit {
     this.userService.getProfile().subscribe({
       next: (response) => {
         const user = response.data;
+        // Check if user has a password (not OAuth-only)
+        this.hasPassword = user.hasPassword !== false;
         if (user.settings) {
           this.settingsData = {
             language: user.settings.language || 'en',
@@ -249,14 +252,16 @@ export class ProfileComponent implements OnInit {
   }
 
   deleteAccount(): void {
-    if (!this.deletePassword) {
+    // Only require password for non-OAuth users
+    if (this.hasPassword && !this.deletePassword) {
       this.toastService.show(this.translationService.translate('profile.passwordRequired'), 'error');
       return;
     }
 
     this.loadingDelete = true;
 
-    this.userService.deleteAccount(this.deletePassword).subscribe({
+    // Pass empty string for OAuth users
+    this.userService.deleteAccount(this.hasPassword ? this.deletePassword : '').subscribe({
       next: () => {
         this.authService.logout();
         void this.router.navigate(['/login']);

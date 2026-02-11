@@ -18,7 +18,7 @@ const getPublicIdFromUrl = (url) => {
 // Get current user profile
 exports.getProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).populate('groups', 'name');
+    const user = await User.findById(req.user._id).select('+password').populate('groups', 'name');
 
     if (!user) {
       return res.status(404).json({
@@ -26,6 +26,9 @@ exports.getProfile = async (req, res) => {
         message: 'User not found'
       });
     }
+
+    // Check if user has a password (not an OAuth-only user)
+    const hasPassword = !!user.password;
 
     res.status(200).json({
       success: true,
@@ -37,7 +40,8 @@ exports.getProfile = async (req, res) => {
         isAdmin: user.isAdmin,
         groups: user.groups,
         settings: user.settings,
-        createdAt: user.createdAt
+        createdAt: user.createdAt,
+        hasPassword
       }
     });
   } catch (error) {
@@ -304,13 +308,6 @@ exports.deleteAccount = async (req, res) => {
     const { password } = req.body;
     const userId = req.user._id;
 
-    if (!password) {
-      return res.status(400).json({
-        success: false,
-        message: 'Password is required to delete account'
-      });
-    }
-
     // Get user with password for verification
     const user = await User.findById(userId).select('+password');
 
@@ -321,14 +318,28 @@ exports.deleteAccount = async (req, res) => {
       });
     }
 
-    // SECURITY: Verify password to ensure it's the actual user
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch) {
-      return res.status(400).json({
-        success: false,
-        message: 'Incorrect password'
-      });
+    // Check if user is an OAuth user (no password set)
+    const isOAuthUser = !user.password && (user.googleId || user.facebookId);
+
+    if (!isOAuthUser) {
+      // Regular user - require password verification
+      if (!password) {
+        return res.status(400).json({
+          success: false,
+          message: 'Password is required to delete account'
+        });
+      }
+
+      // SECURITY: Verify password to ensure it's the actual user
+      const isMatch = await user.comparePassword(password);
+      if (!isMatch) {
+        return res.status(400).json({
+          success: false,
+          message: 'Incorrect password'
+        });
+      }
     }
+    // OAuth users don't need password verification - they're already authenticated via JWT
 
     // Delete profile picture from Cloudinary if exists
     if (user.profilePicture) {

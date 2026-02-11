@@ -71,8 +71,8 @@
       </form>
     </div>
 
-    <!-- Change Password Section -->
-    <div class="section">
+    <!-- Change Password Section - Only show for users with password -->
+    <div class="section" *ngIf="hasPassword">
       <h2>{{ 'profile.changePassword' | translate }}</h2>
       <form (ngSubmit)="changePassword()">
         <div class="form-group">
@@ -256,8 +256,8 @@
       </button>
 
       <div *ngIf="showDeleteConfirm" class="delete-confirm">
-        <p>{{ 'profile.confirmDeleteMessage' | translate }}</p>
-        <div class="form-group">
+        <p>{{ (hasPassword ? 'profile.confirmDeleteMessage' : 'profile.confirmDeleteOAuth') | translate }}</p>
+        <div class="form-group" *ngIf="hasPassword">
           <label>{{ 'profile.enterPassword' | translate }}</label>
           <input
             type="password"
@@ -269,7 +269,7 @@
         <div class="button-row">
           <button
             (click)="deleteAccount()"
-            [disabled]="loadingDelete || !deletePassword"
+            [disabled]="loadingDelete || (hasPassword && !deletePassword)"
             class="btn-danger"
           >
             {{ loadingDelete ? ('auth.loading' | translate) : ('profile.confirmDelete' | translate) }}
