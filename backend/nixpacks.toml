@@ -2,7 +2,7 @@
 cmds = ["npm cache clean --force", "npm install --registry https://registry.npmjs.org/"]
 
 [phases.build]
-cmds = []
+cmds = ["echo 'Build phase - no action needed'"]
 
 [start]
 cmd = "npm start"
