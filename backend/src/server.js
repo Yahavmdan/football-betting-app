@@ -15,6 +15,7 @@ const gameRoutes = require('./routes/gameRoutes');
 const autoBetJob = require('./jobs/autoBetJob');
 const telegramService = require('./services/telegramService');
 const telegramReminderJob = require('./jobs/telegramReminderJob');
+const liveMatchRefreshJob = require('./jobs/liveMatchRefreshJob');
 
 const app = express();
 
@@ -93,4 +94,7 @@ app.listen(PORT, async () => {
 
   // Start Telegram reminder scheduler
   telegramReminderJob.start();
+
+  // Start live match refresh job (runs every minute)
+  liveMatchRefreshJob.start();
 });
