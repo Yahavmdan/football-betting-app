@@ -36,3 +36,12 @@ export interface RelativePoints {
   awayWin: number;
   fromApi?: boolean;
 }
+
+export interface MatchEvent {
+  time: { elapsed: number; extra?: number };
+  team: { id: number; name: string; logo: string };
+  player: { id: number; name: string } | null;
+  assist: { id: number; name: string } | null;
+  type: 'Goal' | 'Card' | 'Subst' | 'Var';
+  detail: string;
+}

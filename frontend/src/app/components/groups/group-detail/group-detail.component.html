@@ -689,6 +689,109 @@
               <div class="bg-logo bg-logo-home" *ngIf="getTeamLogo(match.homeTeam, match)" [style.background-image]="'url(' + getTeamLogo(match.homeTeam, match) + ')'"></div>
               <div class="bg-logo bg-logo-away" *ngIf="getTeamLogo(match.awayTeam, match)" [style.background-image]="'url(' + getTeamLogo(match.awayTeam, match) + ')'"></div>
             </div>
+            <!-- Match Events Section (only for live/finished matches with API data) -->
+            <div class="match-events-section" *ngIf="match.externalApiId && (match.status === 'LIVE' || match.status === 'FINISHED')">
+              <h4 class="events-title collapsible-header" (click)="toggleMatchEvents(); $event.stopPropagation()">
+                <span>{{ 'matches.events' | translate }}</span>
+                <svg class="collapse-arrow" [class.open]="showMatchEvents" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </h4>
+              <div class="collapsible-content" [class.open]="showMatchEvents">
+                <div *ngIf="loadingMatchEvents" class="section-loading">
+                  <div class="inline-spinner"></div>
+                </div>
+                <div *ngIf="!loadingMatchEvents && matchEvents.length === 0" class="events-empty">
+                  {{ 'matches.noEvents' | translate }}
+                </div>
+                <div *ngIf="!loadingMatchEvents && matchEvents.length > 0" class="events-timeline">
+                  <div *ngFor="let event of matchEvents" class="timeline-row"
+                       [class.home-event]="event.team.id === match.homeTeamId"
+                       [class.away-event]="event.team.id !== match.homeTeamId">
+                    <!-- Home side -->
+                    <div class="timeline-side home-side">
+                      <div class="event-card" *ngIf="event.team.id === match.homeTeamId"
+                           [class.goal]="event.type === 'Goal'"
+                           [class.card-yellow]="event.type === 'Card' && event.detail.includes('Yellow')"
+                           [class.card-red]="event.type === 'Card' && event.detail.includes('Red')"
+                           [class.subst]="event.type === 'Subst'"
+                           [class.var]="event.type === 'Var'">
+                        <div class="event-icon">
+                          <svg *ngIf="event.type === 'Goal'" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                            <circle cx="12" cy="12" r="10"/>
+                          </svg>
+                          <span *ngIf="event.type === 'Card' && event.detail.includes('Yellow')" class="card-icon yellow"></span>
+                          <span *ngIf="event.type === 'Card' && event.detail.includes('Red')" class="card-icon red"></span>
+                          <svg *ngIf="event.type === 'Subst'" class="subst-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M17 4l4 4-4 4M3 8h18M7 20l-4-4 4-4M21 16H3"/>
+                          </svg>
+                          <span *ngIf="event.type === 'Var'" class="var-badge">VAR</span>
+                        </div>
+                        <div class="event-info">
+                          <span class="event-player">{{ event.player?.name || '-' }}</span>
+                          <span *ngIf="event.assist?.name && event.type === 'Goal'" class="event-assist">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                            {{ event.assist?.name }}
+                          </span>
+                          <div *ngIf="event.type === 'Subst'" class="subst-info">
+                            <span class="player-in">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="3"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                              {{ event.player?.name }}
+                            </span>
+                            <span class="player-out" *ngIf="event.assist?.name">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="3"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                              {{ event.assist?.name }}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- Center time -->
+                    <div class="timeline-center">
+                      <span class="event-time">{{ event.time.elapsed }}<span *ngIf="event.time.extra">+{{ event.time.extra }}</span>'</span>
+                    </div>
+                    <!-- Away side -->
+                    <div class="timeline-side away-side">
+                      <div class="event-card" *ngIf="event.team.id !== match.homeTeamId"
+                           [class.goal]="event.type === 'Goal'"
+                           [class.card-yellow]="event.type === 'Card' && event.detail.includes('Yellow')"
+                           [class.card-red]="event.type === 'Card' && event.detail.includes('Red')"
+                           [class.subst]="event.type === 'Subst'"
+                           [class.var]="event.type === 'Var'">
+                        <div class="event-icon">
+                          <svg *ngIf="event.type === 'Goal'" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                            <circle cx="12" cy="12" r="10"/>
+                          </svg>
+                          <span *ngIf="event.type === 'Card' && event.detail.includes('Yellow')" class="card-icon yellow"></span>
+                          <span *ngIf="event.type === 'Card' && event.detail.includes('Red')" class="card-icon red"></span>
+                          <svg *ngIf="event.type === 'Subst'" class="subst-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M17 4l4 4-4 4M3 8h18M7 20l-4-4 4-4M21 16H3"/>
+                          </svg>
+                          <span *ngIf="event.type === 'Var'" class="var-badge">VAR</span>
+                        </div>
+                        <div class="event-info">
+                          <span class="event-player">{{ event.player?.name || '-' }}</span>
+                          <span *ngIf="event.assist?.name && event.type === 'Goal'" class="event-assist">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                            {{ event.assist?.name }}
+                          </span>
+                          <div *ngIf="event.type === 'Subst'" class="subst-info">
+                            <span class="player-in">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="3"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                              {{ event.player?.name }}
+                            </span>
+                            <span class="player-out" *ngIf="event.assist?.name">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="3"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                              {{ event.assist?.name }}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
             <!-- Betting Section -->
             <div class="betting-section">
               <h4 class="betting-title collapsible-header" (click)="showBetting = !showBetting; $event.stopPropagation()">

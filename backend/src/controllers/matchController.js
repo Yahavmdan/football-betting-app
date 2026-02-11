@@ -1884,3 +1884,32 @@ exports.getLeagueStandings = async (req, res) => {
     });
   }
 };
+
+// Get match events (goals, cards, substitutions)
+exports.getMatchEvents = async (req, res) => {
+  try {
+    const { matchId } = req.params;
+
+    // Extract fixture ID from matchId (could be DB _id or externalApiId)
+    let fixtureId = matchId;
+    if (!matchId.startsWith('apifootball_')) {
+      const match = await Match.findById(matchId);
+      if (!match) {
+        return res.status(404).json({ success: false, message: 'Match not found' });
+      }
+      if (!match.externalApiId) {
+        return res.status(400).json({ success: false, message: 'Match has no API data' });
+      }
+      fixtureId = match.externalApiId;
+    }
+
+    const events = await apiFootballService.getFixtureEvents(fixtureId);
+
+    res.status(200).json({
+      success: true,
+      data: events
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

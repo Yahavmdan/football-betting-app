@@ -177,7 +177,9 @@
     "noHeadToHead": "No previous matches found",
     "teamForm": "Recent Matches",
     "noRecentMatches": "No recent matches",
-    "added": "added"
+    "added": "added",
+    "events": "Match Events",
+    "noEvents": "No events yet"
   },
   "bets": {
     "placeYourBet": "Place Your Bet",

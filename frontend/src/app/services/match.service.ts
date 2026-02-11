@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Match } from '../models/match.model';
+import { Match, MatchEvent } from '../models/match.model';
 import { League } from '../models/league.model';
 import { environment } from '../../environments/environment';
 
@@ -178,6 +178,14 @@ export class MatchService {
     const params: any = { leagueId };
     if (season) params.season = season.toString();
     return this.http.get<{ success: boolean; data: LeagueStandings }>(`${this.apiUrl}/leagues/standings`, { params, headers: SILENT_HEADERS });
+  }
+
+  // Get match events (goals, cards, substitutions)
+  getMatchEvents(matchId: string): Observable<{ success: boolean; data: MatchEvent[] }> {
+    return this.http.get<{ success: boolean; data: MatchEvent[] }>(
+      `${this.apiUrl}/${matchId}/events`,
+      { headers: SILENT_HEADERS }
+    );
   }
 }
 

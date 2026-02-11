@@ -8,7 +8,7 @@ import { BetService } from '../../../services/bet.service';
 import { AuthService } from '../../../services/auth.service';
 import { TranslationService } from '../../../services/translation.service';
 import { Group, GroupMember, PendingMember } from '../../../models/group.model';
-import { Match } from '../../../models/match.model';
+import { Match, MatchEvent } from '../../../models/match.model';
 import { MemberBet, Bet } from '../../../models/bet.model';
 import { UserStatistics } from '../../../services/bet.service';
 import { TranslatePipe } from '../../../services/translate.pipe';
@@ -95,6 +95,11 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   showBetting = true;
   showHeadToHead = false;
   showTeamForm = false;
+
+  // Match events
+  showMatchEvents = false;
+  loadingMatchEvents = false;
+  matchEvents: MatchEvent[] = [];
 
   // Member bets viewer
   viewingBetsForMatch: string | null = null;
@@ -584,6 +589,15 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
       this.headToHeadMatches = [];
       this.homeTeamRecentMatches = [];
       this.awayTeamRecentMatches = [];
+      // Reset events state
+      this.matchEvents = [];
+      this.showMatchEvents = false;
+
+      // Auto-open and load match events for live/finished matches
+      if (match.externalApiId && (match.status === 'LIVE' || match.status === 'FINISHED')) {
+        this.showMatchEvents = true;
+        this.loadMatchEvents(match);
+      }
 
       // Auto-open bet form if match can be bet on
       if (this.canPlaceBet(match)) {
@@ -667,6 +681,31 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     if (this.showTeamForm && this.expandedMatch && this.homeTeamRecentMatches.length === 0 && this.awayTeamRecentMatches.length === 0 && !this.loadingTeamForm) {
       this.loadTeamForm(this.expandedMatch);
     }
+  }
+
+  toggleMatchEvents(): void {
+    this.showMatchEvents = !this.showMatchEvents;
+    if (this.showMatchEvents && this.expandedMatch && this.matchEvents.length === 0 && !this.loadingMatchEvents) {
+      this.loadMatchEvents(this.expandedMatch);
+    }
+  }
+
+  loadMatchEvents(match: Match): void {
+    if (!match.externalApiId) return;
+
+    this.loadingMatchEvents = true;
+    this.matchEvents = [];
+
+    this.matchService.getMatchEvents(match._id).subscribe({
+      next: (response) => {
+        this.matchEvents = response.data;
+        this.loadingMatchEvents = false;
+      },
+      error: (error) => {
+        console.error('Failed to load match events:', error);
+        this.loadingMatchEvents = false;
+      }
+    });
   }
 
   getTeamResult(match: Match, team: string): 'W' | 'D' | 'L' {

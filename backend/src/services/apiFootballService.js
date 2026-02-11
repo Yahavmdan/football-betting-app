@@ -759,6 +759,36 @@ async function getFixturesOdds(fixtureIds) {
   return oddsMap;
 }
 
+// Get match events for a specific fixture
+async function getFixtureEvents(fixtureId) {
+  try {
+    const numericId = fixtureId.toString().replace('apifootball_', '');
+    console.log(`=== Fetching events for fixture: ${numericId} ===`);
+
+    const response = await axios.get(`${API_BASE_URL}/fixtures/events`, {
+      headers: { 'x-apisports-key': API_KEY },
+      params: { fixture: numericId }
+    });
+
+    console.log('API Response - Events found:', response.data?.response?.length || 0);
+
+    if (response.data && response.data.response) {
+      return response.data.response.map(event => ({
+        time: { elapsed: event.time.elapsed, extra: event.time.extra },
+        team: { id: event.team.id, name: event.team.name, logo: event.team.logo },
+        player: event.player ? { id: event.player.id, name: event.player.name } : null,
+        assist: event.assist ? { id: event.assist.id, name: event.assist.name } : null,
+        type: event.type,
+        detail: event.detail
+      }));
+    }
+    return [];
+  } catch (error) {
+    console.error('Error fetching fixture events:', error.message);
+    throw error;
+  }
+}
+
 module.exports = {
   getSupportedLeagues,
   isLeagueSupported,
@@ -776,5 +806,6 @@ module.exports = {
   getFixtureById,
   getLeagueStandings,
   getFixtureOdds,
-  getFixturesOdds
+  getFixturesOdds,
+  getFixtureEvents
 };
