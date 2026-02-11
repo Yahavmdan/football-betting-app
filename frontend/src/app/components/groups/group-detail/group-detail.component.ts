@@ -284,27 +284,35 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     // Call the refresh API to get fresh live data from external API
     this.matchService.refreshLiveMatches(this.groupId).subscribe({
       next: (response) => {
-        // Update matches with fresh data
-        const isAutomatic = this.isAutomaticGroup();
-        this.matches = response.data.sort((a, b) => {
-          if (isAutomatic) {
-            return new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime();
-          }
-          // Manual groups: SCHEDULED/LIVE first, then FINISHED
-          if ((a.status === 'SCHEDULED' || a.status === 'LIVE') && b.status === 'FINISHED') return -1;
-          if (a.status === 'FINISHED' && (b.status === 'SCHEDULED' || b.status === 'LIVE')) return 1;
+        const updatedMatches = response.data;
 
-          const dateA = new Date(a.matchDate).getTime();
-          const dateB = new Date(b.matchDate).getTime();
-
-          if (a.status !== 'FINISHED') {
-            return dateA - dateB;
-          } else {
-            return dateB - dateA;
+        // Update only the live matches that were returned
+        for (const updatedMatch of updatedMatches) {
+          // Update in main matches array
+          const index = this.matches.findIndex(m => m._id === updatedMatch._id);
+          if (index !== -1) {
+            const existing = this.matches[index];
+            if (existing.round) updatedMatch.round = existing.round;
+            this.matches[index] = updatedMatch;
           }
-        });
-        this.applyFilters();
+
+          // Update in filteredMatches
+          const filteredIndex = this.filteredMatches.findIndex(m => m._id === updatedMatch._id);
+          if (filteredIndex !== -1) {
+            const existingFiltered = this.filteredMatches[filteredIndex];
+            if (existingFiltered.round) updatedMatch.round = existingFiltered.round;
+            this.filteredMatches[filteredIndex] = updatedMatch;
+          }
+        }
+
+        this.groupMatchesByRound();
         this.refreshingLive = false;
+
+        // Reload leaderboard if any match finished
+        const justFinished = updatedMatches.some(m => m.status === 'FINISHED');
+        if (justFinished) {
+          this.loadLeaderboard(true);
+        }
       },
       error: (error) => {
         console.error('Failed to refresh live matches:', error);
@@ -1571,9 +1579,20 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
       next: (response) => {
         // Only update matches that changed (live matches)
         const updatedMatches = response.data;
+
+        if (updatedMatches.length === 0) {
+          this.refreshingLive = false;
+          // No live matches - stop interval
+          if (!this.hasLiveMatches()) {
+            this.stopLiveRefreshInterval();
+          }
+          return;
+        }
+
         let hasChanges = false;
 
         for (const updatedMatch of updatedMatches) {
+          // Update in main matches array
           const index = this.matches.findIndex(m => m._id === updatedMatch._id);
           if (index !== -1) {
             const existing = this.matches[index];
@@ -1588,11 +1607,26 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
               hasChanges = true;
             }
           }
+
+          // Also update in filteredMatches directly (avoid calling applyFilters which may trigger API)
+          const filteredIndex = this.filteredMatches.findIndex(m => m._id === updatedMatch._id);
+          if (filteredIndex !== -1) {
+            const existingFiltered = this.filteredMatches[filteredIndex];
+            // Preserve round info
+            if (existingFiltered.round) updatedMatch.round = existingFiltered.round;
+            this.filteredMatches[filteredIndex] = updatedMatch;
+          }
         }
 
         if (hasChanges) {
-          this.applyFilters();
+          // Only re-group by round, don't call applyFilters (would trigger API call)
           this.groupMatchesByRound();
+
+          // If a match just finished, reload leaderboard silently
+          const justFinished = updatedMatches.some(m => m.status === 'FINISHED');
+          if (justFinished) {
+            this.loadLeaderboard(true);
+          }
         }
 
         this.refreshingLive = false;

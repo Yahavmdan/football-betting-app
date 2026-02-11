@@ -1580,12 +1580,11 @@ exports.refreshLiveMatches = async (req, res) => {
     });
 
     if (potentiallyLiveMatches.length === 0) {
-      // Return all matches even if no live matches to refresh
-      const allMatches = await Match.find({ groups: groupId }).sort({ matchDate: 1 });
+      // Return empty array - no live matches to update
       return res.status(200).json({
         success: true,
         message: 'No live matches to refresh',
-        data: allMatches
+        data: []
       });
     }
 
@@ -1643,13 +1642,11 @@ exports.refreshLiveMatches = async (req, res) => {
       // It might not have started yet or might be from a different source
     }
 
-    // Return all matches for the group (not just live)
-    const allMatches = await Match.find({ groups: groupId }).sort({ matchDate: 1 });
-
+    // Return only the updated/live matches (not all matches)
     res.status(200).json({
       success: true,
       message: `Refreshed ${updatedMatches.length} live matches`,
-      data: allMatches
+      data: updatedMatches
     });
   } catch (error) {
     res.status(500).json({
