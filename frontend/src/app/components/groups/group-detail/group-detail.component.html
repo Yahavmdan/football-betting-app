@@ -1,1062 +1,1215 @@
 <div class="container" *ngIf="group">
-  <button class="back-btn" routerLink="/groups">← {{ 'groups.backToGroups' | translate }}</button>
+    <button class="back-btn" routerLink="/groups">← {{ 'groups.backToGroups' | translate }}</button>
 
-  <div class="group-header">
-    <div class="group-header-top">
-      <div class="group-title-row">
-        <h1>{{ group.name }}</h1>
-        <span class="member-count">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <div class="group-header">
+        <div class="group-header-top">
+            <div class="group-title-row">
+                <h1>{{ group.name }}</h1>
+                <span class="member-count">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
             <circle cx="9" cy="7" r="4"></circle>
             <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
             <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
           </svg>
-          {{ group.members.length }} {{ 'groups.members' | translate }}
+                    {{ group.members.length }} {{ 'groups.members' | translate }}
         </span>
-      </div>
-      <div class="group-menu-wrapper">
-        <button class="btn-group-menu" (click)="showGroupMenu = !showGroupMenu; $event.stopPropagation()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <circle cx="12" cy="5" r="2"></circle>
-            <circle cx="12" cy="12" r="2"></circle>
-            <circle cx="12" cy="19" r="2"></circle>
-          </svg>
-        </button>
-        <div class="group-menu-dropdown" *ngIf="showGroupMenu" (click)="showGroupMenu = false">
-          <button *ngIf="canManageGroup()" (click)="openEditGroup()" class="group-menu-item">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-            </svg>
-            {{ 'common.edit' | translate }}
-          </button>
-          <button *ngIf="canManageGroup()" (click)="confirmDeleteGroup()" class="group-menu-item group-menu-item-danger">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="3 6 5 6 21 6"></polyline>
-              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-            </svg>
-            {{ 'common.delete' | translate }}
-          </button>
-          <button *ngIf="!isGroupCreator() && !authService.isAdmin()" (click)="confirmLeaveGroup()" class="group-menu-item group-menu-item-warning">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-              <polyline points="16 17 21 12 16 7"></polyline>
-              <line x1="21" y1="12" x2="9" y2="12"></line>
-            </svg>
-            {{ 'groups.leaveGroup' | translate }}
-          </button>
+            </div>
+            <div class="group-menu-wrapper">
+                <button class="btn-group-menu" (click)="showGroupMenu = !showGroupMenu; $event.stopPropagation()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                         fill="currentColor">
+                        <circle cx="12" cy="5" r="2"></circle>
+                        <circle cx="12" cy="12" r="2"></circle>
+                        <circle cx="12" cy="19" r="2"></circle>
+                    </svg>
+                </button>
+                <div class="group-menu-dropdown" *ngIf="showGroupMenu" (click)="showGroupMenu = false">
+                    <button *ngIf="canManageGroup()" (click)="openEditGroup()" class="group-menu-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                        {{ 'common.edit' | translate }}
+                    </button>
+                    <button *ngIf="canManageGroup()" (click)="confirmDeleteGroup()"
+                            class="group-menu-item group-menu-item-danger">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                        {{ 'common.delete' | translate }}
+                    </button>
+                    <button *ngIf="!isGroupCreator() && !authService.isAdmin()" (click)="confirmLeaveGroup()"
+                            class="group-menu-item group-menu-item-warning">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                        {{ 'groups.leaveGroup' | translate }}
+                    </button>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-    <p *ngIf="group.description" class="description">{{ group.description }}</p>
-    <div class="group-toolbar">
+        <p *ngIf="group.description" class="description">{{ group.description }}</p>
+        <div class="group-toolbar">
       <span class="invite-code-container">
         <button class="btn-copy-link" (click)="copyJoinLink()" [title]="'groups.shareLink' | translate">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
             <circle cx="8.5" cy="7" r="4"></circle>
             <line x1="20" y1="8" x2="20" y2="14"></line>
             <line x1="23" y1="11" x2="17" y2="11"></line>
           </svg>
-          {{ 'groups.invite' | translate }}
+            {{ 'groups.invite' | translate }}
         </button>
       </span>
-      <div *ngIf="isAutomaticGroup()" class="group-toolbar-league">
-        <button class="btn-standings" (click)="toggleStandings()" [class.active]="showStandings">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="20" x2="18" y2="10"></line>
-            <line x1="12" y1="20" x2="12" y2="4"></line>
-            <line x1="6" y1="20" x2="6" y2="14"></line>
-          </svg>
-          {{ 'standings.leagueTable' | translate }}
-        </button>
-        <button class="btn-sync" (click)="syncMatches()" [disabled]="syncingMatches">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [class.spinning]="syncingMatches">
-            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
-          </svg>
-          {{ syncingMatches ? ('groups.syncingMatches' | translate) : ('groups.syncMatches' | translate) }}
-        </button>
-      </div>
+            <div *ngIf="isAutomaticGroup()" class="group-toolbar-league">
+                <button class="btn-standings" (click)="toggleStandings()" [class.active]="showStandings">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="20" x2="18" y2="10"></line>
+                        <line x1="12" y1="20" x2="12" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                    </svg>
+                    {{ 'standings.leagueTable' | translate }}
+                </button>
+                <button class="btn-sync" (click)="syncMatches()" [disabled]="syncingMatches">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                         [class.spinning]="syncingMatches">
+                        <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+                    </svg>
+                    {{ syncingMatches ? ('groups.syncingMatches' | translate) : ('groups.syncMatches' | translate) }}
+                </button>
+            </div>
+        </div>
+
+        <!-- League Standings Modal Overlay -->
+        <div *ngIf="showStandings && isAutomaticGroup()" class="standings-overlay" (click)="toggleStandings()">
+            <div class="standings-modal" (click)="$event.stopPropagation()">
+                <div class="standings-header">
+                    <div class="standings-title">
+                        <img *ngIf="leagueStandings?.league?.logo" [src]="leagueStandings?.league?.logo"
+                             class="league-logo" alt="">
+                        <h3>{{ leagueStandings?.league?.name || ('standings.leagueTable' | translate) }}</h3>
+                        <span *ngIf="leagueStandings?.league?.season"
+                              class="season-badge">{{ leagueStandings?.league?.season }}
+                            /{{ (leagueStandings?.league?.season || 0) + 1 }}</span>
+                    </div>
+                    <button class="btn-close-standings" (click)="toggleStandings()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+
+                <div *ngIf="loadingStandings" class="standings-loading">
+                    <div class="inline-spinner"></div>
+                </div>
+
+                <div *ngIf="standingsError" class="standings-error">
+                    {{ standingsError }}
+                </div>
+
+                <div *ngIf="!loadingStandings && !standingsError && leagueStandings" class="standings-table-wrapper">
+                    <table class="standings-table">
+                        <thead>
+                        <tr>
+                            <th class="col-rank">#</th>
+                            <th class="col-team">{{ 'standings.team' | translate }}</th>
+                            <th class="col-played">{{ 'standings.played' | translate }}</th>
+                            <th class="col-won">{{ 'standings.won' | translate }}</th>
+                            <th class="col-drawn">{{ 'standings.drawn' | translate }}</th>
+                            <th class="col-lost">{{ 'standings.lost' | translate }}</th>
+                            <th class="col-gf">{{ 'standings.gf' | translate }}</th>
+                            <th class="col-ga">{{ 'standings.ga' | translate }}</th>
+                            <th class="col-gd">{{ 'standings.gd' | translate }}</th>
+                            <th class="col-points">{{ 'standings.pts' | translate }}</th>
+                            <th class="col-form">{{ 'standings.form' | translate }}</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr *ngFor="let team of leagueStandings.standings"
+                            [class.champions-league]="team.description?.includes('Champions')"
+                            [class.europa-league]="team.description?.includes('Europa') || team.description?.includes('Confederation')"
+                            [class.relegation]="team.description?.includes('Relegation')">
+                            <td class="col-rank">{{ team.rank }}</td>
+                            <td class="col-team">
+                                <img [src]="team.team.logo" [alt]="team.team.name | teamTranslate"
+                                     class="team-logo-tiny">
+                                <span class="team-name">{{ team.team.name | teamTranslate }}</span>
+                            </td>
+                            <td class="col-played">{{ team.played }}</td>
+                            <td class="col-won">{{ team.won }}</td>
+                            <td class="col-drawn">{{ team.drawn }}</td>
+                            <td class="col-lost">{{ team.lost }}</td>
+                            <td class="col-gf">{{ team.goalsFor }}</td>
+                            <td class="col-ga">{{ team.goalsAgainst }}</td>
+                            <td class="col-gd" [class.positive]="team.goalsDiff > 0"
+                                [class.negative]="team.goalsDiff < 0">{{ team.goalsDiff > 0 ? '+' : '' }}{{ team.goalsDiff }}
+                            </td>
+                            <td class="col-points"><strong>{{ team.points }}</strong></td>
+                            <td class="col-form">
+                                <div class="form-badges">
+                                    <span *ngFor="let result of team.form.split('')" class="form-badge"
+                                          [class.win]="result === 'W'" [class.draw]="result === 'D'"
+                                          [class.loss]="result === 'L'">{{ result }}</span>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Group Form -->
+        <div *ngIf="editingGroup" class="edit-group-form">
+            <h3>{{ 'groups.editGroup' | translate }}</h3>
+            <div class="form-group">
+                <label>{{ 'groups.groupName' | translate }}</label>
+                <input type="text" [(ngModel)]="editGroupData.name" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>{{ 'groups.description' | translate }}</label>
+                <textarea [(ngModel)]="editGroupData.description" class="form-control" rows="3"></textarea>
+            </div>
+            <div class="button-row">
+                <button (click)="submitEditGroup()" [disabled]="loadingEditGroup" class="btn-primary btn-small">
+                    {{ loadingEditGroup ? ('auth.loading' | translate) : ('common.save' | translate) }}
+                </button>
+                <button (click)="cancelEditGroup()" class="btn-secondary btn-small">
+                    {{ 'groups.cancel' | translate }}
+                </button>
+            </div>
+        </div>
+
+        <!-- Delete Group Confirmation -->
+        <div *ngIf="deletingGroup" class="delete-confirm">
+            <p>{{ 'groups.confirmDelete' | translate }}</p>
+            <div class="button-row">
+                <button (click)="deleteGroup()" [disabled]="loadingDeleteGroup" class="btn-delete-group btn-small">
+                    {{ loadingDeleteGroup ? ('auth.loading' | translate) : ('common.delete' | translate) }}
+                </button>
+                <button (click)="cancelDeleteGroup()" class="btn-secondary btn-small">
+                    {{ 'groups.cancel' | translate }}
+                </button>
+            </div>
+        </div>
+
+        <!-- Leave Group Confirmation -->
+        <div *ngIf="leavingGroup" class="leave-confirm">
+            <p>{{ 'groups.confirmLeave' | translate }}</p>
+            <div class="button-row">
+                <button (click)="leaveGroup()" [disabled]="loadingLeaveGroup" class="btn-leave-group btn-small">
+                    {{ loadingLeaveGroup ? ('auth.loading' | translate) : ('groups.leaveGroup' | translate) }}
+                </button>
+                <button (click)="cancelLeaveGroup()" class="btn-secondary btn-small">
+                    {{ 'groups.cancel' | translate }}
+                </button>
+            </div>
+        </div>
     </div>
 
-    <!-- League Standings Modal Overlay -->
-    <div *ngIf="showStandings && isAutomaticGroup()" class="standings-overlay" (click)="toggleStandings()">
-      <div class="standings-modal" (click)="$event.stopPropagation()">
-        <div class="standings-header">
-          <div class="standings-title">
-            <img *ngIf="leagueStandings?.league?.logo" [src]="leagueStandings?.league?.logo" class="league-logo" alt="">
-            <h3>{{ leagueStandings?.league?.name || ('standings.leagueTable' | translate) }}</h3>
-            <span *ngIf="leagueStandings?.league?.season" class="season-badge">{{ leagueStandings?.league?.season }}/{{ (leagueStandings?.league?.season || 0) + 1 }}</span>
-          </div>
-          <button class="btn-close-standings" (click)="toggleStandings()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
-        </div>
+    <div class="content-grid">
+        <div class="leaderboard-section">
+            <div class="leaderboard-header">
+                <h2>{{ 'groups.leaderboard' | translate }}</h2>
+                <button class="btn-trash-talk" (click)="openTrashTalkInput()" [title]="'groups.trashTalk' | translate">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <span *ngIf="getCurrentUserTrashTalk()" class="has-message-dot"></span>
+                </button>
+            </div>
 
-        <div *ngIf="loadingStandings" class="standings-loading">
-          <div class="inline-spinner"></div>
-        </div>
+            <!-- Trash Talk Input Dialog -->
+            <div *ngIf="showTrashTalkInput" class="trash-talk-dialog">
+                <div class="trash-talk-header">
+                    <h4>{{ 'groups.trashTalkTitle' | translate }}</h4>
+                    <button class="btn-close-trash" (click)="closeTrashTalkInput()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                <p class="trash-talk-desc">{{ 'groups.trashTalkDesc' | translate }}</p>
 
-        <div *ngIf="standingsError" class="standings-error">
-          {{ standingsError }}
-        </div>
+                <!-- Preview bubble -->
+                <div class="trash-talk-preview" *ngIf="trashTalkMessage">
+                    <span class="preview-label">{{ 'groups.preview' | translate }}:</span>
+                    <div class="trash-talk-bubble-preview"
+                         [style.background]="trashTalkBgColor || 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'"
+                         [style.color]="trashTalkTextColor || 'white'">
+                        <img *ngIf="trashTalkTeamLogo" [src]="trashTalkTeamLogo" class="bubble-team-logo" alt="">
+                        <span>{{ trashTalkMessage }}</span>
+                    </div>
+                </div>
 
-        <div *ngIf="!loadingStandings && !standingsError && leagueStandings" class="standings-table-wrapper">
-          <table class="standings-table">
-            <thead>
-              <tr>
-                <th class="col-rank">#</th>
-                <th class="col-team">{{ 'standings.team' | translate }}</th>
-                <th class="col-played">{{ 'standings.played' | translate }}</th>
-                <th class="col-won">{{ 'standings.won' | translate }}</th>
-                <th class="col-drawn">{{ 'standings.drawn' | translate }}</th>
-                <th class="col-lost">{{ 'standings.lost' | translate }}</th>
-                <th class="col-gf">{{ 'standings.gf' | translate }}</th>
-                <th class="col-ga">{{ 'standings.ga' | translate }}</th>
-                <th class="col-gd">{{ 'standings.gd' | translate }}</th>
-                <th class="col-points">{{ 'standings.pts' | translate }}</th>
-                <th class="col-form">{{ 'standings.form' | translate }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let team of leagueStandings.standings" [class.champions-league]="team.description?.includes('Champions')" [class.europa-league]="team.description?.includes('Europa') || team.description?.includes('Confederation')" [class.relegation]="team.description?.includes('Relegation')">
-                <td class="col-rank">{{ team.rank }}</td>
-                <td class="col-team">
-                  <img [src]="team.team.logo" [alt]="team.team.name | teamTranslate" class="team-logo-tiny">
-                  <span class="team-name">{{ team.team.name | teamTranslate }}</span>
-                </td>
-                <td class="col-played">{{ team.played }}</td>
-                <td class="col-won">{{ team.won }}</td>
-                <td class="col-drawn">{{ team.drawn }}</td>
-                <td class="col-lost">{{ team.lost }}</td>
-                <td class="col-gf">{{ team.goalsFor }}</td>
-                <td class="col-ga">{{ team.goalsAgainst }}</td>
-                <td class="col-gd" [class.positive]="team.goalsDiff > 0" [class.negative]="team.goalsDiff < 0">{{ team.goalsDiff > 0 ? '+' : '' }}{{ team.goalsDiff }}</td>
-                <td class="col-points"><strong>{{ team.points }}</strong></td>
-                <td class="col-form">
-                  <div class="form-badges">
-                    <span *ngFor="let result of team.form.split('')" class="form-badge" [class.win]="result === 'W'" [class.draw]="result === 'D'" [class.loss]="result === 'L'">{{ result }}</span>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+                <input
+                        type="text"
+                        [(ngModel)]="trashTalkMessage"
+                        [placeholder]="'groups.trashTalkPlaceholder' | translate"
+                        maxlength="40"
+                        class="trash-talk-input"
+                        [disabled]="loadingTrashTalk">
 
-    <!-- Edit Group Form -->
-    <div *ngIf="editingGroup" class="edit-group-form">
-      <h3>{{ 'groups.editGroup' | translate }}</h3>
-      <div class="form-group">
-        <label>{{ 'groups.groupName' | translate }}</label>
-        <input type="text" [(ngModel)]="editGroupData.name" class="form-control">
-      </div>
-      <div class="form-group">
-        <label>{{ 'groups.description' | translate }}</label>
-        <textarea [(ngModel)]="editGroupData.description" class="form-control" rows="3"></textarea>
-      </div>
-      <div class="button-row">
-        <button (click)="submitEditGroup()" [disabled]="loadingEditGroup" class="btn-primary btn-small">
-          {{ loadingEditGroup ? ('auth.loading' | translate) : ('common.save' | translate) }}
-        </button>
-        <button (click)="cancelEditGroup()" class="btn-secondary btn-small">
-          {{ 'groups.cancel' | translate }}
-        </button>
-      </div>
-    </div>
+                <!-- Team logo selector -->
+                <div class="team-selector">
+                    <span class="team-selector-label">{{ 'groups.selectTeam' | translate }}:</span>
+                    <div class="team-grid">
+                        <button
+                                *ngFor="let team of teamLogos"
+                                class="team-option"
+                                [class.selected]="trashTalkTeamLogo === team.logo"
+                                (click)="selectTrashTalkTeam(team)"
+                                [title]="team.name">
+                            <img [src]="team.logo" [alt]="team.name" class="team-option-logo">
+                        </button>
+                        <button
+                                class="team-option team-option-none"
+                                [class.selected]="!trashTalkTeamLogo"
+                                (click)="clearTrashTalkTeam()"
+                                [title]="'groups.noTeam' | translate">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
 
-    <!-- Delete Group Confirmation -->
-    <div *ngIf="deletingGroup" class="delete-confirm">
-      <p>{{ 'groups.confirmDelete' | translate }}</p>
-      <div class="button-row">
-        <button (click)="deleteGroup()" [disabled]="loadingDeleteGroup" class="btn-delete-group btn-small">
-          {{ loadingDeleteGroup ? ('auth.loading' | translate) : ('common.delete' | translate) }}
-        </button>
-        <button (click)="cancelDeleteGroup()" class="btn-secondary btn-small">
-          {{ 'groups.cancel' | translate }}
-        </button>
-      </div>
-    </div>
+                <!-- Background color selector -->
+                <div class="color-selector">
+                    <span class="color-selector-label">{{ 'groups.selectColor' | translate }}:</span>
+                    <div class="color-grid">
+                        <button
+                                *ngFor="let color of colorPalette"
+                                class="color-option"
+                                [class.selected]="trashTalkBgColor === color"
+                                [style.backgroundColor]="color"
+                                (click)="selectTrashTalkColor(color)">
+                        </button>
+                        <button
+                                class="color-option color-option-none"
+                                [class.selected]="!trashTalkBgColor"
+                                (click)="clearTrashTalkColor()"
+                                [title]="'groups.noColor' | translate">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
 
-    <!-- Leave Group Confirmation -->
-    <div *ngIf="leavingGroup" class="leave-confirm">
-      <p>{{ 'groups.confirmLeave' | translate }}</p>
-      <div class="button-row">
-        <button (click)="leaveGroup()" [disabled]="loadingLeaveGroup" class="btn-leave-group btn-small">
-          {{ loadingLeaveGroup ? ('auth.loading' | translate) : ('groups.leaveGroup' | translate) }}
-        </button>
-        <button (click)="cancelLeaveGroup()" class="btn-secondary btn-small">
-          {{ 'groups.cancel' | translate }}
-        </button>
-      </div>
-    </div>
-  </div>
+                <!-- Text color selector -->
+                <div class="color-selector">
+                    <span class="color-selector-label">{{ 'groups.selectTextColor' | translate }}:</span>
+                    <div class="color-grid">
+                        <button
+                                *ngFor="let color of colorPalette"
+                                class="color-option"
+                                [class.selected]="trashTalkTextColor === color"
+                                [style.backgroundColor]="color"
+                                (click)="selectTrashTalkTextColor(color)">
+                        </button>
+                        <button
+                                class="color-option color-option-none"
+                                [class.selected]="!trashTalkTextColor"
+                                (click)="clearTrashTalkTextColor()"
+                                [title]="'groups.noColor' | translate">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
 
-  <div class="content-grid">
-    <div class="leaderboard-section">
-      <div class="leaderboard-header">
-        <h2>{{ 'groups.leaderboard' | translate }}</h2>
-        <button class="btn-trash-talk" (click)="openTrashTalkInput()" [title]="'groups.trashTalk' | translate">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-          </svg>
-          <span *ngIf="getCurrentUserTrashTalk()" class="has-message-dot"></span>
-        </button>
-      </div>
-
-      <!-- Trash Talk Input Dialog -->
-      <div *ngIf="showTrashTalkInput" class="trash-talk-dialog">
-        <div class="trash-talk-header">
-          <h4>{{ 'groups.trashTalkTitle' | translate }}</h4>
-          <button class="btn-close-trash" (click)="closeTrashTalkInput()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
-        </div>
-        <p class="trash-talk-desc">{{ 'groups.trashTalkDesc' | translate }}</p>
-
-        <!-- Preview bubble -->
-        <div class="trash-talk-preview" *ngIf="trashTalkMessage">
-          <span class="preview-label">{{ 'groups.preview' | translate }}:</span>
-          <div class="trash-talk-bubble-preview" [style.background]="trashTalkBgColor || 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'" [style.color]="trashTalkTextColor || 'white'">
-            <img *ngIf="trashTalkTeamLogo" [src]="trashTalkTeamLogo" class="bubble-team-logo" alt="">
-            <span>{{ trashTalkMessage }}</span>
-          </div>
-        </div>
-
-        <input
-          type="text"
-          [(ngModel)]="trashTalkMessage"
-          [placeholder]="'groups.trashTalkPlaceholder' | translate"
-          maxlength="40"
-          class="trash-talk-input"
-          [disabled]="loadingTrashTalk">
-
-        <!-- Team logo selector -->
-        <div class="team-selector">
-          <span class="team-selector-label">{{ 'groups.selectTeam' | translate }}:</span>
-          <div class="team-grid">
-            <button
-              *ngFor="let team of teamLogos"
-              class="team-option"
-              [class.selected]="trashTalkTeamLogo === team.logo"
-              (click)="selectTrashTalkTeam(team)"
-              [title]="team.name">
-              <img [src]="team.logo" [alt]="team.name" class="team-option-logo">
-            </button>
-            <button
-              class="team-option team-option-none"
-              [class.selected]="!trashTalkTeamLogo"
-              (click)="clearTrashTalkTeam()"
-              [title]="'groups.noTeam' | translate">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        <!-- Background color selector -->
-        <div class="color-selector">
-          <span class="color-selector-label">{{ 'groups.selectColor' | translate }}:</span>
-          <div class="color-grid">
-            <button
-              *ngFor="let color of colorPalette"
-              class="color-option"
-              [class.selected]="trashTalkBgColor === color"
-              [style.backgroundColor]="color"
-              (click)="selectTrashTalkColor(color)">
-            </button>
-            <button
-              class="color-option color-option-none"
-              [class.selected]="!trashTalkBgColor"
-              (click)="clearTrashTalkColor()"
-              [title]="'groups.noColor' | translate">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        <!-- Text color selector -->
-        <div class="color-selector">
-          <span class="color-selector-label">{{ 'groups.selectTextColor' | translate }}:</span>
-          <div class="color-grid">
-            <button
-              *ngFor="let color of colorPalette"
-              class="color-option"
-              [class.selected]="trashTalkTextColor === color"
-              [style.backgroundColor]="color"
-              (click)="selectTrashTalkTextColor(color)">
-            </button>
-            <button
-              class="color-option color-option-none"
-              [class.selected]="!trashTalkTextColor"
-              (click)="clearTrashTalkTextColor()"
-              [title]="'groups.noColor' | translate">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        <div class="trash-talk-footer">
-          <span class="char-count">{{ trashTalkMessage.length }}/40</span>
-          <div class="trash-talk-actions">
-            <button class="btn-secondary btn-small" (click)="closeTrashTalkInput()">{{ 'groups.cancel' | translate }}</button>
-            <button class="btn-primary btn-small" (click)="submitTrashTalk()" [disabled]="loadingTrashTalk">
-              {{ loadingTrashTalk ? ('auth.loading' | translate) : ('common.save' | translate) }}
-            </button>
-          </div>
-        </div>
-      </div>
-      <div *ngIf="loadingLeaderboard" class="loading">{{ 'auth.loading' | translate }}</div>
-      <div *ngIf="!loadingLeaderboard && leaderboard.length > 0" class="leaderboard">
-        <div *ngFor="let member of leaderboard; let i = index" class="leaderboard-item"
-             [class.winner]="isWinner(member)"
-             [class.eliminated]="isEliminated(member)">
-          <span class="rank">{{ i + 1 }}</span>
-          <div class="profile-picture-wrapper" (click)="openProfilePicture(member.user)">
-            <img
-              *ngIf="member.user.profilePicture"
-              [src]="getProfilePictureUrl(member.user.profilePicture)"
-              alt=""
-              class="leaderboard-profile-picture"
-              (error)="onProfileImageError($event)"
-            />
-            <span *ngIf="!member.user.profilePicture" class="leaderboard-profile-placeholder">
+                <div class="trash-talk-footer">
+                    <span class="char-count">{{ trashTalkMessage.length }}/40</span>
+                    <div class="trash-talk-actions">
+                        <button class="btn-secondary btn-small"
+                                (click)="closeTrashTalkInput()">{{ 'groups.cancel' | translate }}
+                        </button>
+                        <button class="btn-primary btn-small" (click)="submitTrashTalk()" [disabled]="loadingTrashTalk">
+                            {{ loadingTrashTalk ? ('auth.loading' | translate) : ('common.save' | translate) }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div *ngIf="loadingLeaderboard" class="loading">{{ 'auth.loading' | translate }}</div>
+            <div *ngIf="!loadingLeaderboard && leaderboard.length > 0" class="leaderboard">
+                <div *ngFor="let member of leaderboard; let i = index" class="leaderboard-item"
+                     [class.winner]="isWinner(member)"
+                     [class.eliminated]="isEliminated(member)">
+                    <span class="rank">{{ i + 1 }}</span>
+                    <div class="profile-picture-wrapper" (click)="openProfilePicture(member.user)">
+                        <img
+                                *ngIf="member.user.profilePicture"
+                                [src]="getProfilePictureUrl(member.user.profilePicture)"
+                                alt=""
+                                class="leaderboard-profile-picture"
+                                (error)="onProfileImageError($event)"
+                        />
+                        <span *ngIf="!member.user.profilePicture" class="leaderboard-profile-placeholder">
               {{ member.user.username.charAt(0).toUpperCase() }}
             </span>
-            <span class="online-indicator" [class.online]="isUserOnline(member.user.lastActive)"></span>
-          </div>
-          <span class="username-wrapper">
+                        <span class="online-indicator" [class.online]="isUserOnline(member.user.lastActive)"></span>
+                    </div>
+                    <span class="username-wrapper">
             <span class="trash-talk-bubble"
                   *ngIf="member.trashTalk?.message && isTrashTalkVisible(member.user._id)"
                   [style.background]="member.trashTalk?.bgColor || null"
                   [style.color]="member.trashTalk?.textColor || null"
                   [style.--bubble-color]="member.trashTalk?.bgColor || '#d97706'">
-              <img *ngIf="member.trashTalk?.teamLogo" [src]="member.trashTalk?.teamLogo" class="bubble-team-logo" alt="">
-              {{ member.trashTalk?.message }}
+              <img *ngIf="member.trashTalk?.teamLogo" [src]="member.trashTalk?.teamLogo" class="bubble-team-logo"
+                   alt="">
+                {{ member.trashTalk?.message }}
             </span>
             <span class="username">
               {{ member.user.username }}
-              <span *ngIf="isWinner(member)" class="trophy">🏆</span>
+                <span *ngIf="isWinner(member)" class="trophy">🏆</span>
               <span *ngIf="isEliminated(member)" class="status-label">({{ 'groups.eliminated' | translate }})</span>
             </span>
             <button
-              *ngIf="member.trashTalk?.message"
-              class="btn-show-trash-talk"
-              (click)="showTrashTalkManual(member.user._id); $event.stopPropagation()"
-              [disabled]="isTrashTalkVisible(member.user._id)"
-              [title]="'groups.showMessage' | translate">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    *ngIf="member.trashTalk?.message"
+                    class="btn-show-trash-talk"
+                    (click)="showTrashTalkManual(member.user._id); $event.stopPropagation()"
+                    [disabled]="isTrashTalkVisible(member.user._id)"
+                    [title]="'groups.showMessage' | translate">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
               </svg>
             </button>
           </span>
-          <span class="points">
+                    <span class="points">
             {{ member.points | number:'1.0-1' }}
           </span>
-          <button
-            *ngIf="canManageGroup() && !isGroupCreatorMember(member.user._id)"
-            (click)="confirmKickMember(member.user._id)"
-            class="btn-kick"
-            [title]="'groups.kickMember' | translate">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
-        </div>
-        <!-- Kick confirmation -->
-        <div *ngIf="kickingMemberId" class="kick-confirm">
-          <p>{{ 'groups.confirmKick' | translate }}</p>
-          <div class="button-row">
-            <button (click)="kickMember(kickingMemberId)" [disabled]="loadingKickMember" class="btn-delete-group btn-small">
-              {{ loadingKickMember ? ('auth.loading' | translate) : ('groups.kick' | translate) }}
-            </button>
-            <button (click)="cancelKickMember()" class="btn-secondary btn-small">
-              {{ 'groups.cancel' | translate }}
-            </button>
-          </div>
-        </div>
-      </div>
-      <div *ngIf="!loadingLeaderboard && leaderboard.length === 0" class="empty-state">
-        {{ 'groups.noMembers' | translate }}
-      </div>
+                    <button
+                            *ngIf="canManageGroup() && !isGroupCreatorMember(member.user._id)"
+                            (click)="confirmKickMember(member.user._id)"
+                            class="btn-kick"
+                            [title]="'groups.kickMember' | translate">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                <!-- Kick confirmation -->
+                <div *ngIf="kickingMemberId" class="kick-confirm">
+                    <p>{{ 'groups.confirmKick' | translate }}</p>
+                    <div class="button-row">
+                        <button (click)="kickMember(kickingMemberId)" [disabled]="loadingKickMember"
+                                class="btn-delete-group btn-small">
+                            {{ loadingKickMember ? ('auth.loading' | translate) : ('groups.kick' | translate) }}
+                        </button>
+                        <button (click)="cancelKickMember()" class="btn-secondary btn-small">
+                            {{ 'groups.cancel' | translate }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div *ngIf="!loadingLeaderboard && leaderboard.length === 0" class="empty-state">
+                {{ 'groups.noMembers' | translate }}
+            </div>
 
-      <!-- Pending Members in Leaderboard (shown to admin/creator) -->
-      <div *ngIf="canManageGroup() && pendingMembers.length > 0" class="pending-in-leaderboard">
-        <div *ngFor="let pending of pendingMembers" class="leaderboard-item pending">
-          <span class="rank">-</span>
-          <div class="profile-picture-wrapper" (click)="openProfilePicture(pending.user)">
-            <img
-              *ngIf="pending.user.profilePicture"
-              [src]="getProfilePictureUrl(pending.user.profilePicture)"
-              alt=""
-              class="leaderboard-profile-picture"
-              (error)="onProfileImageError($event)"
-            />
-            <span *ngIf="!pending.user.profilePicture" class="leaderboard-profile-placeholder">
+            <!-- Pending Members in Leaderboard (shown to admin/creator) -->
+            <div *ngIf="canManageGroup() && pendingMembers.length > 0" class="pending-in-leaderboard">
+                <div *ngFor="let pending of pendingMembers" class="leaderboard-item pending">
+                    <span class="rank">-</span>
+                    <div class="profile-picture-wrapper" (click)="openProfilePicture(pending.user)">
+                        <img
+                                *ngIf="pending.user.profilePicture"
+                                [src]="getProfilePictureUrl(pending.user.profilePicture)"
+                                alt=""
+                                class="leaderboard-profile-picture"
+                                (error)="onProfileImageError($event)"
+                        />
+                        <span *ngIf="!pending.user.profilePicture" class="leaderboard-profile-placeholder">
               {{ pending.user.username.charAt(0).toUpperCase() }}
             </span>
-            <span class="online-indicator" [class.online]="isUserOnline(pending.user.lastActive)"></span>
-          </div>
-          <span class="username">
+                        <span class="online-indicator" [class.online]="isUserOnline(pending.user.lastActive)"></span>
+                    </div>
+                    <span class="username">
             {{ pending.user.username }}
           </span>
-          <div class="pending-actions">
-            <button (click)="approveMember(pending.user._id)" class="btn-approve" [title]="'groups.approve' | translate">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 6 9 17 4 12"></polyline>
-              </svg>
-            </button>
-            <button (click)="rejectMember(pending.user._id)" class="btn-reject" [title]="'groups.reject' | translate">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
-          </div>
+                    <div class="pending-actions">
+                        <button (click)="approveMember(pending.user._id)" class="btn-approve"
+                                [title]="'groups.approve' | translate">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                 stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        </button>
+                        <button (click)="rejectMember(pending.user._id)" class="btn-reject"
+                                [title]="'groups.reject' | translate">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                 stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
+
+        <div class="matches-section">
+            <div class="section-header">
+                <h2>{{ 'groups.matches' | translate }} <span class="match-count">({{ filteredMatches.length }})</span>
+                </h2>
+                <div class="header-actions">
+                    <label class="save-filter-checkbox" [title]="'filters.saveFiltersTooltip' | translate">
+                        <input type="checkbox" [(ngModel)]="saveFiltersEnabled" (change)="onSaveFiltersToggle()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2">
+                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                            <polyline points="7 3 7 8 15 8"></polyline>
+                        </svg>
+                    </label>
+                    <button (click)="openFilterDialog()" class="btn-filter" [class.has-filters]="hasActiveFilters()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                        </svg>
+                        {{ 'filters.filter' | translate }}
+                        <span *ngIf="hasActiveFilters()" class="filter-count">{{ getActiveFilterCount() }}</span>
+                    </button>
+                    <button
+                            *ngIf="canManageGroup() && !isAutomaticGroup()"
+                            [routerLink]="['/matches/manage']"
+                            [queryParams]="{groupId: groupId}"
+                            class="btn-manage"
+                    >
+                        {{ 'matches.manageMatches' | translate }}
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filter Dialog Overlay -->
+            <div *ngIf="showFilterDialog" class="filter-overlay" (click)="closeFilterDialog()">
+                <div class="filter-dialog" (click)="$event.stopPropagation()">
+                    <div class="filter-header">
+                        <h3>{{ 'filters.filterMatches' | translate }}</h3>
+                        <button (click)="closeFilterDialog()" class="btn-close-filter">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                 stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="filter-body">
+                        <!-- Status Filter -->
+                        <div class="filter-section">
+                            <label class="filter-label">{{ 'filters.matchStatus' | translate }}</label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-item">
+                                    <input type="checkbox" [(ngModel)]="filters.showFinished">
+                                    <span>{{ 'filters.finished' | translate }}</span>
+                                </label>
+                                <label class="checkbox-item">
+                                    <input type="checkbox" [(ngModel)]="filters.showNotStarted">
+                                    <span>{{ 'filters.notStarted' | translate }}</span>
+                                </label>
+                                <label class="checkbox-item">
+                                    <input type="checkbox" [(ngModel)]="filters.showOngoing">
+                                    <span>{{ 'filters.ongoing' | translate }}</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Date Range Filter -->
+                        <div class="filter-section">
+                            <label class="filter-label">{{ 'filters.dateRange' | translate }}</label>
+                            <div class="date-range">
+                                <div class="date-input-group">
+                                    <label class="date-label">{{ 'filters.from' | translate }}</label>
+                                    <input type="date" [(ngModel)]="filters.dateFrom"
+                                           class="form-control date-input"
+                                           [class.date-empty]="!filters.dateFrom"
+                                           [attr.data-placeholder]="'filters.insertDate' | translate">
+                                </div>
+                                <span class="date-separator">-</span>
+                                <div class="date-input-group">
+                                    <label class="date-label">{{ 'filters.to' | translate }}</label>
+                                    <input type="date" [(ngModel)]="filters.dateTo"
+                                           class="form-control date-input"
+                                           [class.date-empty]="!filters.dateTo"
+                                           [attr.data-placeholder]="'filters.insertDate' | translate">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Members Who Betted Filter -->
+                        <div class="filter-section">
+                            <label class="filter-label">{{ 'filters.membersBetted' | translate }}</label>
+                            <app-select
+                                    [options]="memberSelectOptions"
+                                    [(ngModel)]="filters.selectedMembers"
+                                    [multiple]="true"
+                                    placeholder="Select members"
+                                    placeholderHe="בחר משתמשים"
+                                    selectedText="selected"
+                                    selectedTextHe="נבחרו">
+                            </app-select>
+                        </div>
+
+                        <!-- Teams Filter -->
+                        <div class="filter-section">
+                            <label class="filter-label">{{ 'filters.teams' | translate }}</label>
+                            <app-select
+                                    [options]="teamSelectOptions"
+                                    [(ngModel)]="filters.selectedTeams"
+                                    [multiple]="true"
+                                    [searchable]="true"
+                                    placeholder="Select teams"
+                                    placeholderHe="בחר קבוצות"
+                                    searchPlaceholder="Search teams..."
+                                    searchPlaceholderHe="חיפוש קבוצות..."
+                                    selectedText="selected"
+                                    selectedTextHe="נבחרו">
+                            </app-select>
+                        </div>
+
+                        <!-- Score Filter (for finished matches) -->
+                        <div class="filter-section">
+                            <label class="filter-label">{{ 'filters.score' | translate }}</label>
+                            <div class="score-filter">
+                                <div class="score-input-group">
+                                    <label>{{ 'filters.homeScore' | translate }}</label>
+                                    <input type="number" [(ngModel)]="filters.homeScore" min="0"
+                                           class="form-control score-input" [placeholder]="'filters.any' | translate">
+                                </div>
+                                <span class="score-separator">-</span>
+                                <div class="score-input-group">
+                                    <label>{{ 'filters.awayScore' | translate }}</label>
+                                    <input type="number" [(ngModel)]="filters.awayScore" min="0"
+                                           class="form-control score-input" [placeholder]="'filters.any' | translate">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="filter-footer">
+                        <button (click)="clearFilters()" class="btn-secondary">{{ 'filters.clearAll' | translate }}
+                        </button>
+                        <button (click)="applyFilters()" class="btn-primary">{{ 'filters.apply' | translate }}</button>
+                    </div>
+                </div>
+            </div>
+            <div *ngIf="loadingMatches" class="loading">{{ 'auth.loading' | translate }}</div>
+
+            <!-- Automatic groups: Show matches grouped by round -->
+            <div *ngIf="!loadingMatches && filteredMatches.length > 0 && isAutomaticGroup() && matchesByRound.length > 0"
+                 class="matches-list matches-by-round">
+                <!-- Load future rounds button (top - loads newer/higher round numbers) -->
+                <button *ngIf="hasMoreFutureRounds" class="btn-load-rounds btn-load-future"
+                        (click)="loadFutureRounds()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="18 15 12 9 6 15"></polyline>
+                    </svg>
+                    {{ 'matches.loadFutureRounds' | translate }}
+                </button>
+
+                <div *ngFor="let roundGroup of matchesByRound" class="round-group">
+                    <div class="round-separator">
+                        <div class="round-separator-left">
+                            <span class="round-dates">{{ formatRoundDateRange(roundGroup.startDate, roundGroup.endDate) }}</span>
+                            <button class="btn-sticky-standings" [class.visible]="isRoundStuck && isAutomaticGroup()"
+                                    [class.active]="showStandings"
+                                    (click)="toggleStandings(); $event.stopPropagation()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                     stroke-linejoin="round">
+                                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                                </svg>
+                                <span>{{ 'standings.leagueTable' | translate }}</span>
+                            </button>
+                        </div>
+                        <span class="round-name">{{ 'matches.round' | translate }} {{ roundGroup.roundNumber }}</span>
+                    </div>
+                    <div class="round-matches">
+                        <div *ngFor="let dateGroup of roundGroup.dateGroups" class="date-group">
+                            <div class="date-separator-sticky">
+                                <span class="date-label">{{ formatMatchDate(dateGroup.date) }}</span>
+                            </div>
+                            <div *ngFor="let match of dateGroup.matches" class="match-card compact"
+                                 [class.has-bet]="hasBetOnMatch(match._id)"
+                                 [class.expanded]="expandedMatchId === match._id"
+                                 [class.live]="match.status === 'LIVE'">
+                                <ng-container
+                                        *ngTemplateOutlet="matchCardTemplate; context: { $implicit: match }"></ng-container>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Load previous rounds button (bottom - loads older/lower round numbers) -->
+                <button *ngIf="hasMorePastRounds" class="btn-load-rounds btn-load-previous"
+                        (click)="loadPreviousRounds()">
+                    {{ 'matches.loadPreviousRounds' | translate }}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Manual groups or no rounds: Show flat list -->
+            <div *ngIf="!loadingMatches && filteredMatches.length > 0 && (!isAutomaticGroup() || matchesByRound.length === 0)"
+                 class="matches-list">
+                <div *ngFor="let match of filteredMatches" class="match-card compact"
+                     [class.has-bet]="hasBetOnMatch(match._id)" [class.expanded]="expandedMatchId === match._id"
+                     [class.live]="match.status === 'LIVE'">
+                    <ng-container *ngTemplateOutlet="matchCardTemplate; context: { $implicit: match }"></ng-container>
+                </div>
+            </div>
+            <div *ngIf="!loadingMatches && filteredMatches.length === 0" class="empty-state">
+                {{ hasActiveFilters() ? ('filters.noMatchesFound' | translate) : ('groups.noMatches' | translate) }}
+            </div>
+        </div>
     </div>
 
-    <div class="matches-section">
-      <div class="section-header">
-        <h2>{{ 'groups.matches' | translate }} <span class="match-count">({{ filteredMatches.length }})</span></h2>
-        <div class="header-actions">
-          <label class="save-filter-checkbox" [title]="'filters.saveFiltersTooltip' | translate">
-            <input type="checkbox" [(ngModel)]="saveFiltersEnabled" (change)="onSaveFiltersToggle()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-              <polyline points="17 21 17 13 7 13 7 21"></polyline>
-              <polyline points="7 3 7 8 15 8"></polyline>
-            </svg>
-          </label>
-          <button (click)="openFilterDialog()" class="btn-filter" [class.has-filters]="hasActiveFilters()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-            </svg>
-            {{ 'filters.filter' | translate }}
-            <span *ngIf="hasActiveFilters()" class="filter-count">{{ getActiveFilterCount() }}</span>
-          </button>
-          <button
-            *ngIf="canManageGroup() && !isAutomaticGroup()"
-            [routerLink]="['/matches/manage']"
-            [queryParams]="{groupId: groupId}"
-            class="btn-manage"
-          >
-            {{ 'matches.manageMatches' | translate }}
-          </button>
-        </div>
-      </div>
-
-      <!-- Filter Dialog Overlay -->
-      <div *ngIf="showFilterDialog" class="filter-overlay" (click)="closeFilterDialog()">
-        <div class="filter-dialog" (click)="$event.stopPropagation()">
-          <div class="filter-header">
-            <h3>{{ 'filters.filterMatches' | translate }}</h3>
-            <button (click)="closeFilterDialog()" class="btn-close-filter">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
-          </div>
-
-          <div class="filter-body">
-            <!-- Status Filter -->
-            <div class="filter-section">
-              <label class="filter-label">{{ 'filters.matchStatus' | translate }}</label>
-              <div class="checkbox-group">
-                <label class="checkbox-item">
-                  <input type="checkbox" [(ngModel)]="filters.showFinished">
-                  <span>{{ 'filters.finished' | translate }}</span>
-                </label>
-                <label class="checkbox-item">
-                  <input type="checkbox" [(ngModel)]="filters.showNotStarted">
-                  <span>{{ 'filters.notStarted' | translate }}</span>
-                </label>
-                <label class="checkbox-item">
-                  <input type="checkbox" [(ngModel)]="filters.showOngoing">
-                  <span>{{ 'filters.ongoing' | translate }}</span>
-                </label>
-              </div>
-            </div>
-
-            <!-- Date Range Filter -->
-            <div class="filter-section">
-              <label class="filter-label">{{ 'filters.dateRange' | translate }}</label>
-              <div class="date-range">
-                <div class="date-input-group">
-                  <label class="date-label">{{ 'filters.from' | translate }}</label>
-                  <input type="date" [(ngModel)]="filters.dateFrom"
-                    class="form-control date-input"
-                    [class.date-empty]="!filters.dateFrom"
-                    [attr.data-placeholder]="'filters.insertDate' | translate">
-                </div>
-                <span class="date-separator">-</span>
-                <div class="date-input-group">
-                  <label class="date-label">{{ 'filters.to' | translate }}</label>
-                  <input type="date" [(ngModel)]="filters.dateTo"
-                    class="form-control date-input"
-                    [class.date-empty]="!filters.dateTo"
-                    [attr.data-placeholder]="'filters.insertDate' | translate">
-                </div>
-              </div>
-            </div>
-
-            <!-- Members Who Betted Filter -->
-            <div class="filter-section">
-              <label class="filter-label">{{ 'filters.membersBetted' | translate }}</label>
-              <app-select
-                [options]="memberSelectOptions"
-                [(ngModel)]="filters.selectedMembers"
-                [multiple]="true"
-                placeholder="Select members"
-                placeholderHe="בחר משתמשים"
-                selectedText="selected"
-                selectedTextHe="נבחרו">
-              </app-select>
-            </div>
-
-            <!-- Teams Filter -->
-            <div class="filter-section">
-              <label class="filter-label">{{ 'filters.teams' | translate }}</label>
-              <app-select
-                [options]="teamSelectOptions"
-                [(ngModel)]="filters.selectedTeams"
-                [multiple]="true"
-                [searchable]="true"
-                placeholder="Select teams"
-                placeholderHe="בחר קבוצות"
-                searchPlaceholder="Search teams..."
-                searchPlaceholderHe="חיפוש קבוצות..."
-                selectedText="selected"
-                selectedTextHe="נבחרו">
-              </app-select>
-            </div>
-
-            <!-- Score Filter (for finished matches) -->
-            <div class="filter-section">
-              <label class="filter-label">{{ 'filters.score' | translate }}</label>
-              <div class="score-filter">
-                <div class="score-input-group">
-                  <label>{{ 'filters.homeScore' | translate }}</label>
-                  <input type="number" [(ngModel)]="filters.homeScore" min="0" class="form-control score-input" [placeholder]="'filters.any' | translate">
-                </div>
-                <span class="score-separator">-</span>
-                <div class="score-input-group">
-                  <label>{{ 'filters.awayScore' | translate }}</label>
-                  <input type="number" [(ngModel)]="filters.awayScore" min="0" class="form-control score-input" [placeholder]="'filters.any' | translate">
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="filter-footer">
-            <button (click)="clearFilters()" class="btn-secondary">{{ 'filters.clearAll' | translate }}</button>
-            <button (click)="applyFilters()" class="btn-primary">{{ 'filters.apply' | translate }}</button>
-          </div>
-        </div>
-      </div>
-      <div *ngIf="loadingMatches" class="loading">{{ 'auth.loading' | translate }}</div>
-
-      <!-- Automatic groups: Show matches grouped by round -->
-      <div *ngIf="!loadingMatches && filteredMatches.length > 0 && isAutomaticGroup() && matchesByRound.length > 0" class="matches-list matches-by-round">
-        <!-- Load future rounds button (top - loads newer/higher round numbers) -->
-        <button *ngIf="hasMoreFutureRounds" class="btn-load-rounds btn-load-future" (click)="loadFutureRounds()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="18 15 12 9 6 15"></polyline>
-          </svg>
-          {{ 'matches.loadFutureRounds' | translate }}
-        </button>
-
-        <div *ngFor="let roundGroup of matchesByRound" class="round-group">
-          <div class="round-separator">
-            <div class="round-separator-left">
-              <span class="round-dates">{{ formatRoundDateRange(roundGroup.startDate, roundGroup.endDate) }}</span>
-              <button class="btn-sticky-standings" [class.visible]="isRoundStuck && isAutomaticGroup()" [class.active]="showStandings" (click)="toggleStandings(); $event.stopPropagation()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="18" y1="20" x2="18" y2="10"></line>
-                  <line x1="12" y1="20" x2="12" y2="4"></line>
-                  <line x1="6" y1="20" x2="6" y2="14"></line>
-                </svg>
-                <span>{{ 'standings.leagueTable' | translate }}</span>
-              </button>
-            </div>
-            <span class="round-name">{{ 'matches.round' | translate }} {{ roundGroup.roundNumber }}</span>
-          </div>
-          <div class="round-matches">
-            <div *ngFor="let dateGroup of roundGroup.dateGroups" class="date-group">
-              <div class="date-separator-sticky">
-                <span class="date-label">{{ formatMatchDate(dateGroup.date) }}</span>
-              </div>
-              <div *ngFor="let match of dateGroup.matches" class="match-card compact" [class.has-bet]="hasBetOnMatch(match._id)" [class.expanded]="expandedMatchId === match._id" [class.live]="match.status === 'LIVE'">
-                <ng-container *ngTemplateOutlet="matchCardTemplate; context: { $implicit: match }"></ng-container>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Load previous rounds button (bottom - loads older/lower round numbers) -->
-        <button *ngIf="hasMorePastRounds" class="btn-load-rounds btn-load-previous" (click)="loadPreviousRounds()">
-          {{ 'matches.loadPreviousRounds' | translate }}
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
-        </button>
-      </div>
-
-      <!-- Manual groups or no rounds: Show flat list -->
-      <div *ngIf="!loadingMatches && filteredMatches.length > 0 && (!isAutomaticGroup() || matchesByRound.length === 0)" class="matches-list">
-        <div *ngFor="let match of filteredMatches" class="match-card compact" [class.has-bet]="hasBetOnMatch(match._id)" [class.expanded]="expandedMatchId === match._id" [class.live]="match.status === 'LIVE'">
-          <ng-container *ngTemplateOutlet="matchCardTemplate; context: { $implicit: match }"></ng-container>
-        </div>
-      </div>
-      <div *ngIf="!loadingMatches && filteredMatches.length === 0" class="empty-state">
-        {{ hasActiveFilters() ? ('filters.noMatchesFound' | translate) : ('groups.noMatches' | translate) }}
-      </div>
-    </div>
-  </div>
-
-  <!-- Match Card Template -->
-  <ng-template #matchCardTemplate let-match>
-    <!-- Compact view - always visible -->
-          <div class="match-compact-row" (click)="toggleMatchExpand(match)">
+    <!-- Match Card Template -->
+    <ng-template #matchCardTemplate let-match>
+        <!-- Compact view - always visible -->
+        <div class="match-compact-row" (click)="toggleMatchExpand(match)">
             <div class="match-compact-teams">
-              <div class="team-block">
-                <span *ngIf="getBetOutcome(match._id) === '1'" class="bet-coin-icon"><span>$</span><span>$</span></span>
-                <img *ngIf="getTeamLogo(match.homeTeam, match)" [src]="getTeamLogo(match.homeTeam, match)" [alt]="match.homeTeam | teamTranslate" class="team-logo-small" (error)="onImageError($event)">
-                <span class="team-name">{{ match.homeTeam | teamTranslate }}</span>
-              </div>
-              <div class="score-block">
-                <span *ngIf="getBetOutcome(match._id) === 'X'" class="bet-coin-icon"><span>$</span><span>$</span></span>
-                <ng-container *ngIf="match.status === 'FINISHED' || match.status === 'LIVE' || (match.result && match.result.homeScore !== null); else noScoreYet">
-                  <div class="score-row">
-                    <span class="score-inline">{{ match.result?.homeScore }}</span>
-                    <span class="vs-compact">-</span>
-                    <span class="score-inline">{{ match.result?.awayScore }}</span>
-                  </div>
-                  <span *ngIf="match.status !== 'LIVE' && match.status !== 'FINISHED'" class="time-under-score">{{ match.matchDate | date:'HH:mm' }}</span>
-                </ng-container>
-                <ng-template #noScoreYet>
-                  <span class="time-instead-score">{{ match.matchDate | date:'HH:mm' }}</span>
-                </ng-template>
-                <div class="score-status-row">
-                  <span class="status-compact" [class.finished]="match.status === 'FINISHED'" [class.started]="match.status === 'SCHEDULED' && isMatchInPast(match.matchDate)" [class.live]="match.status === 'LIVE'">
+                <div class="team-block">
+                    <span *ngIf="getBetOutcome(match._id) === '1'"
+                          class="bet-coin-icon"><span>$</span><span>$</span></span>
+                    <img *ngIf="getTeamLogo(match.homeTeam, match)" [src]="getTeamLogo(match.homeTeam, match)"
+                         [alt]="match.homeTeam | teamTranslate" class="team-logo-small" (error)="onImageError($event)">
+                    <span class="team-name">{{ match.homeTeam | teamTranslate }}</span>
+                </div>
+                <div class="score-block">
+                    <span *ngIf="getBetOutcome(match._id) === 'X'"
+                          class="bet-coin-icon"><span>$</span><span>$</span></span>
+                    <ng-container
+                            *ngIf="match.status === 'FINISHED' || match.status === 'LIVE' || (match.result && match.result.homeScore !== null); else noScoreYet">
+                        <div class="score-row">
+                            <span class="score-inline">{{ match.result?.homeScore }}</span>
+                            <span class="vs-compact">-</span>
+                            <span class="score-inline">{{ match.result?.awayScore }}</span>
+                        </div>
+                        <span *ngIf="match.status !== 'LIVE' && match.status !== 'FINISHED'"
+                              class="time-under-score">{{ match.matchDate | date:'HH:mm' }}</span>
+                    </ng-container>
+                    <ng-template #noScoreYet>
+                        <span class="time-instead-score">{{ match.matchDate | date:'HH:mm' }}</span>
+                    </ng-template>
+                    <div class="score-status-row">
+                  <span class="status-compact" [class.finished]="match.status === 'FINISHED'"
+                        [class.started]="match.status === 'SCHEDULED' && isMatchInPast(match.matchDate)"
+                        [class.live]="match.status === 'LIVE'">
                     <span *ngIf="match.status === 'LIVE'" class="live-indicator"></span>
                     <ng-container *ngIf="match.status === 'LIVE'">
-                      <ng-container *ngIf="match.statusShort === 'HT'; else notHalfTime"><span class="live-time">{{ 'matches.halfTime' | translate }}</span></ng-container>
+                      <ng-container *ngIf="match.statusShort === 'HT'; else notHalfTime"><span
+                              class="live-time">{{ 'matches.halfTime' | translate }}</span></ng-container>
                       <ng-template #notHalfTime>
-                        <ng-container *ngIf="match.elapsed !== undefined && match.elapsed !== null; else liveNoTime"><span class="live-time">{{ match.elapsed }}'<span *ngIf="match.extraTime" class="extra-time">(+{{ match.extraTime }})</span></span></ng-container>
+                        <ng-container
+                                *ngIf="match.elapsed !== undefined && match.elapsed !== null; else liveNoTime"><span
+                                class="live-time">{{ match.elapsed }}'<span *ngIf="match.extraTime" class="extra-time">(+{{ match.extraTime }}
+                            )</span></span></ng-container>
                         <ng-template #liveNoTime>{{ 'matches.live' | translate }}</ng-template>
                       </ng-template>
                     </ng-container>
                     <ng-container *ngIf="match.status !== 'LIVE'">
                       {{ (match.status === 'SCHEDULED' && isMatchInPast(match.matchDate)) ? ('matches.started' | translate) : ('matches.' + match.status.toLowerCase() | translate) }}
-                      <span *ngIf="match.status === 'SCHEDULED' || match.status === 'FINISHED'" class="status-date">{{ match.matchDate | date:'dd/MM' }}</span>
+                        <span *ngIf="match.status === 'SCHEDULED' || match.status === 'FINISHED'"
+                              class="status-date">{{ match.matchDate | date:'dd/MM' }}</span>
                     </ng-container>
                   </span>
-                </div>
-              </div>
-              <div class="team-block">
-                <span *ngIf="getBetOutcome(match._id) === '2'" class="bet-coin-icon"><span>$</span><span>$</span></span>
-                <img *ngIf="getTeamLogo(match.awayTeam, match)" [src]="getTeamLogo(match.awayTeam, match)" [alt]="match.awayTeam | teamTranslate" class="team-logo-small" (error)="onImageError($event)">
-                <span class="team-name">{{ match.awayTeam | teamTranslate }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Expanded view - animated expand/collapse -->
-          <div class="match-expanded-wrapper" [class.expanded]="expandedMatchId === match._id">
-          <div class="match-expanded-content">
-            <!-- Team logo backgrounds -->
-            <div class="match-bg-logos">
-              <div class="bg-logo bg-logo-home" *ngIf="getTeamLogo(match.homeTeam, match)" [style.background-image]="'url(' + getTeamLogo(match.homeTeam, match) + ')'"></div>
-              <div class="bg-logo bg-logo-away" *ngIf="getTeamLogo(match.awayTeam, match)" [style.background-image]="'url(' + getTeamLogo(match.awayTeam, match) + ')'"></div>
-            </div>
-            <!-- Match Events Section (only for live/finished matches with API data) -->
-            <div class="match-events-section" *ngIf="match.externalApiId && (match.status === 'LIVE' || match.status === 'FINISHED')">
-              <h4 class="events-title collapsible-header" (click)="toggleMatchEvents(); $event.stopPropagation()">
-                <span>{{ 'matches.events' | translate }}</span>
-                <svg class="collapse-arrow" [class.open]="showMatchEvents" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
-              </h4>
-              <div class="collapsible-content" [class.open]="showMatchEvents">
-                <div *ngIf="loadingMatchEvents" class="section-loading">
-                  <div class="inline-spinner"></div>
-                </div>
-                <div *ngIf="!loadingMatchEvents && matchEvents.length === 0" class="events-empty">
-                  {{ 'matches.noEvents' | translate }}
-                </div>
-                <div *ngIf="!loadingMatchEvents && processedEvents.length > 0" class="events-timeline">
-                  <!-- Kick-off marker -->
-                  <div class="timeline-marker-row">
-                    <div class="timeline-side home-side"></div>
-                    <div class="timeline-center marker-center">
-                      <span class="marker-badge kickoff">KO</span>
                     </div>
-                    <div class="timeline-side away-side"></div>
-                  </div>
+                </div>
+                <div class="team-block">
+                    <span *ngIf="getBetOutcome(match._id) === '2'"
+                          class="bet-coin-icon"><span>$</span><span>$</span></span>
+                    <img *ngIf="getTeamLogo(match.awayTeam, match)" [src]="getTeamLogo(match.awayTeam, match)"
+                         [alt]="match.awayTeam | teamTranslate" class="team-logo-small" (error)="onImageError($event)">
+                    <span class="team-name">{{ match.awayTeam | teamTranslate }}</span>
+                </div>
+            </div>
+        </div>
 
-                  <ng-container *ngFor="let item of processedEvents">
-                    <!-- HT / FT Marker -->
-                    <div *ngIf="item.isMarker" class="timeline-marker-row">
-                      <div class="timeline-side home-side"></div>
-                      <div class="timeline-center marker-center">
-                        <span class="marker-badge" [class.ht]="item.markerType === 'HT'" [class.ft]="item.markerType === 'FT'">
+        <!-- Expanded view - animated expand/collapse -->
+        <div class="match-expanded-wrapper" [class.expanded]="expandedMatchId === match._id">
+            <div class="match-expanded-content">
+                <!-- Team logo backgrounds -->
+                <div class="match-bg-logos">
+                    <div class="bg-logo bg-logo-home" *ngIf="getTeamLogo(match.homeTeam, match)"
+                         [style.background-image]="'url(' + getTeamLogo(match.homeTeam, match) + ')'"></div>
+                    <div class="bg-logo bg-logo-away" *ngIf="getTeamLogo(match.awayTeam, match)"
+                         [style.background-image]="'url(' + getTeamLogo(match.awayTeam, match) + ')'"></div>
+                </div>
+                <!-- Match Events Section (only for live/finished matches with API data) -->
+                <div class="match-events-section"
+                     *ngIf="match.externalApiId && (match.status === 'LIVE' || match.status === 'FINISHED')">
+                    <h4 class="events-title collapsible-header" (click)="toggleMatchEvents(); $event.stopPropagation()">
+                        <span>{{ 'matches.events' | translate }}</span>
+                        <svg class="collapse-arrow" [class.open]="showMatchEvents" xmlns="http://www.w3.org/2000/svg"
+                             width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </h4>
+                    <div class="collapsible-content" [class.open]="showMatchEvents">
+                        <div *ngIf="loadingMatchEvents" class="section-loading">
+                            <div class="inline-spinner"></div>
+                        </div>
+                        <div *ngIf="!loadingMatchEvents && matchEvents.length === 0" class="events-empty">
+                            {{ 'matches.noEvents' | translate }}
+                        </div>
+                        <div *ngIf="!loadingMatchEvents && processedEvents.length > 0" class="events-timeline">
+                            <!-- Kick-off marker -->
+                            <div class="timeline-marker-row">
+                                <div class="timeline-side home-side"></div>
+                                <div class="timeline-center marker-center">
+                                    <span class="marker-badge kickoff">KO</span>
+                                </div>
+                                <div class="timeline-side away-side"></div>
+                            </div>
+
+                            <ng-container *ngFor="let item of processedEvents">
+                                <!-- HT / FT Marker -->
+                                <div *ngIf="item.isMarker" class="timeline-marker-row">
+                                    <div class="timeline-side home-side"></div>
+                                    <div class="timeline-center marker-center">
+                        <span class="marker-badge" [class.ht]="item.markerType === 'HT'"
+                              [class.ft]="item.markerType === 'FT'">
                           {{ item.markerType }}
-                          <span class="marker-time">{{ item.label }}</span>
+                            <span class="marker-time">{{ item.label }}</span>
                         </span>
-                      </div>
-                      <div class="timeline-side away-side"></div>
-                    </div>
+                                    </div>
+                                    <div class="timeline-side away-side"></div>
+                                </div>
 
-                    <!-- Event Row -->
-                    <div *ngIf="!item.isMarker" class="timeline-row"
-                         [class.home-event]="item.event.team.id === match.homeTeamId"
-                         [class.away-event]="item.event.team.id !== match.homeTeamId"
-                         [class.goal-row]="item.event.type === 'Goal'">
-                      <!-- Home side -->
-                      <div class="timeline-side home-side">
-                        <ng-container *ngIf="item.event.team.id === match.homeTeamId">
-                          <!-- GOAL event -->
-                          <div class="event-content goal" *ngIf="item.event.type === 'Goal'">
-                            <div class="goal-icon-wrap">
-                              <span class="goal-ball-emoji">&#9917;</span>
-                              <div class="goal-ripple"></div>
-                            </div>
-                            <div class="event-info">
-                              <span class="goal-label">{{ 'matches.goalLabel' | translate }}</span>
-                              <span class="goal-scorer">{{ item.event.player?.name || '-' }}</span>
-                              <span *ngIf="item.event.assist?.name" class="goal-assist">{{ 'matches.assistLabel' | translate }}: {{ item.event.assist?.name }}</span>
-                            </div>
-                          </div>
-                          <!-- CARD event -->
-                          <div class="event-content" *ngIf="item.event.type === 'Card'"
-                               [class.card-yellow]="item.event.detail.includes('Yellow')"
-                               [class.card-red]="item.event.detail.includes('Red')">
-                            <div class="event-icon">
-                              <span *ngIf="item.event.detail.includes('Yellow')" class="card-icon yellow"></span>
-                              <span *ngIf="item.event.detail.includes('Red')" class="card-icon red"></span>
-                            </div>
-                            <div class="event-info">
-                              <span class="event-player">{{ item.event.player?.name || '-' }}</span>
-                            </div>
-                          </div>
-                          <!-- SUBST event -->
-                          <div class="event-content subst" *ngIf="item.event.type === 'Subst'">
-                            <div class="subst-icon-wrap">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M1 4v6h6" stroke="#4ade80"/>
-                                <path d="M23 20v-6h-6" stroke="#f87171"/>
-                                <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10" stroke="#4ade80"/>
-                                <path d="M3.51 15A9 9 0 0 0 18.36 18.36L23 14" stroke="#f87171"/>
-                              </svg>
-                            </div>
-                            <div class="subst-players">
-                              <div class="subst-player-row player-in">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="3" stroke-linecap="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
-                                <span class="subst-player-name">{{ item.event.player?.name }}</span>
-                              </div>
-                              <div class="subst-player-row player-out" *ngIf="item.event.assist?.name">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="3" stroke-linecap="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
-                                <span class="subst-player-name">{{ item.event.assist?.name }}</span>
-                              </div>
-                            </div>
-                          </div>
-                          <!-- VAR event -->
-                          <div class="event-content var" *ngIf="item.event.type === 'Var'">
-                            <div class="event-icon"><span class="var-badge">VAR</span></div>
-                            <div class="event-info">
-                              <span class="event-player">{{ item.event.player?.name || '-' }}</span>
-                            </div>
-                          </div>
-                        </ng-container>
-                      </div>
-                      <!-- Center time -->
-                      <div class="timeline-center">
-                        <span class="event-time" [class.goal-time]="item.event.type === 'Goal'">{{ item.event.time.elapsed }}<span *ngIf="item.event.time.extra">+{{ item.event.time.extra }}</span>'</span>
-                      </div>
-                      <!-- Away side -->
-                      <div class="timeline-side away-side">
-                        <ng-container *ngIf="item.event.team.id !== match.homeTeamId">
-                          <!-- GOAL event -->
-                          <div class="event-content goal" *ngIf="item.event.type === 'Goal'">
-                            <div class="goal-icon-wrap">
-                              <span class="goal-ball-emoji">&#9917;</span>
-                              <div class="goal-ripple"></div>
-                            </div>
-                            <div class="event-info">
-                              <span class="goal-label">{{ 'matches.goalLabel' | translate }}</span>
-                              <span class="goal-scorer">{{ item.event.player?.name || '-' }}</span>
-                              <span *ngIf="item.event.assist?.name" class="goal-assist">{{ 'matches.assistLabel' | translate }}: {{ item.event.assist?.name }}</span>
-                            </div>
-                          </div>
-                          <!-- CARD event -->
-                          <div class="event-content" *ngIf="item.event.type === 'Card'"
-                               [class.card-yellow]="item.event.detail.includes('Yellow')"
-                               [class.card-red]="item.event.detail.includes('Red')">
-                            <div class="event-icon">
-                              <span *ngIf="item.event.detail.includes('Yellow')" class="card-icon yellow"></span>
-                              <span *ngIf="item.event.detail.includes('Red')" class="card-icon red"></span>
-                            </div>
-                            <div class="event-info">
-                              <span class="event-player">{{ item.event.player?.name || '-' }}</span>
-                            </div>
-                          </div>
-                          <!-- SUBST event -->
-                          <div class="event-content subst" *ngIf="item.event.type === 'Subst'">
-                            <div class="subst-icon-wrap">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M1 4v6h6" stroke="#4ade80"/>
-                                <path d="M23 20v-6h-6" stroke="#f87171"/>
-                                <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10" stroke="#4ade80"/>
-                                <path d="M3.51 15A9 9 0 0 0 18.36 18.36L23 14" stroke="#f87171"/>
-                              </svg>
-                            </div>
-                            <div class="subst-players">
-                              <div class="subst-player-row player-in">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="3" stroke-linecap="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
-                                <span class="subst-player-name">{{ item.event.player?.name }}</span>
-                              </div>
-                              <div class="subst-player-row player-out" *ngIf="item.event.assist?.name">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="3" stroke-linecap="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
-                                <span class="subst-player-name">{{ item.event.assist?.name }}</span>
-                              </div>
-                            </div>
-                          </div>
-                          <!-- VAR event -->
-                          <div class="event-content var" *ngIf="item.event.type === 'Var'">
-                            <div class="event-icon"><span class="var-badge">VAR</span></div>
-                            <div class="event-info">
-                              <span class="event-player">{{ item.event.player?.name || '-' }}</span>
-                            </div>
-                          </div>
-                        </ng-container>
-                      </div>
+                                <!-- Event Row -->
+                                <div *ngIf="!item.isMarker" class="timeline-row"
+                                     [class.home-event]="item.event.team.id === match.homeTeamId"
+                                     [class.away-event]="item.event.team.id !== match.homeTeamId"
+                                     [class.goal-row]="item.event.type === 'Goal'">
+                                    <!-- Home side -->
+                                    <div class="timeline-side home-side">
+                                        <ng-container *ngIf="item.event.team.id === match.homeTeamId">
+                                            <!-- GOAL event -->
+                                            <div class="event-content goal" *ngIf="item.event.type === 'Goal'">
+                                                <div class="goal-icon-wrap">
+                                                    <span class="goal-ball-emoji">&#9917;</span>
+                                                    <div class="goal-ripple"></div>
+                                                </div>
+                                                <div class="event-info">
+                                                    <span class="goal-label">{{ 'matches.goalLabel' | translate }}</span>
+                                                    <span class="goal-scorer">{{ item.event.player?.name || '-' }}</span>
+                                                    <span *ngIf="item.event.assist?.name"
+                                                          class="goal-assist">{{ 'matches.assistLabel' | translate }}
+                                                        : {{ item.event.assist?.name }}</span>
+                                                </div>
+                                            </div>
+                                            <!-- CARD event -->
+                                            <div class="event-content" *ngIf="item.event.type === 'Card'"
+                                                 [class.card-yellow]="item.event.detail.includes('Yellow')"
+                                                 [class.card-red]="item.event.detail.includes('Red')">
+                                                <div class="event-icon">
+                                                    <span *ngIf="item.event.detail.includes('Yellow')"
+                                                          class="card-icon yellow"></span>
+                                                    <span *ngIf="item.event.detail.includes('Red')"
+                                                          class="card-icon red"></span>
+                                                </div>
+                                                <div class="event-info">
+                                                    <span class="event-player">{{ item.event.player?.name || '-' }}</span>
+                                                </div>
+                                            </div>
+                                            <!-- SUBST event -->
+                                            <div class="event-content subst" *ngIf="item.event.type === 'Subst'">
+                                                <div class="subst-icon-wrap">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                                         viewBox="0 0 24 24" fill="none" stroke-width="2"
+                                                         stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M1 4v6h6" stroke="#4ade80"/>
+                                                        <path d="M23 20v-6h-6" stroke="#f87171"/>
+                                                        <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10" stroke="#4ade80"/>
+                                                        <path d="M3.51 15A9 9 0 0 0 18.36 18.36L23 14"
+                                                              stroke="#f87171"/>
+                                                    </svg>
+                                                </div>
+                                                <div class="subst-players">
+                                                    <div class="subst-player-row player-in"
+                                                         *ngIf="item.event.assist?.name">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8"
+                                                             viewBox="0 0 24 24" fill="none" stroke="#4ade80"
+                                                             stroke-width="3" stroke-linecap="round">
+                                                            <path d="M5 12h14"/>
+                                                            <path d="M12 5l7 7-7 7"/>
+                                                        </svg>
+                                                        <span class="subst-player-name">{{ item.event.assist?.name }}</span>
+                                                    </div>
+                                                    <div class="subst-player-row player-out">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8"
+                                                             viewBox="0 0 24 24" fill="none" stroke="#f87171"
+                                                             stroke-width="3" stroke-linecap="round">
+                                                            <path d="M19 12H5"/>
+                                                            <path d="M12 19l-7-7 7-7"/>
+                                                        </svg>
+                                                        <span class="subst-player-name">{{ item.event.player?.name }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- VAR event -->
+                                            <div class="event-content var" *ngIf="item.event.type === 'Var'">
+                                                <div class="event-icon"><span class="var-badge">VAR</span></div>
+                                                <div class="event-info">
+                                                    <span class="event-player">{{ item.event.player?.name || '-' }}</span>
+                                                </div>
+                                            </div>
+                                        </ng-container>
+                                    </div>
+                                    <!-- Center time -->
+                                    <div class="timeline-center">
+                                        <span class="event-time"
+                                              [class.goal-time]="item.event.type === 'Goal'">{{ item.event.time.elapsed }}
+                                            <span *ngIf="item.event.time.extra">+{{ item.event.time.extra }}</span>'</span>
+                                    </div>
+                                    <!-- Away side -->
+                                    <div class="timeline-side away-side">
+                                        <ng-container *ngIf="item.event.team.id !== match.homeTeamId">
+                                            <!-- GOAL event -->
+                                            <div class="event-content goal" *ngIf="item.event.type === 'Goal'">
+                                                <div class="goal-icon-wrap">
+                                                    <span class="goal-ball-emoji">&#9917;</span>
+                                                    <div class="goal-ripple"></div>
+                                                </div>
+                                                <div class="event-info">
+                                                    <span class="goal-label">{{ 'matches.goalLabel' | translate }}</span>
+                                                    <span class="goal-scorer">{{ item.event.player?.name || '-' }}</span>
+                                                    <span *ngIf="item.event.assist?.name"
+                                                          class="goal-assist">{{ 'matches.assistLabel' | translate }}
+                                                        : {{ item.event.assist?.name }}</span>
+                                                </div>
+                                            </div>
+                                            <!-- CARD event -->
+                                            <div class="event-content" *ngIf="item.event.type === 'Card'"
+                                                 [class.card-yellow]="item.event.detail.includes('Yellow')"
+                                                 [class.card-red]="item.event.detail.includes('Red')">
+                                                <div class="event-icon">
+                                                    <span *ngIf="item.event.detail.includes('Yellow')"
+                                                          class="card-icon yellow"></span>
+                                                    <span *ngIf="item.event.detail.includes('Red')"
+                                                          class="card-icon red"></span>
+                                                </div>
+                                                <div class="event-info">
+                                                    <span class="event-player">{{ item.event.player?.name || '-' }}</span>
+                                                </div>
+                                            </div>
+                                            <!-- SUBST event -->
+                                            <div class="event-content subst" *ngIf="item.event.type === 'Subst'">
+                                                <div class="subst-icon-wrap">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                                         viewBox="0 0 24 24" fill="none" stroke-width="2"
+                                                         stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M1 4v6h6" stroke="#4ade80"/>
+                                                        <path d="M23 20v-6h-6" stroke="#f87171"/>
+                                                        <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10" stroke="#4ade80"/>
+                                                        <path d="M3.51 15A9 9 0 0 0 18.36 18.36L23 14"
+                                                              stroke="#f87171"/>
+                                                    </svg>
+                                                </div>
+                                                <div class="subst-players">
+                                                    <div class="subst-player-row player-in"
+                                                         *ngIf="item.event.assist?.name">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8"
+                                                             viewBox="0 0 24 24" fill="none" stroke="#4ade80"
+                                                             stroke-width="3" stroke-linecap="round">
+                                                            <path d="M5 12h14"/>
+                                                            <path d="M12 5l7 7-7 7"/>
+                                                        </svg>
+                                                        <span class="subst-player-name">{{ item.event.assist?.name }}</span>
+                                                    </div>
+                                                    <div class="subst-player-row player-out">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8"
+                                                             viewBox="0 0 24 24" fill="none" stroke="#f87171"
+                                                             stroke-width="3" stroke-linecap="round">
+                                                            <path d="M19 12H5"/>
+                                                            <path d="M12 19l-7-7 7-7"/>
+                                                        </svg>
+                                                        <span class="subst-player-name">{{ item.event.player?.name }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- VAR event -->
+                                            <div class="event-content var" *ngIf="item.event.type === 'Var'">
+                                                <div class="event-icon"><span class="var-badge">VAR</span></div>
+                                                <div class="event-info">
+                                                    <span class="event-player">{{ item.event.player?.name || '-' }}</span>
+                                                </div>
+                                            </div>
+                                        </ng-container>
+                                    </div>
+                                </div>
+                            </ng-container>
+                        </div>
                     </div>
-                  </ng-container>
                 </div>
-              </div>
-            </div>
-            <!-- Betting Section -->
-            <div class="betting-section">
-              <h4 class="betting-title collapsible-header" (click)="showBetting = !showBetting; $event.stopPropagation()">
-                <span>{{ 'matches.betting' | translate }}</span>
-                <svg class="collapse-arrow" [class.open]="showBetting" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
-              </h4>
-              <div class="collapsible-content" [class.open]="showBetting">
-                <div class="match-actions-row" *ngIf="canManageGroup() && !isAutomaticGroup()">
-                  <span *ngIf="isMatchInPast(match.matchDate) && match.status === 'SCHEDULED' && !canManageGroup()" class="past-match-label">
+                <!-- Betting Section -->
+                <div class="betting-section">
+                    <h4 class="betting-title collapsible-header"
+                        (click)="showBetting = !showBetting; $event.stopPropagation()">
+                        <span>{{ 'matches.betting' | translate }}</span>
+                        <svg class="collapse-arrow" [class.open]="showBetting" xmlns="http://www.w3.org/2000/svg"
+                             width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </h4>
+                    <div class="collapsible-content" [class.open]="showBetting">
+                        <div class="match-actions-row" *ngIf="canManageGroup() && !isAutomaticGroup()">
+                  <span *ngIf="isMatchInPast(match.matchDate) && match.status === 'SCHEDULED' && !canManageGroup()"
+                        class="past-match-label">
                     {{ 'matches.matchStartedLabel' | translate }}
                   </span>
-                  <button
-                    *ngIf="canUpdateScore(match)"
-                    (click)="openScoreUpdate(match); $event.stopPropagation()"
-                    class="btn-action">
-                    {{ 'matches.updateScore' | translate }}
-                  </button>
-                  <button
-                    *ngIf="match.status === 'SCHEDULED' && match.result && match.result.homeScore !== null"
-                    (click)="markAsFinished(match._id); $event.stopPropagation()"
-                    class="btn-action btn-finish">
-                    {{ 'matches.markAsFinished' | translate }}
-                  </button>
-                </div>
-                <!-- Score update form -->
-                <div *ngIf="editingMatchId === match._id && !isAutomaticGroup()" class="score-update-form">
-                  <div class="score-form-row">
-                    <div class="score-form-group">
-                      <label>{{ match.homeTeam | teamTranslate }}</label>
-                      <input
-                        type="number"
-                        [(ngModel)]="updateScoreData.homeScore"
-                        class="score-input"
-                        min="0">
-                    </div>
-                    <div class="score-form-group">
-                      <label>{{ match.awayTeam | teamTranslate }}</label>
-                      <input
-                        type="number"
-                        [(ngModel)]="updateScoreData.awayScore"
-                        class="score-input"
-                        min="0">
-                    </div>
-                  </div>
-                  <div class="score-button-row">
-                    <button
-                      (click)="submitScoreUpdate(match._id)"
-                      [disabled]="loadingScoreUpdate || updateScoreData.homeScore === null || updateScoreData.awayScore === null"
-                      class="btn-primary btn-small">
-                      {{ loadingScoreUpdate ? ('auth.loading' | translate) : ('matches.saveScore' | translate) }}
-                    </button>
-                    <button (click)="cancelScoreUpdate()" class="btn-secondary btn-small">
-                      {{ 'groups.cancel' | translate }}
-                    </button>
-                  </div>
-                </div>
-                <!-- Inline Bet Outcome Buttons -->
-                <p *ngIf="placingBetForMatch === match._id && canPlaceBet(match)" class="bet-instruction">{{ 'bets.clickOnYourBet' | translate }}</p>
-                <div *ngIf="placingBetForMatch === match._id && canPlaceBet(match)" class="inline-outcome-buttons">
-                  <button
-                    type="button"
-                    class="inline-outcome-btn"
-                    [class.selected]="inlineBetData.outcome === '1'"
-                    [disabled]="inlineLoadingBet"
-                    (click)="selectInlineOutcome('1'); $event.stopPropagation()">
-                    <img *ngIf="getTeamLogo(match.homeTeam, match)" [src]="getTeamLogo(match.homeTeam, match)" class="inline-outcome-logo" (error)="onImageError($event)">
-                    <span class="inline-outcome-number">1</span>
-                    <span *ngIf="getMatchRelativePoints(match)" class="inline-outcome-odds">x{{ getMatchRelativePoints(match)?.homeWin }}</span>
-                  </button>
-                  <button
-                    type="button"
-                    class="inline-outcome-btn inline-outcome-draw"
-                    [class.selected]="inlineBetData.outcome === 'X'"
-                    [disabled]="inlineLoadingBet"
-                    (click)="selectInlineOutcome('X'); $event.stopPropagation()">
-                    <span class="inline-outcome-number">X</span>
-                    <span *ngIf="getMatchRelativePoints(match)" class="inline-outcome-odds">x{{ getMatchRelativePoints(match)?.draw }}</span>
-                  </button>
-                  <button
-                    type="button"
-                    class="inline-outcome-btn"
-                    [class.selected]="inlineBetData.outcome === '2'"
-                    [disabled]="inlineLoadingBet"
-                    (click)="selectInlineOutcome('2'); $event.stopPropagation()">
-                    <img *ngIf="getTeamLogo(match.awayTeam, match)" [src]="getTeamLogo(match.awayTeam, match)" class="inline-outcome-logo" (error)="onImageError($event)">
-                    <span class="inline-outcome-number">2</span>
-                    <span *ngIf="getMatchRelativePoints(match)" class="inline-outcome-odds">x{{ getMatchRelativePoints(match)?.awayWin }}</span>
-                  </button>
-                </div>
-                <!-- Wager section for relative groups -->
-                <div *ngIf="placingBetForMatch === match._id && canPlaceBet(match) && group?.betType === 'relative' && inlineBetData.outcome" class="inline-wager-section">
-                  <div class="inline-wager-row">
-                    <div class="inline-credits-display">
-                      <span class="inline-credits-label">{{ 'bets.availableCredits' | translate }}:</span>
-                      <span class="inline-credits-value">{{ inlineEffectiveCredits | number:'1.0-1' }}</span>
-                    </div>
-                    <div class="inline-wager-input-group" (click)="$event.stopPropagation()">
-                      <input
-                        type="number"
-                        [(ngModel)]="inlineWagerAmount"
-                        min="1"
-                        [max]="inlineEffectiveCredits"
-                        step="1"
-                        class="inline-wager-input"
-                        [placeholder]="'bets.enterWagerAmount' | translate"
-                        [disabled]="inlineLoadingBet || inlineEffectiveCredits <= 0">
-                    </div>
-                  </div>
-                  <div *ngIf="inlineWagerAmount && inlineBetData.outcome && getMatchRelativePoints(match)" class="inline-potential-win">
-                    <span class="inline-potential-label">{{ 'bets.potentialWin' | translate }}:</span>
-                    <span class="inline-potential-value">{{ calculateInlinePotentialWin(match) | number:'1.0-1' }} {{ 'groups.credits' | translate }}</span>
-                  </div>
-                  <button
-                    type="button"
-                    class="inline-submit-bet"
-                    [disabled]="inlineLoadingBet || !inlineWagerAmount || inlineEffectiveCredits <= 0"
-                    (click)="submitInlineBet(); $event.stopPropagation()">
-                    <span *ngIf="inlineLoadingBet" class="inline-spinner btn-spinner"></span>
-                    {{ inlineLoadingBet ? ('bets.placingBet' | translate) : (inlineExistingBet ? ('bets.updateBet' | translate) : ('matches.placeBet' | translate)) }}
-                  </button>
-                </div>
-                <div *ngIf="inlineLoadingBet && group?.betType !== 'relative'" class="inline-bet-loading">
-                  <span class="inline-spinner btn-spinner"></span>
-                </div>
-                <!-- Member Bets (auto-loaded) -->
-                <div *ngIf="viewingBetsForMatch === match._id">
-                  <div *ngIf="loadingMemberBets" class="section-loading">
-                    <div class="inline-spinner"></div>
-                  </div>
-                  <div *ngIf="!loadingMemberBets && memberBets.length > 0" class="member-bets-list">
-                    <div *ngFor="let memberBet of memberBets" class="member-bet-item">
-                      <span class="member-name">{{ memberBet.user.username }}</span>
-                      <span *ngIf="memberBet.hasBet" class="bet-time">{{ memberBet.bet?.createdAt | date:'dd/MM/yy, HH:mm' }}</span>
-                      <div class="bet-info">
-                        <span *ngIf="memberBet.hasBet" class="bet-outcome" [class.home]="memberBet.bet?.outcome === '1'" [class.draw]="memberBet.bet?.outcome === 'X'" [class.away]="memberBet.bet?.outcome === '2'">
+                            <button
+                                    *ngIf="canUpdateScore(match)"
+                                    (click)="openScoreUpdate(match); $event.stopPropagation()"
+                                    class="btn-action">
+                                {{ 'matches.updateScore' | translate }}
+                            </button>
+                            <button
+                                    *ngIf="match.status === 'SCHEDULED' && match.result && match.result.homeScore !== null"
+                                    (click)="markAsFinished(match._id); $event.stopPropagation()"
+                                    class="btn-action btn-finish">
+                                {{ 'matches.markAsFinished' | translate }}
+                            </button>
+                        </div>
+                        <!-- Score update form -->
+                        <div *ngIf="editingMatchId === match._id && !isAutomaticGroup()" class="score-update-form">
+                            <div class="score-form-row">
+                                <div class="score-form-group">
+                                    <label>{{ match.homeTeam | teamTranslate }}</label>
+                                    <input
+                                            type="number"
+                                            [(ngModel)]="updateScoreData.homeScore"
+                                            class="score-input"
+                                            min="0">
+                                </div>
+                                <div class="score-form-group">
+                                    <label>{{ match.awayTeam | teamTranslate }}</label>
+                                    <input
+                                            type="number"
+                                            [(ngModel)]="updateScoreData.awayScore"
+                                            class="score-input"
+                                            min="0">
+                                </div>
+                            </div>
+                            <div class="score-button-row">
+                                <button
+                                        (click)="submitScoreUpdate(match._id)"
+                                        [disabled]="loadingScoreUpdate || updateScoreData.homeScore === null || updateScoreData.awayScore === null"
+                                        class="btn-primary btn-small">
+                                    {{ loadingScoreUpdate ? ('auth.loading' | translate) : ('matches.saveScore' | translate) }}
+                                </button>
+                                <button (click)="cancelScoreUpdate()" class="btn-secondary btn-small">
+                                    {{ 'groups.cancel' | translate }}
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Inline Bet Outcome Buttons -->
+                        <p *ngIf="placingBetForMatch === match._id && canPlaceBet(match)"
+                           class="bet-instruction">{{ 'bets.clickOnYourBet' | translate }}</p>
+                        <div *ngIf="placingBetForMatch === match._id && canPlaceBet(match)"
+                             class="inline-outcome-buttons">
+                            <button
+                                    type="button"
+                                    class="inline-outcome-btn"
+                                    [class.selected]="inlineBetData.outcome === '1'"
+                                    [disabled]="inlineLoadingBet"
+                                    (click)="selectInlineOutcome('1'); $event.stopPropagation()">
+                                <img *ngIf="getTeamLogo(match.homeTeam, match)"
+                                     [src]="getTeamLogo(match.homeTeam, match)" class="inline-outcome-logo"
+                                     (error)="onImageError($event)">
+                                <span class="inline-outcome-number">1</span>
+                                <span *ngIf="getMatchRelativePoints(match)"
+                                      class="inline-outcome-odds">x{{ getMatchRelativePoints(match)?.homeWin }}</span>
+                            </button>
+                            <button
+                                    type="button"
+                                    class="inline-outcome-btn inline-outcome-draw"
+                                    [class.selected]="inlineBetData.outcome === 'X'"
+                                    [disabled]="inlineLoadingBet"
+                                    (click)="selectInlineOutcome('X'); $event.stopPropagation()">
+                                <span class="inline-outcome-number">X</span>
+                                <span *ngIf="getMatchRelativePoints(match)"
+                                      class="inline-outcome-odds">x{{ getMatchRelativePoints(match)?.draw }}</span>
+                            </button>
+                            <button
+                                    type="button"
+                                    class="inline-outcome-btn"
+                                    [class.selected]="inlineBetData.outcome === '2'"
+                                    [disabled]="inlineLoadingBet"
+                                    (click)="selectInlineOutcome('2'); $event.stopPropagation()">
+                                <img *ngIf="getTeamLogo(match.awayTeam, match)"
+                                     [src]="getTeamLogo(match.awayTeam, match)" class="inline-outcome-logo"
+                                     (error)="onImageError($event)">
+                                <span class="inline-outcome-number">2</span>
+                                <span *ngIf="getMatchRelativePoints(match)"
+                                      class="inline-outcome-odds">x{{ getMatchRelativePoints(match)?.awayWin }}</span>
+                            </button>
+                        </div>
+                        <!-- Wager section for relative groups -->
+                        <div *ngIf="placingBetForMatch === match._id && canPlaceBet(match) && group?.betType === 'relative' && inlineBetData.outcome"
+                             class="inline-wager-section">
+                            <div class="inline-wager-row">
+                                <div class="inline-credits-display">
+                                    <span class="inline-credits-label">{{ 'bets.availableCredits' | translate }}:</span>
+                                    <span class="inline-credits-value">{{ inlineEffectiveCredits | number:'1.0-1' }}</span>
+                                </div>
+                                <div class="inline-wager-input-group" (click)="$event.stopPropagation()">
+                                    <input
+                                            type="number"
+                                            [(ngModel)]="inlineWagerAmount"
+                                            min="1"
+                                            [max]="inlineEffectiveCredits"
+                                            step="1"
+                                            class="inline-wager-input"
+                                            [placeholder]="'bets.enterWagerAmount' | translate"
+                                            [disabled]="inlineLoadingBet || inlineEffectiveCredits <= 0">
+                                </div>
+                            </div>
+                            <div *ngIf="inlineWagerAmount && inlineBetData.outcome && getMatchRelativePoints(match)"
+                                 class="inline-potential-win">
+                                <span class="inline-potential-label">{{ 'bets.potentialWin' | translate }}:</span>
+                                <span class="inline-potential-value">{{ calculateInlinePotentialWin(match) | number:'1.0-1' }} {{ 'groups.credits' | translate }}</span>
+                            </div>
+                            <button
+                                    type="button"
+                                    class="inline-submit-bet"
+                                    [disabled]="inlineLoadingBet || !inlineWagerAmount || inlineEffectiveCredits <= 0"
+                                    (click)="submitInlineBet(); $event.stopPropagation()">
+                                <span *ngIf="inlineLoadingBet" class="inline-spinner btn-spinner"></span>
+                                {{ inlineLoadingBet ? ('bets.placingBet' | translate) : (inlineExistingBet ? ('bets.updateBet' | translate) : ('matches.placeBet' | translate)) }}
+                            </button>
+                        </div>
+                        <div *ngIf="inlineLoadingBet && group?.betType !== 'relative'" class="inline-bet-loading">
+                            <span class="inline-spinner btn-spinner"></span>
+                        </div>
+                        <!-- Member Bets (auto-loaded) -->
+                        <div *ngIf="viewingBetsForMatch === match._id">
+                            <div *ngIf="loadingMemberBets" class="section-loading">
+                                <div class="inline-spinner"></div>
+                            </div>
+                            <div *ngIf="!loadingMemberBets && memberBets.length > 0" class="member-bets-list">
+                                <div *ngFor="let memberBet of memberBets" class="member-bet-item">
+                                    <span class="member-name">{{ memberBet.user.username }}</span>
+                                    <span *ngIf="memberBet.hasBet"
+                                          class="bet-time">{{ memberBet.bet?.createdAt | date:'dd/MM/yy, HH:mm' }}</span>
+                                    <div class="bet-info">
+                        <span *ngIf="memberBet.hasBet" class="bet-outcome" [class.home]="memberBet.bet?.outcome === '1'"
+                              [class.draw]="memberBet.bet?.outcome === 'X'"
+                              [class.away]="memberBet.bet?.outcome === '2'">
                           {{ memberBet.bet?.outcome === '1' ? (match.homeTeam | teamTranslate) : (memberBet.bet?.outcome === '2' ? (match.awayTeam | teamTranslate) : ('bets.draw' | translate)) }}
                         </span>
-                        <span *ngIf="memberBet.hasBet && group.betType === 'relative' && memberBet.bet?.wagerAmount" class="bet-wager">
+                                        <span *ngIf="memberBet.hasBet && group.betType === 'relative' && memberBet.bet?.wagerAmount"
+                                              class="bet-wager">
                           {{ memberBet.bet?.wagerAmount | number:'1.0-1' }} {{ 'groups.credits' | translate }}
                         </span>
-                        <span *ngIf="!memberBet.hasBet" class="no-bet">{{ 'bets.noBet' | translate }}</span>
-                      </div>
+                                        <span *ngIf="!memberBet.hasBet"
+                                              class="no-bet">{{ 'bets.noBet' | translate }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div *ngIf="!loadingMemberBets && memberBets.length === 0" class="empty-bets">
+                                {{ 'groups.noMembers' | translate }}
+                            </div>
+                        </div>
                     </div>
-                  </div>
-                  <div *ngIf="!loadingMemberBets && memberBets.length === 0" class="empty-bets">
-                    {{ 'groups.noMembers' | translate }}
-                  </div>
                 </div>
-              </div>
-            </div>
-            <!-- Head-to-Head History -->
-            <div class="head-to-head-section">
-              <h4 class="h2h-title collapsible-header" (click)="toggleHeadToHead(); $event.stopPropagation()">
-                <span>{{ 'matches.headToHead' | translate }}</span>
-                <svg class="collapse-arrow" [class.open]="showHeadToHead" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
-              </h4>
-              <div class="collapsible-content" [class.open]="showHeadToHead">
-                <div *ngIf="loadingHeadToHead" class="section-loading">
-                  <div class="inline-spinner"></div>
-                </div>
-                <div *ngIf="!loadingHeadToHead && headToHeadMatches.length === 0" class="h2h-empty">
-                  {{ 'matches.noHeadToHead' | translate }}
-                </div>
-                <div *ngIf="!loadingHeadToHead && headToHeadMatches.length > 0" class="h2h-list">
-                  <div *ngFor="let h2hMatch of headToHeadMatches" class="h2h-item">
-                    <span class="h2h-date">{{ h2hMatch.matchDate | date:'dd/MM/yy' }}</span>
-                    <div class="h2h-teams">
-                      <span class="h2h-team" [class.winner]="(h2hMatch.result?.homeScore ?? 0) > (h2hMatch.result?.awayScore ?? 0)">{{ h2hMatch.homeTeam | teamTranslate }}</span>
-                      <span class="h2h-score">{{ h2hMatch.result?.homeScore }} - {{ h2hMatch.result?.awayScore }}</span>
-                      <span class="h2h-team" [class.winner]="(h2hMatch.result?.awayScore ?? 0) > (h2hMatch.result?.homeScore ?? 0)">{{ h2hMatch.awayTeam | teamTranslate }}</span>
+                <!-- Head-to-Head History -->
+                <div class="head-to-head-section">
+                    <h4 class="h2h-title collapsible-header" (click)="toggleHeadToHead(); $event.stopPropagation()">
+                        <span>{{ 'matches.headToHead' | translate }}</span>
+                        <svg class="collapse-arrow" [class.open]="showHeadToHead" xmlns="http://www.w3.org/2000/svg"
+                             width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </h4>
+                    <div class="collapsible-content" [class.open]="showHeadToHead">
+                        <div *ngIf="loadingHeadToHead" class="section-loading">
+                            <div class="inline-spinner"></div>
+                        </div>
+                        <div *ngIf="!loadingHeadToHead && headToHeadMatches.length === 0" class="h2h-empty">
+                            {{ 'matches.noHeadToHead' | translate }}
+                        </div>
+                        <div *ngIf="!loadingHeadToHead && headToHeadMatches.length > 0" class="h2h-list">
+                            <div *ngFor="let h2hMatch of headToHeadMatches" class="h2h-item">
+                                <span class="h2h-date">{{ h2hMatch.matchDate | date:'dd/MM/yy' }}</span>
+                                <div class="h2h-teams">
+                                    <span class="h2h-team"
+                                          [class.winner]="(h2hMatch.result?.homeScore ?? 0) > (h2hMatch.result?.awayScore ?? 0)">{{ h2hMatch.homeTeam | teamTranslate }}</span>
+                                    <span class="h2h-score">{{ h2hMatch.result?.homeScore }}
+                                        - {{ h2hMatch.result?.awayScore }}</span>
+                                    <span class="h2h-team"
+                                          [class.winner]="(h2hMatch.result?.awayScore ?? 0) > (h2hMatch.result?.homeScore ?? 0)">{{ h2hMatch.awayTeam | teamTranslate }}</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                  </div>
                 </div>
-              </div>
-            </div>
-            <!-- Team Form Section -->
-            <div class="team-form-section">
-              <h4 class="team-form-title collapsible-header" (click)="toggleTeamForm(); $event.stopPropagation()">
-                <span>{{ 'matches.teamForm' | translate }}</span>
-                <svg class="collapse-arrow" [class.open]="showTeamForm" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
-              </h4>
-              <div class="collapsible-content" [class.open]="showTeamForm">
-                <div *ngIf="loadingTeamForm" class="section-loading">
-                  <div class="inline-spinner"></div>
-                </div>
-                <div *ngIf="!loadingTeamForm" class="team-form-container">
-                  <!-- Home Team Form -->
-                  <div class="team-form-column">
-                    <div class="team-form-header">
-                      <img *ngIf="getTeamLogo(match.homeTeam, match)" [src]="getTeamLogo(match.homeTeam, match)" class="team-form-logo" (error)="onImageError($event)">
-                      <span class="team-form-name">{{ match.homeTeam | teamTranslate }}</span>
-                    </div>
-                    <div *ngIf="homeTeamRecentMatches.length === 0" class="team-form-empty">
-                      {{ 'matches.noRecentMatches' | translate }}
-                    </div>
-                    <div *ngIf="homeTeamRecentMatches.length > 0" class="team-form-results">
+                <!-- Team Form Section -->
+                <div class="team-form-section">
+                    <h4 class="team-form-title collapsible-header" (click)="toggleTeamForm(); $event.stopPropagation()">
+                        <span>{{ 'matches.teamForm' | translate }}</span>
+                        <svg class="collapse-arrow" [class.open]="showTeamForm" xmlns="http://www.w3.org/2000/svg"
+                             width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </h4>
+                    <div class="collapsible-content" [class.open]="showTeamForm">
+                        <div *ngIf="loadingTeamForm" class="section-loading">
+                            <div class="inline-spinner"></div>
+                        </div>
+                        <div *ngIf="!loadingTeamForm" class="team-form-container">
+                            <!-- Home Team Form -->
+                            <div class="team-form-column">
+                                <div class="team-form-header">
+                                    <img *ngIf="getTeamLogo(match.homeTeam, match)"
+                                         [src]="getTeamLogo(match.homeTeam, match)" class="team-form-logo"
+                                         (error)="onImageError($event)">
+                                    <span class="team-form-name">{{ match.homeTeam | teamTranslate }}</span>
+                                </div>
+                                <div *ngIf="homeTeamRecentMatches.length === 0" class="team-form-empty">
+                                    {{ 'matches.noRecentMatches' | translate }}
+                                </div>
+                                <div *ngIf="homeTeamRecentMatches.length > 0" class="team-form-results">
                       <span *ngFor="let formMatch of homeTeamRecentMatches"
                             class="form-result"
                             [class.win]="getTeamResult(formMatch, match.homeTeam) === 'W'"
@@ -1065,18 +1218,20 @@
                             [title]="(formMatch.homeTeam | teamTranslate) + ' ' + formMatch.result?.homeScore + '-' + formMatch.result?.awayScore + ' ' + (formMatch.awayTeam | teamTranslate)">
                         {{ getTeamResult(formMatch, match.homeTeam) }}
                       </span>
-                    </div>
-                  </div>
-                  <!-- Away Team Form -->
-                  <div class="team-form-column">
-                    <div class="team-form-header">
-                      <img *ngIf="getTeamLogo(match.awayTeam, match)" [src]="getTeamLogo(match.awayTeam, match)" class="team-form-logo" (error)="onImageError($event)">
-                      <span class="team-form-name">{{ match.awayTeam | teamTranslate }}</span>
-                    </div>
-                    <div *ngIf="awayTeamRecentMatches.length === 0" class="team-form-empty">
-                      {{ 'matches.noRecentMatches' | translate }}
-                    </div>
-                    <div *ngIf="awayTeamRecentMatches.length > 0" class="team-form-results">
+                                </div>
+                            </div>
+                            <!-- Away Team Form -->
+                            <div class="team-form-column">
+                                <div class="team-form-header">
+                                    <img *ngIf="getTeamLogo(match.awayTeam, match)"
+                                         [src]="getTeamLogo(match.awayTeam, match)" class="team-form-logo"
+                                         (error)="onImageError($event)">
+                                    <span class="team-form-name">{{ match.awayTeam | teamTranslate }}</span>
+                                </div>
+                                <div *ngIf="awayTeamRecentMatches.length === 0" class="team-form-empty">
+                                    {{ 'matches.noRecentMatches' | translate }}
+                                </div>
+                                <div *ngIf="awayTeamRecentMatches.length > 0" class="team-form-results">
                       <span *ngFor="let formMatch of awayTeamRecentMatches"
                             class="form-result"
                             [class.win]="getTeamResult(formMatch, match.awayTeam) === 'W'"
@@ -1085,114 +1240,122 @@
                             [title]="(formMatch.homeTeam | teamTranslate) + ' ' + formMatch.result?.homeScore + '-' + formMatch.result?.awayScore + ' ' + (formMatch.awayTeam | teamTranslate)">
                         {{ getTeamResult(formMatch, match.awayTeam) }}
                       </span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                  </div>
                 </div>
-              </div>
-            </div>
-          </div> <!-- Close match-expanded-content -->
-          </div> <!-- Close match-expanded-wrapper -->
-  </ng-template>
+            </div> <!-- Close match-expanded-content -->
+        </div> <!-- Close match-expanded-wrapper -->
+    </ng-template>
 
-  <!-- Profile Picture Modal -->
-  <div *ngIf="viewingProfilePicture" class="profile-picture-modal" (click)="closeProfilePicture()">
-    <div class="profile-picture-modal-content" (click)="$event.stopPropagation()">
-      <button class="close-modal-btn" (click)="closeProfilePicture()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-      </button>
-      <img
-        *ngIf="viewingProfilePicture.profilePicture"
-        [src]="getProfilePictureUrl(viewingProfilePicture.profilePicture)"
-        [alt]="viewingProfilePicture.username"
-        class="modal-profile-picture"
-      />
-      <div *ngIf="!viewingProfilePicture.profilePicture" class="modal-profile-placeholder">
-        {{ viewingProfilePicture.username.charAt(0).toUpperCase() }}
-      </div>
-      <div class="modal-username">
-        {{ viewingProfilePicture.username }}
-        <span class="modal-online-status" [class.online]="isUserOnline(viewingProfilePicture.lastActive)">
+    <!-- Profile Picture Modal -->
+    <div *ngIf="viewingProfilePicture" class="profile-picture-modal" (click)="closeProfilePicture()">
+        <div class="profile-picture-modal-content" (click)="$event.stopPropagation()">
+            <button class="close-modal-btn" (click)="closeProfilePicture()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <img
+                    *ngIf="viewingProfilePicture.profilePicture"
+                    [src]="getProfilePictureUrl(viewingProfilePicture.profilePicture)"
+                    [alt]="viewingProfilePicture.username"
+                    class="modal-profile-picture"
+            />
+            <div *ngIf="!viewingProfilePicture.profilePicture" class="modal-profile-placeholder">
+                {{ viewingProfilePicture.username.charAt(0).toUpperCase() }}
+            </div>
+            <div class="modal-username">
+                {{ viewingProfilePicture.username }}
+                <span class="modal-online-status" [class.online]="isUserOnline(viewingProfilePicture.lastActive)">
           {{ isUserOnline(viewingProfilePicture.lastActive) ? 'Online' : 'Offline' }}
         </span>
-      </div>
+            </div>
 
-      <!-- User Statistics -->
-      <div class="user-statistics">
-        <div *ngIf="loadingStatistics" class="stats-loading">
-          {{ 'auth.loading' | translate }}
+            <!-- User Statistics -->
+            <div class="user-statistics">
+                <div *ngIf="loadingStatistics" class="stats-loading">
+                    {{ 'auth.loading' | translate }}
+                </div>
+
+                <div *ngIf="!loadingStatistics && userStatistics" class="stats-content">
+                    <!-- Group Stats -->
+                    <div class="stats-section">
+                        <h4 class="stats-title">{{ 'stats.groupStats' | translate }}</h4>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <span class="stat-value">{{ userStatistics.groupStats.totalBets }}</span>
+                                <span class="stat-label">{{ 'stats.totalBets' | translate }}</span>
+                            </div>
+                            <div class="stat-item highlight">
+                                <span class="stat-value">{{ userStatistics.groupStats.successRate }}%</span>
+                                <span class="stat-label">{{ 'stats.successRate' | translate }}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value">{{ userStatistics.groupStats.correctPredictions }}
+                                    /{{ userStatistics.groupStats.calculatedBets }}</span>
+                                <span class="stat-label">{{ 'stats.correct' | translate }}</span>
+                            </div>
+                        </div>
+                        <div class="stats-breakdown">
+                            <div class="breakdown-item">
+                                <span class="breakdown-label">1</span>
+                                <span class="breakdown-value">{{ userStatistics.groupStats.correctByType.homeWins }}
+                                    /{{ userStatistics.groupStats.predictions.homeWins }}</span>
+                            </div>
+                            <div class="breakdown-item">
+                                <span class="breakdown-label">X</span>
+                                <span class="breakdown-value">{{ userStatistics.groupStats.correctByType.draws }}
+                                    /{{ userStatistics.groupStats.predictions.draws }}</span>
+                            </div>
+                            <div class="breakdown-item">
+                                <span class="breakdown-label">2</span>
+                                <span class="breakdown-value">{{ userStatistics.groupStats.correctByType.awayWins }}
+                                    /{{ userStatistics.groupStats.predictions.awayWins }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Global Stats -->
+                    <div class="stats-section global">
+                        <h4 class="stats-title">{{ 'stats.globalStats' | translate }}</h4>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <span class="stat-value">{{ userStatistics.globalStats.totalBets }}</span>
+                                <span class="stat-label">{{ 'stats.totalBets' | translate }}</span>
+                            </div>
+                            <div class="stat-item highlight">
+                                <span class="stat-value">{{ userStatistics.globalStats.successRate }}%</span>
+                                <span class="stat-label">{{ 'stats.successRate' | translate }}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value">{{ userStatistics.groupsCount }}</span>
+                                <span class="stat-label">{{ 'stats.groups' | translate }}</span>
+                            </div>
+                        </div>
+                        <div class="stats-breakdown">
+                            <div class="breakdown-item">
+                                <span class="breakdown-label">1</span>
+                                <span class="breakdown-value">{{ userStatistics.globalStats.correctByType.homeWins }}
+                                    /{{ userStatistics.globalStats.predictions.homeWins }}</span>
+                            </div>
+                            <div class="breakdown-item">
+                                <span class="breakdown-label">X</span>
+                                <span class="breakdown-value">{{ userStatistics.globalStats.correctByType.draws }}
+                                    /{{ userStatistics.globalStats.predictions.draws }}</span>
+                            </div>
+                            <div class="breakdown-item">
+                                <span class="breakdown-label">2</span>
+                                <span class="breakdown-value">{{ userStatistics.globalStats.correctByType.awayWins }}
+                                    /{{ userStatistics.globalStats.predictions.awayWins }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <div *ngIf="!loadingStatistics && userStatistics" class="stats-content">
-          <!-- Group Stats -->
-          <div class="stats-section">
-            <h4 class="stats-title">{{ 'stats.groupStats' | translate }}</h4>
-            <div class="stats-grid">
-              <div class="stat-item">
-                <span class="stat-value">{{ userStatistics.groupStats.totalBets }}</span>
-                <span class="stat-label">{{ 'stats.totalBets' | translate }}</span>
-              </div>
-              <div class="stat-item highlight">
-                <span class="stat-value">{{ userStatistics.groupStats.successRate }}%</span>
-                <span class="stat-label">{{ 'stats.successRate' | translate }}</span>
-              </div>
-              <div class="stat-item">
-                <span class="stat-value">{{ userStatistics.groupStats.correctPredictions }}/{{ userStatistics.groupStats.calculatedBets }}</span>
-                <span class="stat-label">{{ 'stats.correct' | translate }}</span>
-              </div>
-            </div>
-            <div class="stats-breakdown">
-              <div class="breakdown-item">
-                <span class="breakdown-label">1</span>
-                <span class="breakdown-value">{{ userStatistics.groupStats.correctByType.homeWins }}/{{ userStatistics.groupStats.predictions.homeWins }}</span>
-              </div>
-              <div class="breakdown-item">
-                <span class="breakdown-label">X</span>
-                <span class="breakdown-value">{{ userStatistics.groupStats.correctByType.draws }}/{{ userStatistics.groupStats.predictions.draws }}</span>
-              </div>
-              <div class="breakdown-item">
-                <span class="breakdown-label">2</span>
-                <span class="breakdown-value">{{ userStatistics.groupStats.correctByType.awayWins }}/{{ userStatistics.groupStats.predictions.awayWins }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Global Stats -->
-          <div class="stats-section global">
-            <h4 class="stats-title">{{ 'stats.globalStats' | translate }}</h4>
-            <div class="stats-grid">
-              <div class="stat-item">
-                <span class="stat-value">{{ userStatistics.globalStats.totalBets }}</span>
-                <span class="stat-label">{{ 'stats.totalBets' | translate }}</span>
-              </div>
-              <div class="stat-item highlight">
-                <span class="stat-value">{{ userStatistics.globalStats.successRate }}%</span>
-                <span class="stat-label">{{ 'stats.successRate' | translate }}</span>
-              </div>
-              <div class="stat-item">
-                <span class="stat-value">{{ userStatistics.groupsCount }}</span>
-                <span class="stat-label">{{ 'stats.groups' | translate }}</span>
-              </div>
-            </div>
-            <div class="stats-breakdown">
-              <div class="breakdown-item">
-                <span class="breakdown-label">1</span>
-                <span class="breakdown-value">{{ userStatistics.globalStats.correctByType.homeWins }}/{{ userStatistics.globalStats.predictions.homeWins }}</span>
-              </div>
-              <div class="breakdown-item">
-                <span class="breakdown-label">X</span>
-                <span class="breakdown-value">{{ userStatistics.globalStats.correctByType.draws }}/{{ userStatistics.globalStats.predictions.draws }}</span>
-              </div>
-              <div class="breakdown-item">
-                <span class="breakdown-label">2</span>
-                <span class="breakdown-value">{{ userStatistics.globalStats.correctByType.awayWins }}/{{ userStatistics.globalStats.predictions.awayWins }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
-  </div>
 </div>
