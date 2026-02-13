@@ -5930,20 +5930,6 @@ h2 {
   transform: translateX(-50%);
 }
 
-/* Small dot on the line at each event */
-.timeline-center::after {
-  content: '';
-  position: absolute;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.25);
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 0;
-}
-
 /* Goal row: green dot */
 .goal-row .timeline-center::after {
   width: 8px;
@@ -5960,7 +5946,6 @@ h2 {
     rgba(34, 197, 94, 0.5) 60%,
     rgba(255, 255, 255, 0.18) 100%
   );
-  width: 3px;
 }
 
 /* Marker center - styled line through markers */
