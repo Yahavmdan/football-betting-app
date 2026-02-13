@@ -179,7 +179,12 @@
     "noRecentMatches": "No recent matches",
     "added": "added",
     "events": "Match Events",
-    "noEvents": "No events yet"
+    "noEvents": "No events yet",
+    "kickoff": "KO",
+    "halfTimeFull": "Half Time",
+    "fullTimeFull": "Full Time",
+    "goalLabel": "GOAL!",
+    "assistLabel": "Assist"
   },
   "bets": {
     "placeYourBet": "Place Your Bet",

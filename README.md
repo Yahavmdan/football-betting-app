@@ -59,7 +59,7 @@ npm install
 cp .env.example .env
 
 # Edit .env file with your configuration
-# - MongoDB URI (already set to port 27018)
+# - MongoDB URI (already set to port 27017)
 # - JWT secret (change in production!)
 # - Football API is already configured (TheSportsDB free key)
 nano .env
@@ -86,18 +86,18 @@ The frontend will run on `http://localhost:4200`
 
 ### 4. Database Setup
 
-You need to start a separate MongoDB instance on port 27018 (to avoid conflicts with other MongoDB instances).
+You need to start a separate MongoDB instance on port 27017 (to avoid conflicts with other MongoDB instances).
 
 **Option 1: Start MongoDB on a specific port**
 ```bash
-mongod --port 27018 --dbpath /path/to/your/data/directory
+mongod --port 27017 --dbpath /path/to/your/data/directory
 ```
 
 **Option 2: Using a configuration file**
 Create a `mongod.conf` file:
 ```yaml
 net:
-  port: 27018
+  port: 27017
 storage:
   dbPath: /path/to/your/data/directory
 ```
@@ -118,7 +118,7 @@ MongoDB will automatically create the database and collections when you first ru
 
 ```
 PORT=3000
-MONGODB_URI=mongodb://localhost:27018/football-betting
+MONGODB_URI=mongodb://localhost:27017/football-betting
 JWT_SECRET=your_jwt_secret_key_here_change_in_production
 JWT_EXPIRE=7d
 FOOTBALL_API_KEY=3

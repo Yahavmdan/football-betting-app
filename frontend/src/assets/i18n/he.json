@@ -179,7 +179,12 @@
     "noRecentMatches": "אין משחקים אחרונים",
     "added": "נוספו",
     "events": "אירועי המשחק",
-    "noEvents": "אין אירועים עדיין"
+    "noEvents": "אין אירועים עדיין",
+    "kickoff": "התחלה",
+    "halfTimeFull": "מחצית",
+    "fullTimeFull": "סיום",
+    "goalLabel": "גול!",
+    "assistLabel": "בישול"
   },
   "bets": {
     "placeYourBet": "בצע את ההימור שלך",

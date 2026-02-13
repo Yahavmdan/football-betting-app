@@ -704,91 +704,154 @@
                 <div *ngIf="!loadingMatchEvents && matchEvents.length === 0" class="events-empty">
                   {{ 'matches.noEvents' | translate }}
                 </div>
-                <div *ngIf="!loadingMatchEvents && matchEvents.length > 0" class="events-timeline">
-                  <div *ngFor="let event of matchEvents" class="timeline-row"
-                       [class.home-event]="event.team.id === match.homeTeamId"
-                       [class.away-event]="event.team.id !== match.homeTeamId">
-                    <!-- Home side -->
-                    <div class="timeline-side home-side">
-                      <div class="event-card" *ngIf="event.team.id === match.homeTeamId"
-                           [class.goal]="event.type === 'Goal'"
-                           [class.card-yellow]="event.type === 'Card' && event.detail.includes('Yellow')"
-                           [class.card-red]="event.type === 'Card' && event.detail.includes('Red')"
-                           [class.subst]="event.type === 'Subst'"
-                           [class.var]="event.type === 'Var'">
-                        <div class="event-icon">
-                          <svg *ngIf="event.type === 'Goal'" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                            <circle cx="12" cy="12" r="10"/>
-                          </svg>
-                          <span *ngIf="event.type === 'Card' && event.detail.includes('Yellow')" class="card-icon yellow"></span>
-                          <span *ngIf="event.type === 'Card' && event.detail.includes('Red')" class="card-icon red"></span>
-                          <svg *ngIf="event.type === 'Subst'" class="subst-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <path d="M17 4l4 4-4 4M3 8h18M7 20l-4-4 4-4M21 16H3"/>
-                          </svg>
-                          <span *ngIf="event.type === 'Var'" class="var-badge">VAR</span>
-                        </div>
-                        <div class="event-info">
-                          <span class="event-player">{{ event.player?.name || '-' }}</span>
-                          <span *ngIf="event.assist?.name && event.type === 'Goal'" class="event-assist">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                            {{ event.assist?.name }}
-                          </span>
-                          <div *ngIf="event.type === 'Subst'" class="subst-info">
-                            <span class="player-in">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="3"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                              {{ event.player?.name }}
-                            </span>
-                            <span class="player-out" *ngIf="event.assist?.name">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="3"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-                              {{ event.assist?.name }}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
+                <div *ngIf="!loadingMatchEvents && processedEvents.length > 0" class="events-timeline">
+                  <!-- Kick-off marker -->
+                  <div class="timeline-marker-row">
+                    <div class="timeline-side home-side"></div>
+                    <div class="timeline-center marker-center">
+                      <span class="marker-badge kickoff">KO</span>
                     </div>
-                    <!-- Center time -->
-                    <div class="timeline-center">
-                      <span class="event-time">{{ event.time.elapsed }}<span *ngIf="event.time.extra">+{{ event.time.extra }}</span>'</span>
-                    </div>
-                    <!-- Away side -->
-                    <div class="timeline-side away-side">
-                      <div class="event-card" *ngIf="event.team.id !== match.homeTeamId"
-                           [class.goal]="event.type === 'Goal'"
-                           [class.card-yellow]="event.type === 'Card' && event.detail.includes('Yellow')"
-                           [class.card-red]="event.type === 'Card' && event.detail.includes('Red')"
-                           [class.subst]="event.type === 'Subst'"
-                           [class.var]="event.type === 'Var'">
-                        <div class="event-icon">
-                          <svg *ngIf="event.type === 'Goal'" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                            <circle cx="12" cy="12" r="10"/>
-                          </svg>
-                          <span *ngIf="event.type === 'Card' && event.detail.includes('Yellow')" class="card-icon yellow"></span>
-                          <span *ngIf="event.type === 'Card' && event.detail.includes('Red')" class="card-icon red"></span>
-                          <svg *ngIf="event.type === 'Subst'" class="subst-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <path d="M17 4l4 4-4 4M3 8h18M7 20l-4-4 4-4M21 16H3"/>
-                          </svg>
-                          <span *ngIf="event.type === 'Var'" class="var-badge">VAR</span>
-                        </div>
-                        <div class="event-info">
-                          <span class="event-player">{{ event.player?.name || '-' }}</span>
-                          <span *ngIf="event.assist?.name && event.type === 'Goal'" class="event-assist">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                            {{ event.assist?.name }}
-                          </span>
-                          <div *ngIf="event.type === 'Subst'" class="subst-info">
-                            <span class="player-in">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="3"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                              {{ event.player?.name }}
-                            </span>
-                            <span class="player-out" *ngIf="event.assist?.name">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="3"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-                              {{ event.assist?.name }}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                    <div class="timeline-side away-side"></div>
                   </div>
+
+                  <ng-container *ngFor="let item of processedEvents">
+                    <!-- HT / FT Marker -->
+                    <div *ngIf="item.isMarker" class="timeline-marker-row">
+                      <div class="timeline-side home-side"></div>
+                      <div class="timeline-center marker-center">
+                        <span class="marker-badge" [class.ht]="item.markerType === 'HT'" [class.ft]="item.markerType === 'FT'">
+                          {{ item.markerType }}
+                          <span class="marker-time">{{ item.label }}</span>
+                        </span>
+                      </div>
+                      <div class="timeline-side away-side"></div>
+                    </div>
+
+                    <!-- Event Row -->
+                    <div *ngIf="!item.isMarker" class="timeline-row"
+                         [class.home-event]="item.event.team.id === match.homeTeamId"
+                         [class.away-event]="item.event.team.id !== match.homeTeamId"
+                         [class.goal-row]="item.event.type === 'Goal'">
+                      <!-- Home side -->
+                      <div class="timeline-side home-side">
+                        <ng-container *ngIf="item.event.team.id === match.homeTeamId">
+                          <!-- GOAL event -->
+                          <div class="event-content goal" *ngIf="item.event.type === 'Goal'">
+                            <div class="goal-icon-wrap">
+                              <span class="goal-ball-emoji">&#9917;</span>
+                              <div class="goal-ripple"></div>
+                            </div>
+                            <div class="event-info">
+                              <span class="goal-label">{{ 'matches.goalLabel' | translate }}</span>
+                              <span class="goal-scorer">{{ item.event.player?.name || '-' }}</span>
+                              <span *ngIf="item.event.assist?.name" class="goal-assist">{{ 'matches.assistLabel' | translate }}: {{ item.event.assist?.name }}</span>
+                            </div>
+                          </div>
+                          <!-- CARD event -->
+                          <div class="event-content" *ngIf="item.event.type === 'Card'"
+                               [class.card-yellow]="item.event.detail.includes('Yellow')"
+                               [class.card-red]="item.event.detail.includes('Red')">
+                            <div class="event-icon">
+                              <span *ngIf="item.event.detail.includes('Yellow')" class="card-icon yellow"></span>
+                              <span *ngIf="item.event.detail.includes('Red')" class="card-icon red"></span>
+                            </div>
+                            <div class="event-info">
+                              <span class="event-player">{{ item.event.player?.name || '-' }}</span>
+                            </div>
+                          </div>
+                          <!-- SUBST event -->
+                          <div class="event-content subst" *ngIf="item.event.type === 'Subst'">
+                            <div class="subst-icon-wrap">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 4v6h6" stroke="#4ade80"/>
+                                <path d="M23 20v-6h-6" stroke="#f87171"/>
+                                <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10" stroke="#4ade80"/>
+                                <path d="M3.51 15A9 9 0 0 0 18.36 18.36L23 14" stroke="#f87171"/>
+                              </svg>
+                            </div>
+                            <div class="subst-players">
+                              <div class="subst-player-row player-in">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="3" stroke-linecap="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+                                <span class="subst-player-name">{{ item.event.player?.name }}</span>
+                              </div>
+                              <div class="subst-player-row player-out" *ngIf="item.event.assist?.name">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="3" stroke-linecap="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+                                <span class="subst-player-name">{{ item.event.assist?.name }}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <!-- VAR event -->
+                          <div class="event-content var" *ngIf="item.event.type === 'Var'">
+                            <div class="event-icon"><span class="var-badge">VAR</span></div>
+                            <div class="event-info">
+                              <span class="event-player">{{ item.event.player?.name || '-' }}</span>
+                            </div>
+                          </div>
+                        </ng-container>
+                      </div>
+                      <!-- Center time -->
+                      <div class="timeline-center">
+                        <span class="event-time" [class.goal-time]="item.event.type === 'Goal'">{{ item.event.time.elapsed }}<span *ngIf="item.event.time.extra">+{{ item.event.time.extra }}</span>'</span>
+                      </div>
+                      <!-- Away side -->
+                      <div class="timeline-side away-side">
+                        <ng-container *ngIf="item.event.team.id !== match.homeTeamId">
+                          <!-- GOAL event -->
+                          <div class="event-content goal" *ngIf="item.event.type === 'Goal'">
+                            <div class="goal-icon-wrap">
+                              <span class="goal-ball-emoji">&#9917;</span>
+                              <div class="goal-ripple"></div>
+                            </div>
+                            <div class="event-info">
+                              <span class="goal-label">{{ 'matches.goalLabel' | translate }}</span>
+                              <span class="goal-scorer">{{ item.event.player?.name || '-' }}</span>
+                              <span *ngIf="item.event.assist?.name" class="goal-assist">{{ 'matches.assistLabel' | translate }}: {{ item.event.assist?.name }}</span>
+                            </div>
+                          </div>
+                          <!-- CARD event -->
+                          <div class="event-content" *ngIf="item.event.type === 'Card'"
+                               [class.card-yellow]="item.event.detail.includes('Yellow')"
+                               [class.card-red]="item.event.detail.includes('Red')">
+                            <div class="event-icon">
+                              <span *ngIf="item.event.detail.includes('Yellow')" class="card-icon yellow"></span>
+                              <span *ngIf="item.event.detail.includes('Red')" class="card-icon red"></span>
+                            </div>
+                            <div class="event-info">
+                              <span class="event-player">{{ item.event.player?.name || '-' }}</span>
+                            </div>
+                          </div>
+                          <!-- SUBST event -->
+                          <div class="event-content subst" *ngIf="item.event.type === 'Subst'">
+                            <div class="subst-icon-wrap">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 4v6h6" stroke="#4ade80"/>
+                                <path d="M23 20v-6h-6" stroke="#f87171"/>
+                                <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10" stroke="#4ade80"/>
+                                <path d="M3.51 15A9 9 0 0 0 18.36 18.36L23 14" stroke="#f87171"/>
+                              </svg>
+                            </div>
+                            <div class="subst-players">
+                              <div class="subst-player-row player-in">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="3" stroke-linecap="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+                                <span class="subst-player-name">{{ item.event.player?.name }}</span>
+                              </div>
+                              <div class="subst-player-row player-out" *ngIf="item.event.assist?.name">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="3" stroke-linecap="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+                                <span class="subst-player-name">{{ item.event.assist?.name }}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <!-- VAR event -->
+                          <div class="event-content var" *ngIf="item.event.type === 'Var'">
+                            <div class="event-icon"><span class="var-badge">VAR</span></div>
+                            <div class="event-info">
+                              <span class="event-player">{{ item.event.player?.name || '-' }}</span>
+                            </div>
+                          </div>
+                        </ng-container>
+                      </div>
+                    </div>
+                  </ng-container>
                 </div>
               </div>
             </div>

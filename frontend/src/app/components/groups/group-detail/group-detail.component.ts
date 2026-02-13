@@ -100,6 +100,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   showMatchEvents = false;
   loadingMatchEvents = false;
   matchEvents: MatchEvent[] = [];
+  processedEvents: any[] = [];
 
   // Member bets viewer
   viewingBetsForMatch: string | null = null;
@@ -488,12 +489,6 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
         this.applyFilters();
         this.loadingMatches = false;
 
-        // Log live match detection for debugging
-        const now = new Date();
-        const liveCount = this.matches.filter(m => m.status === 'LIVE').length;
-        const startedCount = this.matches.filter(m => m.status === 'SCHEDULED' && new Date(m.matchDate) <= now).length;
-        console.log(`[LiveRefresh] Loaded ${this.matches.length} matches. Live: ${liveCount}, Started but not marked: ${startedCount}`);
-
         // Start auto-refresh if there are live matches
         this.startLiveRefreshIfNeeded();
 
@@ -591,6 +586,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
       this.awayTeamRecentMatches = [];
       // Reset events state
       this.matchEvents = [];
+      this.processedEvents = [];
       this.showMatchEvents = false;
 
       // Auto-open and load match events for live/finished matches
@@ -695,10 +691,16 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
 
     this.loadingMatchEvents = true;
     this.matchEvents = [];
+    this.processedEvents = [];
 
     this.matchService.getMatchEvents(match._id).subscribe({
       next: (response) => {
-        this.matchEvents = response.data;
+        // Normalize event types to capitalized form (Goal, Card, Subst, Var)
+        this.matchEvents = (response.data || []).map(e => ({
+          ...e,
+          type: (e.type.charAt(0).toUpperCase() + e.type.slice(1).toLowerCase()) as any
+        }));
+        this.processedEvents = this.buildProcessedEvents(this.matchEvents, match);
         this.loadingMatchEvents = false;
       },
       error: (error) => {
@@ -706,6 +708,54 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
         this.loadingMatchEvents = false;
       }
     });
+  }
+
+  buildProcessedEvents(events: MatchEvent[], match: Match): any[] {
+    const result: any[] = [];
+    let htInserted = false;
+    let lastFirstHalfExtra = 0;
+    let lastSecondHalfExtra = 0;
+
+    // Find max extra time in each half
+    for (const e of events) {
+      if (e.time.elapsed <= 45 && e.time.extra) {
+        lastFirstHalfExtra = Math.max(lastFirstHalfExtra, e.time.extra);
+      }
+      if (e.time.elapsed > 45 && e.time.extra) {
+        lastSecondHalfExtra = Math.max(lastSecondHalfExtra, e.time.extra);
+      }
+    }
+
+    // Sort events by time
+    const sorted = [...events].sort((a, b) => {
+      const timeA = a.time.elapsed * 100 + (a.time.extra || 0);
+      const timeB = b.time.elapsed * 100 + (b.time.extra || 0);
+      return timeA - timeB;
+    });
+
+    for (const event of sorted) {
+      // Insert HT marker before first second-half event
+      if (!htInserted && event.time.elapsed > 45) {
+        htInserted = true;
+        result.push({
+          isMarker: true,
+          markerType: 'HT',
+          label: lastFirstHalfExtra > 0 ? `45' + ${lastFirstHalfExtra}` : `45'`
+        });
+      }
+      result.push({ isMarker: false, event });
+    }
+
+    // Insert FT marker at the end for finished matches
+    if (match.status === 'FINISHED') {
+      result.push({
+        isMarker: true,
+        markerType: 'FT',
+        label: lastSecondHalfExtra > 0 ? `90' + ${lastSecondHalfExtra}` : `90'`
+      });
+    }
+
+    return result;
   }
 
   getTeamResult(match: Match, team: string): 'W' | 'D' | 'L' {
@@ -1212,7 +1262,6 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
 
     // Swap dates if they're reversed
     if (dateFrom && dateTo && dateFrom > dateTo) {
-      console.log(`Frontend: Swapping reversed dates: ${dateFrom} <-> ${dateTo}`);
       [dateFrom, dateTo] = [dateTo, dateFrom];
     }
 
@@ -1598,15 +1647,6 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     if (this.liveRefreshInterval || !this.isPageVisible) {
       return;
     }
-
-    // Check if there are live matches to track
-    if (!this.hasLiveMatches()) {
-      console.log('[LiveRefresh] No live matches to track');
-      return;
-    }
-
-    console.log('[LiveRefresh] Starting auto-refresh interval (every 60 seconds)');
-
     // Run first refresh immediately
     this.refreshLiveMatchesSilently();
 
@@ -1614,11 +1654,9 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     this.liveRefreshInterval = setInterval(() => {
       // Double-check conditions before each refresh
       if (!this.isPageVisible || !this.hasLiveMatches()) {
-        console.log('[LiveRefresh] Stopping interval - no more live matches or page hidden');
         this.stopLiveRefreshInterval();
         return;
       }
-      console.log('[LiveRefresh] Auto-refreshing live matches...');
       this.refreshLiveMatchesSilently();
     }, this.LIVE_REFRESH_INTERVAL_MS);
   }
@@ -1634,19 +1672,16 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     if (this.refreshingLive) return;
 
     this.refreshingLive = true;
-    console.log('[LiveRefresh] Fetching live match updates...');
 
     this.matchService.refreshLiveMatches(this.groupId).subscribe({
       next: (response) => {
         // Only update matches that changed (live matches)
         const updatedMatches = response.data;
-        console.log(`[LiveRefresh] Received ${updatedMatches.length} updated matches`);
 
         if (updatedMatches.length === 0) {
           this.refreshingLive = false;
           // Only stop if no more potentially live matches
           if (!this.hasLiveMatches()) {
-            console.log('[LiveRefresh] No more live matches, stopping interval');
             this.stopLiveRefreshInterval();
           }
           return;

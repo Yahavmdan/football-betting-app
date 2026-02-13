@@ -42,6 +42,6 @@ export interface MatchEvent {
   team: { id: number; name: string; logo: string };
   player: { id: number; name: string } | null;
   assist: { id: number; name: string } | null;
-  type: 'Goal' | 'Card' | 'Subst' | 'Var';
+  type: 'Goal' | 'Card' | 'Subst' | 'Var' | string;
   detail: string;
 }

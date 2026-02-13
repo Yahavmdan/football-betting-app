@@ -771,16 +771,28 @@ async function getFixtureEvents(fixtureId) {
     });
 
     console.log('API Response - Events found:', response.data?.response?.length || 0);
+    if (response.data?.response?.length > 0) {
+      const types = [...new Set(response.data.response.map(e => e.type))];
+      console.log('Event types from API:', types);
+    }
 
     if (response.data && response.data.response) {
-      return response.data.response.map(event => ({
-        time: { elapsed: event.time.elapsed, extra: event.time.extra },
-        team: { id: event.team.id, name: event.team.name, logo: event.team.logo },
-        player: event.player ? { id: event.player.id, name: event.player.name } : null,
-        assist: event.assist ? { id: event.assist.id, name: event.assist.name } : null,
-        type: event.type,
-        detail: event.detail
-      }));
+      return response.data.response.map(event => {
+        // Normalize type to capitalized first letter (API may return lowercase)
+        let type = event.type || '';
+        type = type.charAt(0).toUpperCase() + type.slice(1).toLowerCase();
+        // Map common variations
+        if (type === 'Subst' || type === 'Substitution') type = 'Subst';
+
+        return {
+          time: { elapsed: event.time.elapsed, extra: event.time.extra },
+          team: { id: event.team.id, name: event.team.name, logo: event.team.logo },
+          player: (event.player && event.player.name) ? { id: event.player.id, name: event.player.name } : null,
+          assist: (event.assist && event.assist.name) ? { id: event.assist.id, name: event.assist.name } : null,
+          type,
+          detail: event.detail || ''
+        };
+      });
     }
     return [];
   } catch (error) {
