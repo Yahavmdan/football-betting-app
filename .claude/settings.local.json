@@ -23,7 +23,8 @@
       "Bash(node src/scripts/setMatchLive.js:*)",
       "Bash(node:*)",
       "Bash(git config:*)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(ng build)"
     ]
   }
 }

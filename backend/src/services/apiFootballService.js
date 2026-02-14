@@ -801,6 +801,88 @@ async function getFixtureEvents(fixtureId) {
   }
 }
 
+// Get match lineups for a specific fixture
+async function getFixtureLineups(fixtureId) {
+  try {
+    const numericId = fixtureId.toString().replace('apifootball_', '');
+    console.log(`=== Fetching lineups for fixture: ${numericId} ===`);
+
+    const response = await axios.get(`${API_BASE_URL}/fixtures/lineups`, {
+      headers: { 'x-apisports-key': API_KEY },
+      params: { fixture: numericId }
+    });
+
+    console.log('API Response - Lineups found:', response.data?.response?.length || 0);
+
+    if (response.data && response.data.response && response.data.response.length > 0) {
+      return response.data.response.map(teamLineup => ({
+        team: {
+          id: teamLineup.team.id,
+          name: teamLineup.team.name,
+          logo: teamLineup.team.logo,
+          colors: teamLineup.team.colors || null
+        },
+        coach: teamLineup.coach ? {
+          id: teamLineup.coach.id,
+          name: teamLineup.coach.name,
+          photo: teamLineup.coach.photo
+        } : null,
+        formation: teamLineup.formation,
+        startXI: (teamLineup.startXI || []).map(p => ({
+          id: p.player.id,
+          name: p.player.name,
+          number: p.player.number,
+          pos: p.player.pos,
+          grid: p.player.grid
+        })),
+        substitutes: (teamLineup.substitutes || []).map(p => ({
+          id: p.player.id,
+          name: p.player.name,
+          number: p.player.number,
+          pos: p.player.pos
+        }))
+      }));
+    }
+    return [];
+  } catch (error) {
+    console.error('Error fetching fixture lineups:', error.message);
+    throw error;
+  }
+}
+
+// Get match statistics for a specific fixture
+async function getFixtureStatistics(fixtureId) {
+  try {
+    const numericId = fixtureId.toString().replace('apifootball_', '');
+    console.log(`=== Fetching statistics for fixture: ${numericId} ===`);
+
+    const response = await axios.get(`${API_BASE_URL}/fixtures/statistics`, {
+      headers: { 'x-apisports-key': API_KEY },
+      params: { fixture: numericId }
+    });
+
+    console.log('API Response - Statistics found:', response.data?.response?.length || 0);
+
+    if (response.data && response.data.response && response.data.response.length > 0) {
+      return response.data.response.map(teamStats => ({
+        team: {
+          id: teamStats.team.id,
+          name: teamStats.team.name,
+          logo: teamStats.team.logo
+        },
+        statistics: (teamStats.statistics || []).map(stat => ({
+          type: stat.type,
+          value: stat.value
+        }))
+      }));
+    }
+    return [];
+  } catch (error) {
+    console.error('Error fetching fixture statistics:', error.message);
+    throw error;
+  }
+}
+
 module.exports = {
   getSupportedLeagues,
   isLeagueSupported,
@@ -819,5 +901,7 @@ module.exports = {
   getLeagueStandings,
   getFixtureOdds,
   getFixturesOdds,
-  getFixtureEvents
+  getFixtureEvents,
+  getFixtureLineups,
+  getFixtureStatistics
 };

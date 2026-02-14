@@ -180,13 +180,19 @@
     "teamForm": "Recent Matches",
     "noRecentMatches": "No recent matches",
     "added": "added",
-    "events": "Match Events",
+    "events": "Events",
     "noEvents": "No events yet",
     "kickoff": "KO",
     "halfTimeFull": "Half Time",
     "fullTimeFull": "Full Time",
     "goalLabel": "GOAL!",
-    "assistLabel": "Assist"
+    "assistLabel": "Assist",
+    "lineups": "Lineups",
+    "noLineups": "Lineups not available",
+    "startingXI": "Starting XI",
+    "substitutes": "Substitutes",
+    "statistics": "Statistics",
+    "noStatistics": "Statistics not available"
   },
   "bets": {
     "placeYourBet": "Place Your Bet",

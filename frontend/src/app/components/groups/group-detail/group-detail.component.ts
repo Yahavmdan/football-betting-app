@@ -8,7 +8,7 @@ import { BetService } from '../../../services/bet.service';
 import { AuthService } from '../../../services/auth.service';
 import { TranslationService } from '../../../services/translation.service';
 import { Group, GroupMember, PendingMember } from '../../../models/group.model';
-import { Match, MatchEvent } from '../../../models/match.model';
+import { Match, MatchEvent, MatchLineup, MatchTeamStatistics } from '../../../models/match.model';
 import { MemberBet, Bet } from '../../../models/bet.model';
 import { UserStatistics } from '../../../services/bet.service';
 import { TranslatePipe } from '../../../services/translate.pipe';
@@ -96,6 +96,9 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   showHeadToHead = false;
   showTeamForm = false;
 
+  // Match details tabs
+  activeMatchTab: 'events' | 'lineups' | 'statistics' = 'events';
+
   // Match events
   showMatchEvents = false;
   loadingMatchEvents = false;
@@ -103,6 +106,18 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   processedEvents: any[] = [];
   private eventsRefreshInterval: ReturnType<typeof setInterval> | null = null;
   private readonly EVENTS_REFRESH_INTERVAL_MS = 60000; // 1 minute
+
+  // Match lineups
+  matchLineups: MatchLineup[] = [];
+  loadingMatchLineups = false;
+
+  // Match statistics
+  matchStatistics: MatchTeamStatistics[] = [];
+  loadingMatchStatistics = false;
+
+  // Cached timestamp for online status checks (prevents ExpressionChangedAfterItHasBeenCheckedError)
+  private cachedNow: number = Date.now();
+  private onlineCheckInterval: ReturnType<typeof setInterval> | null = null;
 
   // Member bets viewer
   viewingBetsForMatch: string | null = null;
@@ -215,6 +230,11 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
 
     // Set up page visibility listener for auto-refresh optimization
     document.addEventListener('visibilitychange', this.handleVisibilityChange);
+
+    // Update cached timestamp periodically for online status checks
+    this.onlineCheckInterval = setInterval(() => {
+      this.cachedNow = Date.now();
+    }, 30000); // Update every 30 seconds
   }
 
   private initTeamLogos(): void {
@@ -593,6 +613,10 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
       this.matchEvents = [];
       this.processedEvents = [];
       this.showMatchEvents = false;
+      // Reset lineups and statistics
+      this.matchLineups = [];
+      this.matchStatistics = [];
+      this.activeMatchTab = 'events';
 
       // Auto-open and load match events for live/finished matches
       if (match.externalApiId && (match.status === 'LIVE' || match.status === 'FINISHED' || this.isMatchLive(match))) {
@@ -813,6 +837,144 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
         this.loadingMatchEvents = false;
       }
     });
+  }
+
+  loadMatchLineups(match: Match): void {
+    if (!match.externalApiId) return;
+
+    this.loadingMatchLineups = true;
+    this.matchLineups = [];
+
+    this.matchService.getMatchLineups(match._id).subscribe({
+      next: (response) => {
+        this.matchLineups = response.data || [];
+        this.loadingMatchLineups = false;
+      },
+      error: (error) => {
+        console.error('Failed to load match lineups:', error);
+        this.loadingMatchLineups = false;
+      }
+    });
+  }
+
+  loadMatchStatistics(match: Match): void {
+    if (!match.externalApiId) return;
+
+    this.loadingMatchStatistics = true;
+    this.matchStatistics = [];
+
+    this.matchService.getMatchStatistics(match._id).subscribe({
+      next: (response) => {
+        this.matchStatistics = response.data || [];
+        this.loadingMatchStatistics = false;
+      },
+      error: (error) => {
+        console.error('Failed to load match statistics:', error);
+        this.loadingMatchStatistics = false;
+      }
+    });
+  }
+
+  selectMatchTab(tab: 'events' | 'lineups' | 'statistics'): void {
+    this.activeMatchTab = tab;
+    if (!this.expandedMatch) return;
+
+    // Load data if not already loaded
+    if (tab === 'events' && this.matchEvents.length === 0 && !this.loadingMatchEvents) {
+      this.loadMatchEvents(this.expandedMatch);
+    } else if (tab === 'lineups' && this.matchLineups.length === 0 && !this.loadingMatchLineups) {
+      this.loadMatchLineups(this.expandedMatch);
+    } else if (tab === 'statistics' && this.matchStatistics.length === 0 && !this.loadingMatchStatistics) {
+      this.loadMatchStatistics(this.expandedMatch);
+    }
+  }
+
+  getStatValue(stats: MatchTeamStatistics[], teamIndex: number, statType: string): string | number {
+    if (!stats || !stats[teamIndex]) return '-';
+    const stat = stats[teamIndex].statistics.find(s => s.type === statType);
+    return stat?.value ?? '-';
+  }
+
+  // Statistics name translations
+  private readonly statTranslations: { [key: string]: { en: string; he: string } } = {
+    'Shots on Goal': { en: 'Shots on Goal', he: 'בעיטות למסגרת' },
+    'Shots off Goal': { en: 'Shots off Goal', he: 'בעיטות מחוץ למסגרת' },
+    'Total Shots': { en: 'Total Shots', he: 'סה"כ בעיטות' },
+    'Blocked Shots': { en: 'Blocked Shots', he: 'בעיטות חסומות' },
+    'Shots insidebox': { en: 'Shots Inside Box', he: 'בעיטות מתוך הרחבה' },
+    'Shots outsidebox': { en: 'Shots Outside Box', he: 'בעיטות מחוץ לרחבה' },
+    'Fouls': { en: 'Fouls', he: 'עבירות' },
+    'Corner Kicks': { en: 'Corner Kicks', he: 'קרנות' },
+    'Offsides': { en: 'Offsides', he: 'נבדלים' },
+    'Ball Possession': { en: 'Possession', he: 'אחזקת כדור' },
+    'Yellow Cards': { en: 'Yellow Cards', he: 'כרטיסים צהובים' },
+    'Red Cards': { en: 'Red Cards', he: 'כרטיסים אדומים' },
+    'Goalkeeper Saves': { en: 'Saves', he: 'הצלות' },
+    'Total passes': { en: 'Total Passes', he: 'סה"כ מסירות' },
+    'Passes accurate': { en: 'Accurate Passes', he: 'מסירות מדויקות' },
+    'Passes %': { en: 'Pass Accuracy', he: 'דיוק מסירות' },
+    'expected_goals': { en: 'Expected Goals', he: 'שערים צפויים' },
+    'goals_prevented': { en: 'Goals Prevented', he: 'שערים שנמנעו' }
+  };
+
+  translateStatName(statType: string): string {
+    const lang = this.translationService.getCurrentLanguage();
+    const translation = this.statTranslations[statType];
+    if (translation) {
+      return lang === 'he' ? translation.he : translation.en;
+    }
+    // Return original if no translation found
+    return statType;
+  }
+
+  // Lineup pitch helpers
+  getPlayerRow(grid: string | undefined, teamIndex: number): number {
+    if (!grid) return 1;
+    const row = parseInt(grid.split(':')[0], 10);
+    // For away team (top half), invert the rows
+    if (teamIndex === 1) {
+      return row;
+    }
+    return row;
+  }
+
+  getPlayerCol(grid: string | undefined): number {
+    if (!grid) return 1;
+    return parseInt(grid.split(':')[1], 10);
+  }
+
+  getRowPlayerCount(players: any[], grid: string | undefined): number {
+    if (!grid) return 1;
+    const row = grid.split(':')[0];
+    return players.filter(p => p.grid && p.grid.startsWith(row + ':')).length;
+  }
+
+  getShortName(fullName: string): string {
+    if (!fullName) return '';
+    const parts = fullName.split(' ');
+    if (parts.length === 1) return fullName;
+    // Return first initial + last name
+    return parts[parts.length - 1];
+  }
+
+  getStatPercentage(stats: MatchTeamStatistics[], teamIndex: number, statType: string): number {
+    if (!stats || stats.length < 2) return 50;
+    const val1 = this.parseStatValue(stats[0].statistics.find(s => s.type === statType)?.value);
+    const val2 = this.parseStatValue(stats[1].statistics.find(s => s.type === statType)?.value);
+    const total = val1 + val2;
+    if (total === 0) return 50;
+    return teamIndex === 0 ? (val1 / total) * 100 : (val2 / total) * 100;
+  }
+
+  private parseStatValue(value: any): number {
+    if (value === null || value === undefined) return 0;
+    if (typeof value === 'number') return value;
+    if (typeof value === 'string') {
+      // Handle percentage strings like "65%"
+      const numStr = value.replace('%', '');
+      return parseFloat(numStr) || 0;
+    }
+    return 0;
   }
 
   buildProcessedEvents(events: MatchEvent[], match: Match): any[] {
@@ -1574,8 +1736,8 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   // Online status helper
   isUserOnline(lastActive?: Date): boolean {
     if (!lastActive) return false;
-    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
-    return new Date(lastActive) > fiveMinutesAgo;
+    const fiveMinutesAgo = this.cachedNow - 5 * 60 * 1000;
+    return new Date(lastActive).getTime() > fiveMinutesAgo;
   }
 
   // Profile picture modal methods
@@ -1739,6 +1901,9 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.trashTalkInterval) {
       clearTimeout(this.trashTalkInterval);
+    }
+    if (this.onlineCheckInterval) {
+      clearInterval(this.onlineCheckInterval);
     }
     this.stopLiveRefreshInterval();
     this.stopEventsRefreshInterval();

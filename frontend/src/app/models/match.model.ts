@@ -45,3 +45,45 @@ export interface MatchEvent {
   type: 'Goal' | 'Card' | 'Subst' | 'Var' | string;
   detail: string;
 }
+
+export interface MatchLineupPlayer {
+  id: number;
+  name: string;
+  number: number;
+  pos: string;
+  grid?: string;
+}
+
+export interface MatchLineup {
+  team: {
+    id: number;
+    name: string;
+    logo: string;
+    colors?: {
+      player?: { primary: string; number: string; border: string };
+      goalkeeper?: { primary: string; number: string; border: string };
+    } | null;
+  };
+  coach: {
+    id: number;
+    name: string;
+    photo: string;
+  } | null;
+  formation: string;
+  startXI: MatchLineupPlayer[];
+  substitutes: MatchLineupPlayer[];
+}
+
+export interface MatchStatistic {
+  type: string;
+  value: number | string | null;
+}
+
+export interface MatchTeamStatistics {
+  team: {
+    id: number;
+    name: string;
+    logo: string;
+  };
+  statistics: MatchStatistic[];
+}

@@ -180,13 +180,19 @@
     "teamForm": "משחקים אחרונים",
     "noRecentMatches": "אין משחקים אחרונים",
     "added": "נוספו",
-    "events": "אירועי המשחק",
+    "events": "אירועים",
     "noEvents": "אין אירועים עדיין",
     "kickoff": "התחלה",
     "halfTimeFull": "מחצית",
     "fullTimeFull": "סיום",
     "goalLabel": "גול!",
-    "assistLabel": "בישול"
+    "assistLabel": "בישול",
+    "lineups": "הרכבים",
+    "noLineups": "הרכבים לא זמינים",
+    "startingXI": "הרכב פתיחה",
+    "substitutes": "מחליפים",
+    "statistics": "סטטיסטיקות",
+    "noStatistics": "סטטיסטיקות לא זמינות"
   },
   "bets": {
     "placeYourBet": "בצע את ההימור שלך",
