@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, effect } from '@angular/core';
 
 @Injectable({
   providedIn: 'root'
@@ -6,6 +6,17 @@ import { Injectable, signal } from '@angular/core';
 export class LoadingService {
   private loadingCount = 0;
   isLoading = signal(false);
+
+  constructor() {
+    // Effect to toggle body scroll when loading state changes
+    effect(() => {
+      if (this.isLoading()) {
+        document.body.style.overflow = 'hidden';
+      } else {
+        document.body.style.overflow = '';
+      }
+    });
+  }
 
   show(): void {
     this.loadingCount++;

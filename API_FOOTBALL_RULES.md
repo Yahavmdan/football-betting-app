@@ -1,5 +1,5 @@
 # API-Football Integration Rules
-
+documentation : https://www.api-football.com/documentation-v3
 ## Base Configuration
 - **Base URL**: `https://v3.football.api-sports.io`
 - **Auth Header**: `x-apisports-key: {API_KEY}`

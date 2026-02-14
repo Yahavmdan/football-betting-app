@@ -775,6 +775,9 @@
                 <div class="match-events-section"
                      *ngIf="match.externalApiId && (match.status === 'LIVE' || match.status === 'FINISHED')">
                     <h4 class="events-title collapsible-header" (click)="toggleMatchEvents(); $event.stopPropagation()">
+                        <svg class="section-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                        </svg>
                         <span>{{ 'matches.events' | translate }}</span>
                         <svg class="collapse-arrow" [class.open]="showMatchEvents" xmlns="http://www.w3.org/2000/svg"
                              width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -790,15 +793,6 @@
                             {{ 'matches.noEvents' | translate }}
                         </div>
                         <div *ngIf="!loadingMatchEvents && processedEvents.length > 0" class="events-timeline">
-                            <!-- Kick-off marker -->
-                            <div class="timeline-marker-row">
-                                <div class="timeline-side home-side"></div>
-                                <div class="timeline-center marker-center">
-                                    <span class="marker-badge kickoff">KO</span>
-                                </div>
-                                <div class="timeline-side away-side"></div>
-                            </div>
-
                             <ng-container *ngFor="let item of processedEvents">
                                 <!-- HT / FT Marker -->
                                 <div *ngIf="item.isMarker" class="timeline-marker-row">
@@ -806,7 +800,7 @@
                                     <div class="timeline-center marker-center">
                         <span class="marker-badge" [class.ht]="item.markerType === 'HT'"
                               [class.ft]="item.markerType === 'FT'">
-                          {{ item.markerType }}
+                          {{ item.markerType === 'HT' ? ('matches.halfTime' | translate) : ('matches.fullTime' | translate) }}
                             <span class="marker-time">{{ item.label }}</span>
                         </span>
                                     </div>
@@ -976,6 +970,14 @@
                                     </div>
                                 </div>
                             </ng-container>
+                            <!-- Kick-off marker at bottom -->
+                            <div class="timeline-marker-row">
+                                <div class="timeline-side home-side"></div>
+                                <div class="timeline-center marker-center">
+                                    <span class="marker-badge kickoff">{{ 'matches.kickOff' | translate }}</span>
+                                </div>
+                                <div class="timeline-side away-side"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -983,6 +985,11 @@
                 <div class="betting-section">
                     <h4 class="betting-title collapsible-header"
                         (click)="showBetting = !showBetting; $event.stopPropagation()">
+                        <svg class="section-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path>
+                            <path d="M12 18V6"></path>
+                        </svg>
                         <span>{{ 'matches.betting' | translate }}</span>
                         <svg class="collapse-arrow" [class.open]="showBetting" xmlns="http://www.w3.org/2000/svg"
                              width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -1154,6 +1161,14 @@
                 <!-- Head-to-Head History -->
                 <div class="head-to-head-section">
                     <h4 class="h2h-title collapsible-header" (click)="toggleHeadToHead(); $event.stopPropagation()">
+                        <svg class="section-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <!-- Left arrow pointing right towards center (from top-left) -->
+                            <line x1="2" y1="2" x2="10" y2="10"></line>
+                            <polyline points="6 10 10 10 10 6"></polyline>
+                            <!-- Right arrow pointing left towards center (from bottom-right) -->
+                            <line x1="22" y1="22" x2="14" y2="14"></line>
+                            <polyline points="18 14 14 14 14 18"></polyline>
+                        </svg>
                         <span>{{ 'matches.headToHead' | translate }}</span>
                         <svg class="collapse-arrow" [class.open]="showHeadToHead" xmlns="http://www.w3.org/2000/svg"
                              width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -1186,6 +1201,10 @@
                 <!-- Team Form Section -->
                 <div class="team-form-section">
                     <h4 class="team-form-title collapsible-header" (click)="toggleTeamForm(); $event.stopPropagation()">
+                        <svg class="section-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
                         <span>{{ 'matches.teamForm' | translate }}</span>
                         <svg class="collapse-arrow" [class.open]="showTeamForm" xmlns="http://www.w3.org/2000/svg"
                              width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"

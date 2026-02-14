@@ -115,13 +115,15 @@
     "syncMatchesDesc": "Fetch matches from the past week and the upcoming week",
     "shareLink": "Share join link",
     "linkCopied": "Link copied!",
-    "invite": "Invite"
+    "invite": "Copy invite link"
   },
   "matches": {
     "scheduled": "SCHEDULED",
     "started": "STARTED",
     "live": "LIVE",
-    "halfTime": "HT",
+    "kickOff": "Kick Off",
+    "halfTime": "Half Time",
+    "fullTime": "Full Time",
     "finished": "FINISHED",
     "postponed": "POSTPONED",
     "cancelled": "CANCELLED",

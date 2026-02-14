@@ -115,13 +115,15 @@
     "syncMatchesDesc": "שלוף משחקים מהשבוע האחרון והשבוע הקרוב",
     "shareLink": "שתף קישור הצטרפות",
     "linkCopied": "הקישור הועתק!",
-    "invite": "הזמן"
+    "invite": "העתק קישור הזמנה"
   },
   "matches": {
     "scheduled": "מתוכנן",
     "started": "התחיל",
     "live": "בשידור חי",
+    "kickOff": "שריקת פתיחה",
     "halfTime": "מחצית",
+    "fullTime": "סיום",
     "finished": "הסתיים",
     "postponed": "נדחה",
     "cancelled": "בוטל",

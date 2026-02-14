@@ -101,6 +101,8 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   loadingMatchEvents = false;
   matchEvents: MatchEvent[] = [];
   processedEvents: any[] = [];
+  private eventsRefreshInterval: ReturnType<typeof setInterval> | null = null;
+  private readonly EVENTS_REFRESH_INTERVAL_MS = 60000; // 1 minute
 
   // Member bets viewer
   viewingBetsForMatch: string | null = null;
@@ -574,11 +576,14 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
       this.headToHeadMatches = [];
       this.homeTeamRecentMatches = [];
       this.awayTeamRecentMatches = [];
+      // Stop events refresh when collapsing
+      this.stopEventsRefreshInterval();
     } else {
       this.expandedMatchId = matchId;
       this.expandedMatch = match;
       // Reset collapsible sections - data fetched on demand
-      this.showBetting = true;
+      // Collapse betting section by default for live matches
+      this.showBetting = !(match.status === 'LIVE' || this.isMatchLive(match));
       this.showHeadToHead = false;
       this.showTeamForm = false;
       this.headToHeadMatches = [];
@@ -590,9 +595,14 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
       this.showMatchEvents = false;
 
       // Auto-open and load match events for live/finished matches
-      if (match.externalApiId && (match.status === 'LIVE' || match.status === 'FINISHED')) {
+      if (match.externalApiId && (match.status === 'LIVE' || match.status === 'FINISHED' || this.isMatchLive(match))) {
         this.showMatchEvents = true;
         this.loadMatchEvents(match);
+
+        // Start events refresh interval for live matches
+        if (match.status === 'LIVE' || this.isMatchLive(match)) {
+          this.startEventsRefreshInterval();
+        }
       }
 
       // Auto-open bet form if match can be bet on
@@ -684,6 +694,101 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     if (this.showMatchEvents && this.expandedMatch && this.matchEvents.length === 0 && !this.loadingMatchEvents) {
       this.loadMatchEvents(this.expandedMatch);
     }
+
+    // Start or stop events refresh interval based on visibility
+    if (this.showMatchEvents && this.expandedMatch &&
+        (this.expandedMatch.status === 'LIVE' || this.isMatchLive(this.expandedMatch))) {
+      this.startEventsRefreshInterval();
+    } else {
+      this.stopEventsRefreshInterval();
+    }
+  }
+
+  private isMatchLive(match: Match): boolean {
+    const now = new Date();
+    const matchDate = new Date(match.matchDate);
+    return match.status === 'LIVE' || (match.status === 'SCHEDULED' && matchDate <= now);
+  }
+
+  private startEventsRefreshInterval(): void {
+    // Don't start if already running or page not visible
+    if (this.eventsRefreshInterval || !this.isPageVisible) {
+      return;
+    }
+
+    this.eventsRefreshInterval = setInterval(() => {
+      if (!this.isPageVisible || !this.showMatchEvents || !this.expandedMatch) {
+        this.stopEventsRefreshInterval();
+        return;
+      }
+
+      // Refresh match data (score, minute) and events
+      this.refreshExpandedMatchData();
+    }, this.EVENTS_REFRESH_INTERVAL_MS);
+  }
+
+  private stopEventsRefreshInterval(): void {
+    if (this.eventsRefreshInterval) {
+      clearInterval(this.eventsRefreshInterval);
+      this.eventsRefreshInterval = null;
+    }
+  }
+
+  private refreshExpandedMatchData(): void {
+    if (!this.expandedMatch) return;
+
+    // Refresh match data (score, elapsed time)
+    this.matchService.refreshSingleMatch(this.expandedMatch._id).subscribe({
+      next: (response) => {
+        const updatedMatch = response.data;
+
+        // Preserve round
+        if (this.expandedMatch?.round) {
+          updatedMatch.round = this.expandedMatch.round;
+        }
+
+        // Update the expanded match reference
+        this.expandedMatch = updatedMatch;
+
+        // Update in matches arrays
+        const index = this.matches.findIndex(m => m._id === updatedMatch._id);
+        if (index !== -1) {
+          this.matches[index] = updatedMatch;
+        }
+        const filteredIndex = this.filteredMatches.findIndex(m => m._id === updatedMatch._id);
+        if (filteredIndex !== -1) {
+          this.filteredMatches[filteredIndex] = updatedMatch;
+        }
+
+        this.groupMatchesByRound();
+
+        // If match finished, stop the interval
+        if (updatedMatch.status === 'FINISHED') {
+          this.stopEventsRefreshInterval();
+        }
+      },
+      error: (error) => {
+        console.error('Failed to refresh expanded match:', error);
+      }
+    });
+
+    // Refresh events if showing
+    if (this.showMatchEvents && this.expandedMatch.externalApiId) {
+      this.matchService.getMatchEvents(this.expandedMatch._id).subscribe({
+        next: (response) => {
+          this.matchEvents = (response.data || []).map(e => ({
+            ...e,
+            type: (e.type.charAt(0).toUpperCase() + e.type.slice(1).toLowerCase()) as any
+          }));
+          if (this.expandedMatch) {
+            this.processedEvents = this.buildProcessedEvents(this.matchEvents, this.expandedMatch);
+          }
+        },
+        error: (error) => {
+          console.error('Failed to refresh match events:', error);
+        }
+      });
+    }
   }
 
   loadMatchEvents(match: Match): void {
@@ -726,16 +831,34 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
       }
     }
 
-    // Sort events by time
+    // Check if match has reached half time
+    const hasSecondHalfEvents = events.some(e => e.time.elapsed > 45);
+    const matchReachedHalfTime = match.status === 'FINISHED' ||
+      hasSecondHalfEvents ||
+      (match.elapsed && match.elapsed >= 45) ||
+      match.statusShort === 'HT' ||
+      match.statusShort === '2H';
+
+    // Sort events by time descending (most recent first)
     const sorted = [...events].sort((a, b) => {
       const timeA = a.time.elapsed * 100 + (a.time.extra || 0);
       const timeB = b.time.elapsed * 100 + (b.time.extra || 0);
-      return timeA - timeB;
+      return timeB - timeA;
     });
 
+    // Insert FT marker at the top for finished matches
+    if (match.status === 'FINISHED') {
+      result.push({
+        isMarker: true,
+        markerType: 'FT',
+        label: lastSecondHalfExtra > 0 ? `90' + ${lastSecondHalfExtra}` : `90'`
+      });
+    }
+
     for (const event of sorted) {
-      // Insert HT marker before first second-half event
-      if (!htInserted && event.time.elapsed > 45) {
+      // Insert HT marker after last second-half event (before first-half events)
+      // Only show HT if match has actually reached half time
+      if (!htInserted && event.time.elapsed <= 45 && matchReachedHalfTime) {
         htInserted = true;
         result.push({
           isMarker: true,
@@ -744,15 +867,6 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
         });
       }
       result.push({ isMarker: false, event });
-    }
-
-    // Insert FT marker at the end for finished matches
-    if (match.status === 'FINISHED') {
-      result.push({
-        isMarker: true,
-        markerType: 'FT',
-        label: lastSecondHalfExtra > 0 ? `90' + ${lastSecondHalfExtra}` : `90'`
-      });
     }
 
     return result;
@@ -1627,6 +1741,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
       clearTimeout(this.trashTalkInterval);
     }
     this.stopLiveRefreshInterval();
+    this.stopEventsRefreshInterval();
     document.removeEventListener('visibilitychange', this.handleVisibilityChange);
   }
 
@@ -1634,11 +1749,19 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   private handleVisibilityChange = (): void => {
     this.isPageVisible = !document.hidden;
     if (this.isPageVisible) {
-      // Page became visible - restart interval if there are live matches
+      // Page became visible - restart intervals if needed
       this.startLiveRefreshIfNeeded();
+      // Restart events refresh if events section is expanded for a live match
+      if (this.showMatchEvents && this.expandedMatch &&
+          (this.expandedMatch.status === 'LIVE' || this.isMatchLive(this.expandedMatch))) {
+        this.startEventsRefreshInterval();
+        // Also do an immediate refresh on visibility restore
+        this.refreshExpandedMatchData();
+      }
     } else {
-      // Page became hidden - stop interval to save resources
+      // Page became hidden - stop intervals to save resources
       this.stopLiveRefreshInterval();
+      this.stopEventsRefreshInterval();
     }
   };
 
