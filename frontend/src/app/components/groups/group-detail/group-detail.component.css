@@ -1570,6 +1570,7 @@ h2 {
     rotate: -20deg;
     animation: coinWiggle 1.8s ease-in-out infinite;
     transform-origin: center center;
+    z-index: 10;
 }
 
 .bet-coin-icon span:first-child {
