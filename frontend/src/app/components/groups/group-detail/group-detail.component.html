@@ -221,10 +221,18 @@
     </div>
 
     <div class="content-grid">
-        <div class="leaderboard-section">
-            <div class="leaderboard-header">
-                <h2>{{ 'groups.leaderboard' | translate }}</h2>
-                <button class="btn-trash-talk" (click)="openTrashTalkInput()" [title]="'groups.trashTalk' | translate">
+        <div class="leaderboard-section" [class.collapsed]="!isLeaderboardExpanded">
+            <div class="leaderboard-header" (click)="toggleLeaderboard()">
+                <div class="leaderboard-title-wrapper">
+                    <svg class="collapse-chevron" [class.expanded]="isLeaderboardExpanded"
+                         xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                    <h2>{{ 'groups.leaderboard' | translate }}</h2>
+                    <span class="member-count-badge" *ngIf="!isLeaderboardExpanded">({{ leaderboard.length }})</span>
+                </div>
+                <button class="btn-trash-talk" (click)="openTrashTalkInput(); $event.stopPropagation()" [title]="'groups.trashTalk' | translate">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
@@ -232,7 +240,8 @@
                     <span *ngIf="getCurrentUserTrashTalk()" class="has-message-dot"></span>
                 </button>
             </div>
-
+            <div class="leaderboard-content" [class.expanded]="isLeaderboardExpanded">
+                <div class="leaderboard-content-inner">
             <!-- Trash Talk Input Dialog -->
             <div *ngIf="showTrashTalkInput" class="trash-talk-dialog">
                 <div class="trash-talk-header">
@@ -472,6 +481,8 @@
                             </svg>
                         </button>
                     </div>
+                </div>
+            </div>
                 </div>
             </div>
         </div>

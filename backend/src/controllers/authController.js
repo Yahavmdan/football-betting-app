@@ -65,6 +65,15 @@ exports.login = async (req, res) => {
       });
     }
 
+    // Check if user is OAuth-only (no password set)
+    if (!user.password) {
+      const provider = user.googleId ? 'Google' : user.facebookId ? 'Facebook' : 'OAuth';
+      return res.status(401).json({
+        success: false,
+        message: `This account uses ${provider} login. Please sign in with ${provider}.`
+      });
+    }
+
     const isPasswordCorrect = await user.comparePassword(password);
 
     if (!isPasswordCorrect) {

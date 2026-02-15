@@ -182,6 +182,9 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   standingsError = '';
   isRoundStuck = false;
 
+  // Leaderboard collapse state
+  isLeaderboardExpanded = false;
+
   // Round grouping for automatic groups
   matchesByRound: RoundGroup[] = [];
   allRounds: RoundGroup[] = []; // All rounds before pagination
@@ -423,6 +426,10 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     if (this.showStandings && !this.loadingStandings) {
       this.loadStandings();
     }
+  }
+
+  toggleLeaderboard(): void {
+    this.isLeaderboardExpanded = !this.isLeaderboardExpanded;
   }
 
   loadStandings(): void {
@@ -1818,6 +1825,10 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   }
 
   openTrashTalkInput(): void {
+    // Expand leaderboard if collapsed
+    if (!this.isLeaderboardExpanded) {
+      this.isLeaderboardExpanded = true;
+    }
     // Find current user's trash talk
     const currentUserId = this.authService.getCurrentUser()?.id;
     const member = this.leaderboard.find(m => m.user._id === currentUserId);
