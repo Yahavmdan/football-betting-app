@@ -38,8 +38,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   currentUser: User | null = null;
   loading = true;
   hasPreferences = false;
-  showPreferencesReminder = false;
-
   // Matches
   allMatches: PersonalizedMatch[] = [];
   liveMatches: PersonalizedMatch[] = [];
@@ -91,7 +89,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
       if (user) {
-        this.showPreferencesReminder = !user.settings?.preferencesConfigured;
         this.loadPersonalizedMatches();
         this.startAutoRefresh();
       }
@@ -124,17 +121,6 @@ export class HomeComponent implements OnInit, OnDestroy {
       error: (error) => {
         console.error('Failed to load personalized matches:', error);
         this.loading = false;
-      }
-    });
-  }
-
-  dismissReminder(): void {
-    this.preferencesService.dismissReminder().subscribe({
-      next: () => {
-        this.showPreferencesReminder = false;
-      },
-      error: (error) => {
-        console.error('Failed to dismiss reminder:', error);
       }
     });
   }

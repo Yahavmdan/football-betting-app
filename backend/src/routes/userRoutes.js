@@ -12,8 +12,7 @@ const {
   unlinkTelegram,
   updateTelegramSettings,
   getTelegramStatus,
-  updatePreferences,
-  dismissPreferencesReminder
+  updatePreferences
 } = require('../controllers/userController');
 const { protect } = require('../middleware/auth');
 const { uploadProfile } = require('../middleware/upload');
@@ -29,7 +28,6 @@ router.delete('/account', protect, deleteAccount);
 
 // Preferences routes
 router.put('/preferences', protect, updatePreferences);
-router.post('/preferences/dismiss', protect, dismissPreferencesReminder);
 
 // Telegram routes
 router.post('/telegram/generate-link-code', protect, generateTelegramLinkCode);

@@ -17,15 +17,6 @@
       </button>
   </div>
 
-  <!-- Preferences Reminder Banner -->
-  <div *ngIf="showPreferencesReminder && !loading" class="preferences-reminder">
-    <p>{{ 'home.preferencesReminder' | translate }}</p>
-    <div class="reminder-actions">
-      <a routerLink="/preferences" class="setup-btn">{{ 'home.setupNow' | translate }}</a>
-      <button type="button" class="dismiss-btn" (click)="dismissReminder()">×</button>
-    </div>
-  </div>
-
   <!-- Loading State -->
   <div *ngIf="loading" class="loading-container">
     <div class="loading-spinner"></div>

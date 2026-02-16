@@ -19,8 +19,7 @@
     "noPreferences": "Set up your favorite teams and leagues to see personalized matches",
     "setupNow": "Set Up Now",
     "liveNow": "Live Now",
-    "noMatches": "No upcoming matches for your favorites",
-    "preferencesReminder": "Personalize your experience by selecting your favorite teams and leagues"
+    "noMatches": "No upcoming matches for your favorites"
   },
   "preferences": {
     "title": "My Preferences",
