@@ -127,7 +127,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
             sessionStorage.removeItem(REDIRECT_URL_KEY);
             void this.router.navigateByUrl(redirectUrl);
           } else {
-            void this.router.navigate(['/groups']);
+            void this.router.navigate(['/home']);
           }
         },
         error: (error) => {
@@ -149,7 +149,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
             sessionStorage.removeItem(REDIRECT_URL_KEY);
             void this.router.navigateByUrl(redirectUrl);
           } else {
-            void this.router.navigate(['/groups']);
+            void this.router.navigate(['/home']);
           }
         },
         error: (error) => {
@@ -170,7 +170,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
           sessionStorage.removeItem(REDIRECT_URL_KEY);
           void this.router.navigateByUrl(redirectUrl);
         } else {
-          void this.router.navigate(['/groups']);
+          void this.router.navigate(['/home']);
         }
       },
       error: (error) => {

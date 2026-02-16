@@ -8,6 +8,56 @@
       from { opacity: 0; }
       to { opacity: 1; }
     }
+
+    /* Dashboard Navigation Tabs */
+    .dashboard-tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 1.5rem;
+      background: #f1f5f9;
+      padding: 4px;
+      border-radius: 10px;
+      max-width: 280px;
+    }
+    .dashboard-tab {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.6rem 1.25rem;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #64748b;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      background: transparent;
+    }
+    .dashboard-tab:hover:not(.active) {
+      color: #334155;
+      background: rgba(255, 255, 255, 0.6);
+    }
+    .dashboard-tab.active {
+      background: white;
+      color: #1e293b;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    :host-context(.dark-theme) .dashboard-tabs {
+      background: #1e293b;
+    }
+    :host-context(.dark-theme) .dashboard-tab {
+      color: #94a3b8;
+    }
+    :host-context(.dark-theme) .dashboard-tab:hover:not(.active) {
+      color: #e2e8f0;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    :host-context(.dark-theme) .dashboard-tab.active {
+      background: #334155;
+      color: #f1f5f9;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+
     .header {
       display: flex;
       justify-content: space-between;

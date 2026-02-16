@@ -11,7 +11,9 @@ const {
   generateTelegramLinkCode,
   unlinkTelegram,
   updateTelegramSettings,
-  getTelegramStatus
+  getTelegramStatus,
+  updatePreferences,
+  dismissPreferencesReminder
 } = require('../controllers/userController');
 const { protect } = require('../middleware/auth');
 const { uploadProfile } = require('../middleware/upload');
@@ -24,6 +26,10 @@ router.post('/profile-picture', protect, uploadProfile.single('profilePicture'),
 router.delete('/profile-picture', protect, deleteProfilePicture);
 router.put('/settings', protect, updateSettings);
 router.delete('/account', protect, deleteAccount);
+
+// Preferences routes
+router.put('/preferences', protect, updatePreferences);
+router.post('/preferences/dismiss', protect, dismissPreferencesReminder);
 
 // Telegram routes
 router.post('/telegram/generate-link-code', protect, generateTelegramLinkCode);

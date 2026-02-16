@@ -141,10 +141,13 @@ export class MatchService {
   }
 
   // Get teams for a specific league (for automatic groups)
-  getLeagueTeams(leagueId: string, season?: number): Observable<{ success: boolean; data: ApiTeam[] }> {
+  getLeagueTeams(leagueId: string, season?: number, silent = true): Observable<{ success: boolean; data: ApiTeam[] }> {
     const params: any = { leagueId };
     if (season) params.season = season.toString();
-    return this.http.get<{ success: boolean; data: ApiTeam[] }>(`${this.apiUrl}/leagues/teams`, { params });
+    return this.http.get<{ success: boolean; data: ApiTeam[] }>(`${this.apiUrl}/leagues/teams`, {
+      params,
+      headers: silent ? SILENT_HEADERS : undefined
+    });
   }
 
   // Get filtered fixtures from API (for automatic groups)
@@ -202,6 +205,11 @@ export class MatchService {
       `${this.apiUrl}/${matchId}/statistics`,
       { headers: SILENT_HEADERS }
     );
+  }
+
+  // Get personalized matches based on user preferences
+  getPersonalizedMatches(): Observable<PersonalizedMatchesResponse> {
+    return this.http.get<PersonalizedMatchesResponse>(`${this.apiUrl}/personalized`);
   }
 }
 
@@ -267,4 +275,29 @@ export interface StandingTeam {
   lost: number;
   goalsFor: number;
   goalsAgainst: number;
+}
+
+export interface PersonalizedMatch extends ApiFixture {
+  isFavoriteTeam: boolean;
+  leagueId: string;
+}
+
+export interface PersonalizedMatchesResponse {
+  success: boolean;
+  data: {
+    matches: PersonalizedMatch[];
+    liveMatches: PersonalizedMatch[];
+    groupedByLeague: {
+      [leagueId: string]: {
+        league: {
+          id: string;
+          name: string;
+          logo: string | null;
+        };
+        matches: PersonalizedMatch[];
+      };
+    };
+    hasPreferences: boolean;
+    dateRange?: { from: string; to: string };
+  };
 }

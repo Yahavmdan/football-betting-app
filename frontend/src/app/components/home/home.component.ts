@@ -1,0 +1,460 @@
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { MatchService, PersonalizedMatch } from '../../services/match.service';
+import { PreferencesService } from '../../services/preferences.service';
+import { AuthService } from '../../services/auth.service';
+import { TranslationService } from '../../services/translation.service';
+import { TranslatePipe } from '../../services/translate.pipe';
+import { TeamTranslatePipe } from '../../pipes/team-translate.pipe';
+import { Match, MatchEvent, MatchLineup, MatchTeamStatistics } from '../../models/match.model';
+import { User } from '../../models/user.model';
+
+interface LeagueGroup {
+  league: {
+    id: string;
+    name: string;
+    logo: string | null;
+  };
+  matches: PersonalizedMatch[];
+  isCollapsed: boolean;
+}
+
+interface ProcessedEvent {
+  isMarker?: boolean;
+  markerType?: 'HT' | 'FT' | 'KO';
+  label?: string;
+  event?: MatchEvent;
+}
+
+@Component({
+  selector: 'app-home',
+  standalone: true,
+  imports: [CommonModule, RouterModule, TranslatePipe, TeamTranslatePipe],
+  templateUrl: './home.component.html',
+  styleUrls: ['./home.component.css']
+})
+export class HomeComponent implements OnInit, OnDestroy {
+  currentUser: User | null = null;
+  loading = true;
+  hasPreferences = false;
+  showPreferencesReminder = false;
+
+  // Matches
+  allMatches: PersonalizedMatch[] = [];
+  liveMatches: PersonalizedMatch[] = [];
+  leagueGroups: LeagueGroup[] = [];
+
+  // Expanded match state
+  expandedMatchId: string | null = null;
+  activeMatchTab: 'events' | 'lineups' | 'statistics' = 'events';
+
+  // Match events
+  matchEvents: MatchEvent[] = [];
+  processedEvents: ProcessedEvent[] = [];
+  loadingMatchEvents = false;
+
+  // Match lineups
+  matchLineups: MatchLineup[] = [];
+  loadingMatchLineups = false;
+
+  // Match statistics
+  matchStatistics: MatchTeamStatistics[] = [];
+  loadingMatchStatistics = false;
+
+  // Head to Head
+  headToHeadMatches: any[] = [];
+  loadingHeadToHead = false;
+  showHeadToHead = false;
+
+  // Team Form
+  homeTeamRecentMatches: any[] = [];
+  awayTeamRecentMatches: any[] = [];
+  loadingTeamForm = false;
+  showTeamForm = false;
+
+  // Current expanded match reference
+  currentExpandedMatch: PersonalizedMatch | null = null;
+
+  // Auto-refresh
+  private refreshInterval: ReturnType<typeof setInterval> | null = null;
+  private readonly REFRESH_INTERVAL_MS = 60000; // 1 minute
+
+  constructor(
+    private matchService: MatchService,
+    private preferencesService: PreferencesService,
+    private authService: AuthService,
+    public translationService: TranslationService
+  ) {}
+
+  ngOnInit(): void {
+    this.authService.currentUser$.subscribe(user => {
+      this.currentUser = user;
+      if (user) {
+        this.showPreferencesReminder = !user.settings?.preferencesConfigured;
+        this.loadPersonalizedMatches();
+        this.startAutoRefresh();
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.stopAutoRefresh();
+  }
+
+  loadPersonalizedMatches(): void {
+    this.loading = true;
+    this.matchService.getPersonalizedMatches().subscribe({
+      next: (response) => {
+        this.hasPreferences = response.data.hasPreferences;
+        this.allMatches = response.data.matches;
+        this.liveMatches = response.data.liveMatches || [];
+
+        // Convert grouped data to array and sort by league name
+        this.leagueGroups = Object.entries(response.data.groupedByLeague)
+          .map(([leagueId, data]) => ({
+            league: data.league,
+            matches: data.matches,
+            isCollapsed: false
+          }))
+          .sort((a, b) => a.league.name.localeCompare(b.league.name));
+
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Failed to load personalized matches:', error);
+        this.loading = false;
+      }
+    });
+  }
+
+  dismissReminder(): void {
+    this.preferencesService.dismissReminder().subscribe({
+      next: () => {
+        this.showPreferencesReminder = false;
+      },
+      error: (error) => {
+        console.error('Failed to dismiss reminder:', error);
+      }
+    });
+  }
+
+  toggleLeagueCollapse(leagueGroup: LeagueGroup): void {
+    leagueGroup.isCollapsed = !leagueGroup.isCollapsed;
+  }
+
+  toggleMatchExpand(match: PersonalizedMatch): void {
+    if (this.expandedMatchId === match.externalApiId) {
+      this.expandedMatchId = null;
+      this.currentExpandedMatch = null;
+      this.resetExpandedState();
+    } else {
+      this.expandedMatchId = match.externalApiId;
+      this.currentExpandedMatch = match;
+      this.activeMatchTab = 'events';
+      this.showHeadToHead = false;
+      this.showTeamForm = false;
+      this.loadMatchEvents(match.externalApiId);
+      // Load H2H and team form
+      if (match.homeTeam && match.awayTeam) {
+        this.loadHeadToHead(match.homeTeam, match.awayTeam, match.homeTeamId, match.awayTeamId);
+        this.loadTeamForm(match.homeTeam, match.awayTeam, match.homeTeamId, match.awayTeamId);
+      }
+    }
+  }
+
+  private resetExpandedState(): void {
+    this.matchEvents = [];
+    this.processedEvents = [];
+    this.matchLineups = [];
+    this.matchStatistics = [];
+    this.headToHeadMatches = [];
+    this.homeTeamRecentMatches = [];
+    this.awayTeamRecentMatches = [];
+  }
+
+  selectMatchTab(tab: 'events' | 'lineups' | 'statistics'): void {
+    this.activeMatchTab = tab;
+    if (this.expandedMatchId) {
+      if (tab === 'events' && this.matchEvents.length === 0) {
+        this.loadMatchEvents(this.expandedMatchId);
+      } else if (tab === 'lineups' && this.matchLineups.length === 0) {
+        this.loadMatchLineups(this.expandedMatchId);
+      } else if (tab === 'statistics' && this.matchStatistics.length === 0) {
+        this.loadMatchStatistics(this.expandedMatchId);
+      }
+    }
+  }
+
+  loadMatchEvents(matchId: string): void {
+    this.loadingMatchEvents = true;
+    this.matchService.getMatchEvents(matchId).subscribe({
+      next: (response) => {
+        this.matchEvents = response.data || [];
+        this.processedEvents = this.processEvents(this.matchEvents);
+        this.loadingMatchEvents = false;
+      },
+      error: (error) => {
+        console.error('Failed to load match events:', error);
+        this.loadingMatchEvents = false;
+      }
+    });
+  }
+
+  loadMatchLineups(matchId: string): void {
+    this.loadingMatchLineups = true;
+    this.matchService.getMatchLineups(matchId).subscribe({
+      next: (response) => {
+        this.matchLineups = response.data || [];
+        this.loadingMatchLineups = false;
+      },
+      error: (error) => {
+        console.error('Failed to load match lineups:', error);
+        this.loadingMatchLineups = false;
+      }
+    });
+  }
+
+  loadMatchStatistics(matchId: string): void {
+    this.loadingMatchStatistics = true;
+    this.matchService.getMatchStatistics(matchId).subscribe({
+      next: (response) => {
+        this.matchStatistics = response.data || [];
+        this.loadingMatchStatistics = false;
+      },
+      error: (error) => {
+        console.error('Failed to load match statistics:', error);
+        this.loadingMatchStatistics = false;
+      }
+    });
+  }
+
+  loadHeadToHead(homeTeam: string, awayTeam: string, homeTeamId?: number, awayTeamId?: number): void {
+    this.loadingHeadToHead = true;
+    this.matchService.getHeadToHead(homeTeam, awayTeam, homeTeamId, awayTeamId).subscribe({
+      next: (response) => {
+        this.headToHeadMatches = response.data || [];
+        this.loadingHeadToHead = false;
+      },
+      error: (error) => {
+        console.error('Failed to load H2H:', error);
+        this.loadingHeadToHead = false;
+      }
+    });
+  }
+
+  loadTeamForm(homeTeam: string, awayTeam: string, homeTeamId?: number, awayTeamId?: number): void {
+    this.loadingTeamForm = true;
+    this.matchService.getTeamRecentMatches(homeTeam, homeTeamId).subscribe({
+      next: (response) => {
+        this.homeTeamRecentMatches = response.data || [];
+      },
+      error: (error) => {
+        console.error('Failed to load home team form:', error);
+      }
+    });
+    this.matchService.getTeamRecentMatches(awayTeam, awayTeamId).subscribe({
+      next: (response) => {
+        this.awayTeamRecentMatches = response.data || [];
+        this.loadingTeamForm = false;
+      },
+      error: (error) => {
+        console.error('Failed to load away team form:', error);
+        this.loadingTeamForm = false;
+      }
+    });
+  }
+
+  toggleHeadToHead(): void {
+    this.showHeadToHead = !this.showHeadToHead;
+  }
+
+  toggleTeamForm(): void {
+    this.showTeamForm = !this.showTeamForm;
+  }
+
+  processEvents(events: MatchEvent[]): ProcessedEvent[] {
+    if (!events || events.length === 0) return [];
+
+    // Sort events by time in reverse (latest first for display)
+    const sortedEvents = [...events].sort((a, b) => {
+      const timeA = a.time.elapsed + (a.time.extra || 0);
+      const timeB = b.time.elapsed + (b.time.extra || 0);
+      return timeB - timeA;
+    });
+
+    const processed: ProcessedEvent[] = [];
+    let addedHT = false;
+    let addedFT = false;
+
+    for (const event of sortedEvents) {
+      const totalTime = event.time.elapsed + (event.time.extra || 0);
+
+      // Add FT marker before first event after 90
+      if (totalTime > 90 && !addedFT) {
+        processed.push({ isMarker: true, markerType: 'FT', label: "90'" });
+        addedFT = true;
+      }
+
+      // Add HT marker before first event after 45
+      if (totalTime > 45 && totalTime <= 90 && !addedHT) {
+        processed.push({ isMarker: true, markerType: 'HT', label: "45'" });
+        addedHT = true;
+      }
+
+      processed.push({ event });
+    }
+
+    // Add kickoff marker at the end
+    processed.push({ isMarker: true, markerType: 'KO', label: "0'" });
+
+    return processed;
+  }
+
+  getTeamResult(match: any, teamName: string): string {
+    const homeScore = match.result?.homeScore ?? 0;
+    const awayScore = match.result?.awayScore ?? 0;
+    const isHome = match.homeTeam === teamName;
+
+    if (homeScore === awayScore) return 'D';
+    if (isHome) {
+      return homeScore > awayScore ? 'W' : 'L';
+    } else {
+      return awayScore > homeScore ? 'W' : 'L';
+    }
+  }
+
+  getStatValue(stats: MatchTeamStatistics[], teamIndex: number, statType: string): string {
+    const teamStats = stats[teamIndex]?.statistics || [];
+    const stat = teamStats.find(s => s.type === statType);
+    return stat?.value?.toString() || '0';
+  }
+
+  getStatPercentage(stats: MatchTeamStatistics[], teamIndex: number, statType: string): number {
+    const homeValue = this.parseStatValue(this.getStatValue(stats, 0, statType));
+    const awayValue = this.parseStatValue(this.getStatValue(stats, 1, statType));
+    const total = homeValue + awayValue;
+    if (total === 0) return 50;
+    return teamIndex === 0 ? (homeValue / total) * 100 : (awayValue / total) * 100;
+  }
+
+  private parseStatValue(value: string): number {
+    const num = parseFloat(value.replace('%', ''));
+    return isNaN(num) ? 0 : num;
+  }
+
+  translateStatName(statType: string): string {
+    const translations: { [key: string]: { en: string; he: string } } = {
+      'Shots on Goal': { en: 'Shots on Goal', he: 'בעיטות למסגרת' },
+      'Shots off Goal': { en: 'Shots off Goal', he: 'בעיטות מחוץ למסגרת' },
+      'Total Shots': { en: 'Total Shots', he: 'סה"כ בעיטות' },
+      'Blocked Shots': { en: 'Blocked Shots', he: 'בעיטות חסומות' },
+      'Shots insidebox': { en: 'Shots Inside Box', he: 'בעיטות מתוך הרחבה' },
+      'Shots outsidebox': { en: 'Shots Outside Box', he: 'בעיטות מחוץ לרחבה' },
+      'Fouls': { en: 'Fouls', he: 'עבירות' },
+      'Corner Kicks': { en: 'Corner Kicks', he: 'קרנות' },
+      'Offsides': { en: 'Offsides', he: 'נבדלים' },
+      'Ball Possession': { en: 'Ball Possession', he: 'אחזקת כדור' },
+      'Yellow Cards': { en: 'Yellow Cards', he: 'כרטיסים צהובים' },
+      'Red Cards': { en: 'Red Cards', he: 'כרטיסים אדומים' },
+      'Goalkeeper Saves': { en: 'Goalkeeper Saves', he: 'הצלות שוער' },
+      'Total passes': { en: 'Total Passes', he: 'סה"כ מסירות' },
+      'Passes accurate': { en: 'Accurate Passes', he: 'מסירות מדויקות' },
+      'Passes %': { en: 'Pass Accuracy', he: 'דיוק מסירות' },
+      'expected_goals': { en: 'Expected Goals', he: 'גולים צפויים' }
+    };
+
+    const lang = this.translationService.getCurrentLanguage();
+    // @ts-ignore
+      return translations[statType]?.[lang] || statType;
+  }
+
+  // Lineup helper methods
+  getPlayerRow(grid: string | null | undefined, teamIndex: number): number {
+    if (!grid) return 1;
+    const [row] = grid.split(':').map(Number);
+    return teamIndex === 0 ? row : (5 - row + 1);
+  }
+
+  getPlayerCol(grid: string | null | undefined): number {
+    if (!grid) return 1;
+    const [, col] = grid.split(':').map(Number);
+    return col;
+  }
+
+  getRowPlayerCount(players: any[], grid: string | null | undefined): number {
+    if (!grid) return 1;
+    const [row] = grid.split(':').map(Number);
+    return players.filter(p => p.grid?.startsWith(row + ':')).length;
+  }
+
+  getShortName(fullName: string): string {
+    if (!fullName) return '';
+    const parts = fullName.split(' ');
+    if (parts.length === 1) return fullName;
+    return parts[parts.length - 1];
+  }
+
+  isMatchInPast(matchDate: string): boolean {
+    return new Date(matchDate) < new Date();
+  }
+
+  onImageError(event: Event): void {
+    (event.target as HTMLImageElement).style.display = 'none';
+  }
+
+  formatMatchDate(dateStr: string): string {
+    const date = new Date(dateStr);
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const isToday = date.toDateString() === today.toDateString();
+    const isTomorrow = date.toDateString() === tomorrow.toDateString();
+    const isYesterday = date.toDateString() === yesterday.toDateString();
+
+    const timeStr = date.toLocaleTimeString(this.translationService.getCurrentLanguage() === 'he' ? 'he-IL' : 'en-US', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    if (isToday) {
+      return `${this.translationService.translate('common.today')} ${timeStr}`;
+    } else if (isTomorrow) {
+      return `${this.translationService.translate('common.tomorrow')} ${timeStr}`;
+    } else if (isYesterday) {
+      return `${this.translationService.translate('common.yesterday')} ${timeStr}`;
+    }
+
+    return date.toLocaleDateString(this.translationService.getCurrentLanguage() === 'he' ? 'he-IL' : 'en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  private startAutoRefresh(): void {
+    if (this.refreshInterval) return;
+
+    this.refreshInterval = setInterval(() => {
+      if (this.liveMatches.length > 0) {
+        this.loadPersonalizedMatches();
+      }
+    }, this.REFRESH_INTERVAL_MS);
+  }
+
+  private stopAutoRefresh(): void {
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+      this.refreshInterval = null;
+    }
+  }
+
+  refreshMatches(): void {
+    this.loadPersonalizedMatches();
+  }
+}

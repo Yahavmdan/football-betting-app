@@ -1971,3 +1971,162 @@ exports.getMatchStatistics = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+// Get personalized matches based on user preferences
+exports.getPersonalizedMatches = async (req, res) => {
+  try {
+    const user = req.user;
+    const settings = user.settings || {};
+
+    const favoriteLeagues = settings.favoriteLeagues || [];
+    const favoriteTournaments = settings.favoriteTournaments || [];
+    const favoriteTeams = settings.favoriteTeams || [];
+
+    console.log('=== getPersonalizedMatches ===');
+    console.log('User ID:', user._id);
+    console.log('Favorite Leagues:', favoriteLeagues);
+    console.log('Favorite Tournaments:', favoriteTournaments);
+    console.log('Favorite Teams:', favoriteTeams);
+
+    // If no preferences set, return empty
+    if (favoriteLeagues.length === 0 && favoriteTournaments.length === 0 && favoriteTeams.length === 0) {
+      console.log('No preferences set, returning empty');
+      return res.status(200).json({
+        success: true,
+        data: {
+          matches: [],
+          groupedByLeague: {},
+          hasPreferences: false
+        }
+      });
+    }
+
+    // Calculate date range: past 3 days to future 7 days
+    const now = new Date();
+    const pastDate = new Date(now);
+    pastDate.setDate(pastDate.getDate() - 3);
+    const futureDate = new Date(now);
+    futureDate.setDate(futureDate.getDate() + 7);
+
+    const dateFrom = pastDate.toISOString().split('T')[0];
+    const dateTo = futureDate.toISOString().split('T')[0];
+
+    console.log('Date range:', dateFrom, 'to', dateTo);
+
+    const allMatches = [];
+    const seenFixtures = new Set();
+
+    // Combine leagues and tournaments into one list
+    const leagueIds = [...new Set([...favoriteLeagues, ...favoriteTournaments])];
+    console.log('Combined league IDs:', leagueIds);
+
+    // Fetch fixtures for each favorite league/tournament
+    for (const leagueId of leagueIds) {
+      try {
+        console.log(`Fetching fixtures for league ${leagueId}...`);
+        // getFilteredFixtures returns an array directly, not { fixtures }
+        const fixtures = await apiFootballService.getFilteredFixtures(
+          leagueId,
+          null, // current season
+          { dateFrom, dateTo }
+        );
+
+        console.log(`League ${leagueId}: Found ${fixtures.length} fixtures`);
+
+        for (const fixture of fixtures) {
+          if (!seenFixtures.has(fixture.externalApiId)) {
+            seenFixtures.add(fixture.externalApiId);
+
+            // Check if this fixture involves a favorite team
+            const isFavoriteTeam = favoriteTeams.some(
+              team => team.teamId === fixture.homeTeamId || team.teamId === fixture.awayTeamId
+            );
+
+            allMatches.push({
+              ...fixture,
+              isFavoriteTeam,
+              leagueId
+            });
+          }
+        }
+      } catch (err) {
+        console.error(`Failed to fetch fixtures for league ${leagueId}:`, err.message);
+      }
+    }
+
+    // If user has favorite teams, also fetch their matches from any league
+    for (const team of favoriteTeams) {
+      // Skip if we already have this team's matches from favorite leagues
+      if (leagueIds.includes(team.leagueId)) continue;
+
+      try {
+        console.log(`Fetching fixtures for team ${team.teamId} in league ${team.leagueId}...`);
+        // getFilteredFixtures returns an array directly, not { fixtures }
+        const fixtures = await apiFootballService.getFilteredFixtures(
+          team.leagueId,
+          null,
+          { dateFrom, dateTo, teamId: team.teamId.toString() }
+        );
+
+        console.log(`Team ${team.teamId}: Found ${fixtures.length} fixtures`);
+
+        for (const fixture of fixtures) {
+          if (!seenFixtures.has(fixture.externalApiId)) {
+            seenFixtures.add(fixture.externalApiId);
+            allMatches.push({
+              ...fixture,
+              isFavoriteTeam: true,
+              leagueId: team.leagueId
+            });
+          }
+        }
+      } catch (err) {
+        console.error(`Failed to fetch fixtures for team ${team.teamId}:`, err.message);
+      }
+    }
+
+    console.log(`Total matches found: ${allMatches.length}`);
+
+    // Sort by date
+    allMatches.sort((a, b) => new Date(a.matchDate) - new Date(b.matchDate));
+
+    // Group by league
+    const groupedByLeague = {};
+    const supportedLeagues = apiFootballService.getSupportedLeagues();
+
+    for (const match of allMatches) {
+      const leagueInfo = supportedLeagues.find(l => l.id === match.leagueId) || {
+        id: match.leagueId,
+        name: match.competition || 'Unknown League',
+        logo: null
+      };
+
+      if (!groupedByLeague[match.leagueId]) {
+        groupedByLeague[match.leagueId] = {
+          league: leagueInfo,
+          matches: []
+        };
+      }
+      groupedByLeague[match.leagueId].matches.push(match);
+    }
+
+    // Separate live matches
+    const liveMatches = allMatches.filter(m => m.status === 'LIVE');
+
+    res.status(200).json({
+      success: true,
+      data: {
+        matches: allMatches,
+        liveMatches,
+        groupedByLeague,
+        hasPreferences: true,
+        dateRange: { from: dateFrom, to: dateTo }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};

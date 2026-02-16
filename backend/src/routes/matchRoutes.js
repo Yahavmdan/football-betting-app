@@ -28,7 +28,8 @@ const {
   refreshSingleMatch,
   getMatchEvents,
   getMatchLineups,
-  getMatchStatistics
+  getMatchStatistics,
+  getPersonalizedMatches
 } = require('../controllers/matchController');
 const { protect } = require('../middleware/auth');
 
@@ -47,6 +48,7 @@ router.delete('/leagues/cache', protect, clearLeagueCache);
 router.post('/sync-league', protect, syncLeagueFixturesToGroup);
 router.get('/head-to-head', protect, getHeadToHead);
 router.get('/team-recent', protect, getTeamRecentMatches);
+router.get('/personalized', protect, getPersonalizedMatches);
 router.get('/:matchId/events', protect, getMatchEvents);
 router.get('/:matchId/lineups', protect, getMatchLineups);
 router.get('/:matchId/statistics', protect, getMatchStatistics);

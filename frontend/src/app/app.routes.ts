@@ -5,8 +5,18 @@ import { adminGuard } from './guards/admin.guard';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: '/groups',
+    redirectTo: '/home',
     pathMatch: 'full'
+  },
+  {
+    path: 'home',
+    canActivate: [authGuard],
+    loadComponent: () => import('./components/home/home.component').then(m => m.HomeComponent)
+  },
+  {
+    path: 'preferences',
+    canActivate: [authGuard],
+    loadComponent: () => import('./components/preferences/preferences-setup.component').then(m => m.PreferencesSetupComponent)
   },
   {
     path: 'login',
@@ -86,6 +96,6 @@ export const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: '/groups'
+    redirectTo: '/home'
   }
 ];

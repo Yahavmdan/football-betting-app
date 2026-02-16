@@ -6,11 +6,22 @@ export interface TelegramSettings {
   reminderMinutes: 5 | 10 | 15 | 30 | 60;
 }
 
+export interface FavoriteTeam {
+  leagueId: string;
+  teamId: number;
+  teamName: string;
+  teamLogo: string;
+}
+
 export interface UserSettings {
   language: 'en' | 'he';
   theme: 'light' | 'dark' | 'system';
   autoBet: boolean;
   telegram?: TelegramSettings;
+  favoriteLeagues?: string[];
+  favoriteTournaments?: string[];
+  favoriteTeams?: FavoriteTeam[];
+  preferencesConfigured?: boolean;
 }
 
 export interface User {

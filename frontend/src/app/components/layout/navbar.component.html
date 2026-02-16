@@ -2,7 +2,7 @@
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-brand">
-                <a routerLink="/groups" class="logo-link">
+                <a routerLink="/home" class="logo-link">
                     <svg class="app-logo-svg" viewBox="0 0 68 42" xmlns="http://www.w3.org/2000/svg">
                         <text x="4" y="32" text-anchor="middle" font-family="'Poppins', sans-serif" font-size="28" font-weight="800" fill="#4ade80" transform="rotate(10, 4, 32)">1</text>
                         <text x="14" y="32" text-anchor="middle" font-family="'Poppins', sans-serif" font-size="28" font-weight="800" fill="rgba(255,255,255,0.9)" transform="rotate(10, 14, 32)">X</text>
@@ -127,6 +127,13 @@
                             </svg>
                             {{ user.username }}
                         </a>
+                        <a routerLink="/home" routerLinkActive="active" class="dropdown-item" (click)="closeUserDropdown()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                            </svg>
+                            {{ 'nav.home' | translate }}
+                        </a>
                         <a routerLink="/groups" routerLinkActive="active" class="dropdown-item" (click)="closeUserDropdown()">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -198,6 +205,8 @@
 
             <!-- Mobile dropdown menu -->
             <div class="mobile-menu" [class.open]="mobileMenuOpen">
+                <a routerLink="/home" routerLinkActive="active"
+                   (click)="closeMobileMenu()">{{ 'nav.home' | translate }}</a>
                 <a routerLink="/groups" routerLinkActive="active"
                    (click)="closeMobileMenu()">{{ 'nav.myGroups' | translate }}</a>
                 <a *ngIf="user.isAdmin" routerLink="/admin/feedback" routerLinkActive="active"

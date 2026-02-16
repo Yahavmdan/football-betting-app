@@ -86,6 +86,22 @@ const userSchema = new mongoose.Schema({
         enum: [5, 10, 15, 30, 60],
         default: 15
       }
+    },
+    favoriteLeagues: [{
+      type: String
+    }],
+    favoriteTournaments: [{
+      type: String
+    }],
+    favoriteTeams: [{
+      leagueId: String,
+      teamId: Number,
+      teamName: String,
+      teamLogo: String
+    }],
+    preferencesConfigured: {
+      type: Boolean,
+      default: false
     }
   },
   lastActive: {

@@ -1,0 +1,139 @@
+<div class="preferences-container">
+  <div class="preferences-header">
+    <a routerLink="/home" class="back-btn">←</a>
+    <h1>{{ 'preferences.title' | translate }}</h1>
+  </div>
+
+  <!-- Loading State -->
+  @if (loadingLeagues) {
+    <div class="loading-container">
+      <div class="loading-spinner"></div>
+    </div>
+  }
+
+  @if (!loadingLeagues) {
+    <!-- Selection Summary -->
+    @if (hasSelections) {
+      <div class="selection-summary">
+        @if (selectedLeagues.size > 0) {
+          <div class="selection-summary-item">
+            <span>{{ 'preferences.leagues' | translate }}:</span>
+            <span class="selection-count">{{ selectedLeagues.size }}</span>
+          </div>
+        }
+        @if (selectedTournaments.size > 0) {
+          <div class="selection-summary-item">
+            <span>{{ 'preferences.tournaments' | translate }}:</span>
+            <span class="selection-count">{{ selectedTournaments.size }}</span>
+          </div>
+        }
+        @if (selectedTeams.length > 0) {
+          <div class="selection-summary-item">
+            <span>{{ 'preferences.teams' | translate }}:</span>
+            <span class="selection-count">{{ selectedTeams.length }}</span>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Leagues Section -->
+    <section class="preferences-section">
+      <h2>{{ 'preferences.selectLeagues' | translate }}</h2>
+      <div class="options-grid">
+        @for (league of availableLeagues; track league.id) {
+          <div
+            class="option-item"
+            [class.selected]="isLeagueSelected(league.id)"
+            (click)="toggleLeague(league.id)">
+            <div class="logo-circle">
+              @if (league.logo) {
+                <img [src]="league.logo" [alt]="'leagues.' + league.id | translate">
+              }
+              @if (isSavingItem('league', league.id)) {
+                <span class="item-spinner"></span>
+              } @else if (isLeagueSelected(league.id)) {
+                <span class="checkmark">✓</span>
+              }
+            </div>
+            <span class="option-name">{{ 'leagues.' + league.id | translate }}</span>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Tournaments Section -->
+    <section class="preferences-section">
+      <h2>{{ 'preferences.selectTournaments' | translate }}</h2>
+      <div class="options-grid">
+        @for (tournament of availableTournaments; track tournament.id) {
+          <div
+            class="option-item"
+            [class.selected]="isTournamentSelected(tournament.id)"
+            (click)="toggleTournament(tournament.id)">
+            <div class="logo-circle">
+              @if (tournament.logo) {
+                <img [src]="tournament.logo" [alt]="'tournaments.' + tournament.id | translate">
+              }
+              @if (isSavingItem('tournament', tournament.id)) {
+                <span class="item-spinner"></span>
+              } @else if (isTournamentSelected(tournament.id)) {
+                <span class="checkmark">✓</span>
+              }
+            </div>
+            <span class="option-name">{{ 'tournaments.' + tournament.id | translate }}</span>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Teams Section (only if leagues selected) -->
+    @if (selectedLeagues.size > 0) {
+      <section class="preferences-section">
+        <h2>{{ 'preferences.selectTeams' | translate }}</h2>
+        <p class="section-hint">{{ 'preferences.selectTeamsHint' | translate }}</p>
+
+        @for (leagueId of getSelectedLeagueIds(); track leagueId) {
+          <div class="league-teams-section">
+            <div class="league-teams-header">
+              @if (getLeagueLogo(leagueId)) {
+                <img [src]="getLeagueLogo(leagueId)" [alt]="'leagues.' + leagueId | translate" class="league-mini-logo">
+              }
+              <h3>{{ 'leagues.' + leagueId | translate }}</h3>
+            </div>
+
+            @if (loadingTeamsForLeague === leagueId) {
+              <div class="teams-loading">
+                <div class="loading-spinner small"></div>
+              </div>
+            } @else if (leagueTeams.get(leagueId)) {
+              <div class="teams-grid">
+                @for (team of leagueTeams.get(leagueId); track team.id) {
+                  <div
+                    class="team-item"
+                    [class.selected]="isTeamSelected(team.id, leagueId)"
+                    (click)="toggleTeam(team, leagueId)">
+                    <div class="team-logo-circle">
+                      @if (team.logo) {
+                        <img [src]="team.logo" [alt]="team.name">
+                      }
+                      @if (isSavingItem('team', leagueId + '_' + team.id)) {
+                        <span class="item-spinner small"></span>
+                      } @else if (isTeamSelected(team.id, leagueId)) {
+                        <span class="checkmark">✓</span>
+                      }
+                    </div>
+                    <span class="team-name">{{ team.name }}</span>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+      </section>
+    } @else {
+      <div class="no-leagues-hint">
+        <p>{{ 'preferences.noTeamsSelected' | translate }}</p>
+      </div>
+    }
+  }
+</div>

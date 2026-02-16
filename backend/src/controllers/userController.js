@@ -569,3 +569,88 @@ exports.getTelegramStatus = async (req, res) => {
     });
   }
 };
+
+// Update user preferences (favorite leagues, tournaments, teams)
+exports.updatePreferences = async (req, res) => {
+  try {
+    const { favoriteLeagues, favoriteTournaments, favoriteTeams } = req.body;
+    const userId = req.user._id;
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Update preferences
+    if (favoriteLeagues !== undefined) {
+      user.settings.favoriteLeagues = favoriteLeagues;
+    }
+    if (favoriteTournaments !== undefined) {
+      user.settings.favoriteTournaments = favoriteTournaments;
+    }
+    if (favoriteTeams !== undefined) {
+      user.settings.favoriteTeams = favoriteTeams;
+    }
+
+    // Mark preferences as configured if any preference is set
+    const hasPreferences =
+      (user.settings.favoriteLeagues && user.settings.favoriteLeagues.length > 0) ||
+      (user.settings.favoriteTournaments && user.settings.favoriteTournaments.length > 0) ||
+      (user.settings.favoriteTeams && user.settings.favoriteTeams.length > 0);
+
+    if (hasPreferences) {
+      user.settings.preferencesConfigured = true;
+    }
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Preferences updated successfully',
+      data: {
+        favoriteLeagues: user.settings.favoriteLeagues,
+        favoriteTournaments: user.settings.favoriteTournaments,
+        favoriteTeams: user.settings.favoriteTeams,
+        preferencesConfigured: user.settings.preferencesConfigured
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Dismiss preferences reminder (sets preferencesConfigured to true)
+exports.dismissPreferencesReminder = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    user.settings.preferencesConfigured = true;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Preferences reminder dismissed'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};

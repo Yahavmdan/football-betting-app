@@ -3,11 +3,37 @@
     "title": "Football Betting"
   },
   "nav": {
+    "home": "Home",
+    "matches": "Matches",
+    "groups": "Groups",
+    "myMatches": "My Matches",
     "myGroups": "My Groups",
     "logout": "Logout",
     "feedback": "Feedback",
     "darkMode": "Dark Mode",
     "lightMode": "Light Mode"
+  },
+  "home": {
+    "title": "My Matches",
+    "editPreferences": "Edit Preferences",
+    "noPreferences": "Set up your favorite teams and leagues to see personalized matches",
+    "setupNow": "Set Up Now",
+    "liveNow": "Live Now",
+    "noMatches": "No upcoming matches for your favorites",
+    "preferencesReminder": "Personalize your experience by selecting your favorite teams and leagues"
+  },
+  "preferences": {
+    "title": "My Preferences",
+    "selectLeagues": "Select Leagues",
+    "selectTournaments": "Select Tournaments",
+    "selectTeams": "Select Favorite Teams",
+    "selectTeamsHint": "Optionally select specific teams to highlight their matches",
+    "noTeamsSelected": "Select leagues first to see teams",
+    "save": "Save Preferences",
+    "saved": "Preferences saved",
+    "leagues": "Leagues",
+    "tournaments": "Tournaments",
+    "teams": "Teams"
   },
   "auth": {
     "login": "Login",
@@ -238,8 +264,12 @@
     "edit": "Edit",
     "delete": "Delete",
     "save": "Save",
+    "saving": "Saving...",
     "copy": "Copy",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "yesterday": "Yesterday"
   },
   "profile": {
     "title": "My Profile",
@@ -403,5 +433,36 @@
     "yourBest": "Your Best Scores",
     "globalBest": "Global Top 10",
     "noPersonalScores": "Play to set your first score!"
+  },
+  "leagues": {
+    "383": "Israeli Premier League",
+    "382": "Liga Leumit",
+    "39": "Premier League",
+    "140": "La Liga",
+    "135": "Serie A",
+    "78": "Bundesliga",
+    "61": "Ligue 1",
+    "2": "Champions League",
+    "3": "Europa League",
+    "1": "World Cup",
+    "4": "Euro Championship",
+    "848": "Conference League"
+  },
+  "tournaments": {
+    "1": "FIFA World Cup",
+    "2": "UEFA Champions League",
+    "3": "UEFA Europa League",
+    "4": "UEFA Euro Championship",
+    "848": "UEFA Conference League"
+  },
+  "countries": {
+    "Israel": "Israel",
+    "England": "England",
+    "Spain": "Spain",
+    "Italy": "Italy",
+    "Germany": "Germany",
+    "France": "France",
+    "Europe": "Europe",
+    "World": "World"
   }
 }

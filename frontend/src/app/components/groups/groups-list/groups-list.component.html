@@ -1,4 +1,14 @@
 <div class="container">
+  <!-- Navigation Tabs -->
+  <div class="dashboard-tabs">
+    <a routerLink="/home" class="dashboard-tab">
+      <span>{{ 'nav.matches' | translate }}</span>
+    </a>
+    <a routerLink="/groups" class="dashboard-tab active">
+      <span>{{ 'nav.groups' | translate }}</span>
+    </a>
+  </div>
+
   <div class="header">
     <h1>{{ 'groups.myGroups' | translate }}</h1>
     <div class="actions">
