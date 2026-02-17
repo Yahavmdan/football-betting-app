@@ -329,10 +329,6 @@ html.dark-theme .leaderboard-item {
   color: #e5e7eb;
 }
 
-html.dark-theme .leaderboard-item:hover {
-  background: #1f2937;
-}
-
 html.dark-theme .leaderboard-rank {
   color: #9ca3af;
 }
@@ -766,10 +762,6 @@ html.dark-theme .leaderboard-section h2 {
 html.dark-theme .leaderboard-item {
   background: #111827;
   border-color: #374151;
-}
-
-html.dark-theme .leaderboard-item:hover {
-  background: #1f2937;
 }
 
 html.dark-theme .leaderboard-item:first-child {

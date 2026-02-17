@@ -51,7 +51,10 @@
       <span *ngIf="group.isPending" class="pending-badge">
         {{ 'groups.pendingApproval' | translate }}
       </span>
-      <h3>{{ group.name }}</h3>
+        <div class="flex">
+            <h3>{{ group.name }}</h3>
+            <div>{{ group.selectedLeague }}</div>
+        </div>
       <p class="description">{{ group.description || ('groups.noDescription' | translate) }}</p>
       <div class="group-info">
         <span class="member-count">{{ group.members.length }} {{ 'groups.members' | translate }}</span>

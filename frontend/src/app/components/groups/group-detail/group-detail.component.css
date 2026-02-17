@@ -963,7 +963,7 @@
 /* Floating trash talk bubble */
 .trash-talk-bubble {
     position: absolute;
-    bottom: 100%;
+    bottom: 80%;
     left: 50%;
     transform: translateX(-50%);
     margin-bottom: 8px;
@@ -1151,10 +1151,6 @@ h2 {
     font-weight: 700;
     color: white;
     flex-shrink: 0;
-}
-
-.leaderboard-item:hover {
-    background: #f1f5f9;
 }
 
 .leaderboard-item:first-child {
@@ -3136,17 +3132,6 @@ h2 {
 @media (max-width: 768px) {
     .container {
         padding: 1rem;
-    }
-
-    .leaderboard-item:hover,
-    .leaderboard-item.winner:hover,
-    .leaderboard-item.eliminated:hover,
-    .leaderboard-item:first-child:hover,
-    :host-context(.dark-theme) .leaderboard-item:hover,
-    :host-context(.dark-theme) .leaderboard-item.winner:hover,
-    :host-context(.dark-theme) .leaderboard-item.eliminated:hover,
-    :host-context(.dark-theme) .leaderboard-item:first-child:hover {
-        background: unset !important;
     }
 
     .group-header-top {
@@ -5182,10 +5167,6 @@ h2 {
 
 :host-context(.dark-theme) .leaderboard-item {
     background: #111827;
-}
-
-:host-context(.dark-theme) .leaderboard-item:hover {
-    background: #1f2937;
 }
 
 :host-context(.dark-theme) .leaderboard-item:first-child {
