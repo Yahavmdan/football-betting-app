@@ -475,12 +475,14 @@
                   <div class="stat-row">
                     <div class="stat-value home">{{ getStatValue(matchStatistics, 0, stat.type) }}</div>
                     <div class="stat-bar-wrapper">
-                      <div class="stat-bar-side home-side">
-                        <div class="stat-bar home" [style.width.%]="getStatPercentage(matchStatistics, 0, stat.type)"></div>
-                      </div>
-                      <div class="stat-bar-side away-side">
-                        <div class="stat-bar away" [style.width.%]="getStatPercentage(matchStatistics, 1, stat.type)"></div>
-                      </div>
+                      <ng-container *ngIf="shouldShowStat(matchStatistics, stat.type)">
+                        <div class="stat-bar-side home-side">
+                          <div class="stat-bar home" [style.width.%]="getStatPercentage(matchStatistics, 0, stat.type)"></div>
+                        </div>
+                        <div class="stat-bar-side away-side">
+                          <div class="stat-bar away" [style.width.%]="getStatPercentage(matchStatistics, 1, stat.type)"></div>
+                        </div>
+                      </ng-container>
                     </div>
                     <div class="stat-value away">{{ getStatValue(matchStatistics, 1, stat.type) }}</div>
                   </div>

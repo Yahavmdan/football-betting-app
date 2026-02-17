@@ -334,6 +334,12 @@ export class HomeComponent implements OnInit, OnDestroy {
     return teamIndex === 0 ? (homeValue / total) * 100 : (awayValue / total) * 100;
   }
 
+  shouldShowStat(stats: MatchTeamStatistics[], statType: string): boolean {
+    const homeValue = this.parseStatValue(this.getStatValue(stats, 0, statType));
+    const awayValue = this.parseStatValue(this.getStatValue(stats, 1, statType));
+    return homeValue !== 0 || awayValue !== 0;
+  }
+
   private parseStatValue(value: string): number {
     const num = parseFloat(value.replace('%', ''));
     return isNaN(num) ? 0 : num;
@@ -357,7 +363,8 @@ export class HomeComponent implements OnInit, OnDestroy {
       'Total passes': { en: 'Total Passes', he: 'סה"כ מסירות' },
       'Passes accurate': { en: 'Accurate Passes', he: 'מסירות מדויקות' },
       'Passes %': { en: 'Pass Accuracy', he: 'דיוק מסירות' },
-      'expected_goals': { en: 'Expected Goals', he: 'גולים צפויים' }
+      'expected_goals': { en: 'Expected Goals', he: 'גולים צפויים' },
+      'goals_prevented': { en: 'Goals Prevented', he: 'שערים שנמנעו' }
     };
 
     const lang = this.translationService.getCurrentLanguage();

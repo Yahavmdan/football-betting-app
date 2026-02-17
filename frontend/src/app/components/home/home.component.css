@@ -1621,6 +1621,7 @@
 
 .stat-bar-wrapper {
   display: flex;
+  direction: ltr; /* Force LTR to keep bars consistent regardless of language */
   height: 8px;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 4px;
@@ -1654,14 +1655,6 @@
 .stat-bar.away {
   background: linear-gradient(90deg, #ec4899 0%, #f472b6 100%);
   border-radius: 0 4px 4px 0;
-}
-
-[dir="rtl"] .stat-bar.home {
-  border-radius: 0 4px 4px 0;
-}
-
-[dir="rtl"] .stat-bar.away {
-  border-radius: 4px 0 0 4px;
 }
 
 /* =========================== */
