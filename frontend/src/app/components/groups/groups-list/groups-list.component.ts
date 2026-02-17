@@ -54,6 +54,10 @@ export class GroupsListComponent implements OnInit {
     });
   }
 
+  getLeagueLogo(leagueId: string): string {
+    return `https://media.api-sports.io/football/leagues/${leagueId}.png`;
+  }
+
   cancelJoinRequest(groupId: string, event: Event): void {
     event.stopPropagation();
     if (this.cancellingGroupId) return;

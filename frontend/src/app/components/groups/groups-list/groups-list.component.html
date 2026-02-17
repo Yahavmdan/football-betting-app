@@ -51,11 +51,15 @@
       <span *ngIf="group.isPending" class="pending-badge">
         {{ 'groups.pendingApproval' | translate }}
       </span>
-      <h3>{{ group.name }}</h3>
+      <div class="group-title">
+          <h3>{{ group.name }}</h3>
+          <div *ngIf="group.selectedLeague" class="league-logo-wrapper">
+            <img [src]="getLeagueLogo(group.selectedLeague)" alt="" class="league-logo">
+        </div>
+      </div>
       <p class="description">{{ group.description || ('groups.noDescription' | translate) }}</p>
       <div class="group-info">
         <span class="member-count">{{ group.members.length }} {{ 'groups.members' | translate }}</span>
-        <span class="invite-code">{{ 'groups.code' | translate }}: {{ group.inviteCode }}</span>
       </div>
     </div>
   </div>
