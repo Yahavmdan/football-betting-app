@@ -70,15 +70,16 @@
       transition: transform 0.2s ease;
       flex-shrink: 0;
       color: #6b7280;
+      transform: rotate(180deg);
     }
 
     .select-container.open .dropdown-arrow {
-      transform: rotate(180deg);
+      transform: rotate(0deg);
     }
 
     .dropdown-panel {
       position: absolute;
-      top: calc(100% + 4px);
+      bottom: calc(100% + 4px);
       left: 0;
       right: 0;
       background: white;
@@ -90,11 +91,11 @@
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      animation: slideDown 0.2s ease-out;
+      animation: slideUp 0.2s ease-out;
     }
 
-    @keyframes slideDown {
-      from { opacity: 0; transform: translateY(-8px); }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
     }
 

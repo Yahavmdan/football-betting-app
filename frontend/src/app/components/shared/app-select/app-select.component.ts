@@ -157,12 +157,6 @@ export class AppSelectComponent implements ControlValueAccessor, OnInit, OnChang
     if (this.isOpen) {
       this.searchQuery = '';
       this.filterOptions();
-      if (this.searchable) {
-        setTimeout(() => {
-          const input = this.elementRef.nativeElement.querySelector('.search-input');
-          if (input) input.focus();
-        }, 50);
-      }
     }
   }
 
