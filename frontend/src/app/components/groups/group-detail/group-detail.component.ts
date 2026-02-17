@@ -241,11 +241,19 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   }
 
   private initTeamLogos(): void {
-    // Get team logos for selection
-    this.teamLogos = this.allTeams.slice(0, 20).map(team => ({
-      name: team.name,
-      logo: team.logo || ''
-    })).filter(team => team.logo);
+    // For automatic groups with API teams loaded, use teams from the group's league
+    if (this.apiTeams.length > 0) {
+      this.teamLogos = this.apiTeams.map(team => ({
+        name: team.name,
+        logo: team.logo
+      })).filter(team => team.logo);
+    } else {
+      // Fallback to local teams (first 20) - will be replaced once API teams load
+      this.teamLogos = this.allTeams.slice(0, 20).map(team => ({
+        name: team.name,
+        logo: team.logo || ''
+      })).filter(team => team.logo);
+    }
   }
 
   private initTeamSelectOptions(): void {
@@ -412,6 +420,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
       next: (response) => {
         this.apiTeams = response.data;
         this.initTeamSelectOptions(); // Reinitialize with API teams
+        this.initTeamLogos(); // Reinitialize team logos for trash talk with league teams
         this.loadingApiTeams = false;
       },
       error: (error) => {
