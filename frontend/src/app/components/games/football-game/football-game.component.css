@@ -270,15 +270,17 @@
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: var(--radius-lg);
-  overflow: hidden;
-  transition: max-height 0.3s ease, opacity 0.3s ease;
-  max-height: 800px;
+  overflow: visible;
+  transition: max-height 0.3s ease, opacity 0.3s ease, overflow 0s 0.3s;
+  max-height: 2000px;
   opacity: 1;
 }
 
 .leaderboard.collapsed {
   max-height: 0;
   opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.3s ease, overflow 0s;
 }
 
 .loading {

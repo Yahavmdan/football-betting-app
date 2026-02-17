@@ -9,6 +9,7 @@ import { TranslatePipe } from '../../services/translate.pipe';
 import { TeamTranslatePipe } from '../../pipes/team-translate.pipe';
 import { Match, MatchEvent, MatchLineup, MatchTeamStatistics } from '../../models/match.model';
 import { User } from '../../models/user.model';
+import { getTeamByName } from '../../data/teams.data';
 
 interface LeagueGroup {
   league: {
@@ -99,8 +100,10 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.stopAutoRefresh();
   }
 
-  loadPersonalizedMatches(): void {
-    this.loading = true;
+  loadPersonalizedMatches(silent: boolean = false): void {
+    if (!silent) {
+      this.loading = true;
+    }
     this.matchService.getPersonalizedMatches().subscribe({
       next: (response) => {
         this.hasPreferences = response.data.hasPreferences;
@@ -108,11 +111,16 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.liveMatches = response.data.liveMatches || [];
 
         // Convert grouped data to array and sort by league name
+        // Preserve collapsed state when refreshing
+        const previousCollapsedState = new Map(
+          this.leagueGroups.map(g => [g.league.id, g.isCollapsed])
+        );
+
         this.leagueGroups = Object.entries(response.data.groupedByLeague)
           .map(([leagueId, data]) => ({
             league: data.league,
             matches: data.matches,
-            isCollapsed: false
+            isCollapsed: previousCollapsedState.get(data.league.id) ?? false
           }))
           .sort((a, b) => a.league.name.localeCompare(b.league.name));
 
@@ -135,6 +143,8 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.currentExpandedMatch = null;
       this.resetExpandedState();
     } else {
+      // Reset state when switching to a different match
+      this.resetExpandedState();
       this.expandedMatchId = match.externalApiId;
       this.currentExpandedMatch = match;
       this.activeMatchTab = 'events';
@@ -359,7 +369,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   getPlayerRow(grid: string | null | undefined, teamIndex: number): number {
     if (!grid) return 1;
     const [row] = grid.split(':').map(Number);
-    return teamIndex === 0 ? row : (5 - row + 1);
+    // No inversion needed - CSS handles direction via top/bottom positioning
+    // Row 1 = GK (near own goal), Row 5 = forwards (toward center)
+    return row;
   }
 
   getPlayerCol(grid: string | null | undefined): number {
@@ -385,8 +397,37 @@ export class HomeComponent implements OnInit, OnDestroy {
     return new Date(matchDate) < new Date();
   }
 
+  hasFavoriteTeam(match: PersonalizedMatch): boolean {
+    const favoriteTeams = this.currentUser?.settings?.favoriteTeams;
+    if (!favoriteTeams || favoriteTeams.length === 0) return false;
+
+    return favoriteTeams.some(fav =>
+      fav.teamId === match.homeTeamId || fav.teamId === match.awayTeamId
+    );
+  }
+
+  getTeamLogo(teamName: string, match: PersonalizedMatch): string | null {
+    // Always prefer local logo if available
+    const localTeam = getTeamByName(teamName);
+    if (localTeam) return localTeam.logo;
+
+    // Fall back to API logo from match data
+    if (match.homeTeam === teamName && match.homeTeamLogo) {
+      return match.homeTeamLogo;
+    }
+    if (match.awayTeam === teamName && match.awayTeamLogo) {
+      return match.awayTeamLogo;
+    }
+    return null;
+  }
+
   onImageError(event: Event): void {
     (event.target as HTMLImageElement).style.display = 'none';
+  }
+
+  getProfilePictureUrl(path: string): string {
+    if (!path) return '';
+    return path;
   }
 
   formatMatchDate(dateStr: string): string {
@@ -427,8 +468,10 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (this.refreshInterval) return;
 
     this.refreshInterval = setInterval(() => {
+      // Only refresh if there are live matches
       if (this.liveMatches.length > 0) {
-        this.loadPersonalizedMatches();
+        // Silent refresh - no loading spinner
+        this.loadPersonalizedMatches(true);
       }
     }, this.REFRESH_INTERVAL_MS);
   }

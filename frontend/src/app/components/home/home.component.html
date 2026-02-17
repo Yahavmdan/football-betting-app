@@ -7,6 +7,16 @@
     <a routerLink="/groups" class="dashboard-tab">
       <span>{{ 'nav.groups' | translate }}</span>
     </a>
+    <a routerLink="/profile" class="dashboard-tab profile-tab">
+      <img *ngIf="currentUser?.profilePicture"
+           [src]="currentUser!.profilePicture!"
+           alt="Profile"
+           class="tab-profile-picture">
+      <span *ngIf="!currentUser?.profilePicture" class="tab-profile-placeholder">
+        {{ currentUser?.username?.charAt(0)?.toUpperCase() }}
+      </span>
+      <span class="profile-tab-name">{{ currentUser?.username }}</span>
+    </a>
   </div>
 
   <!-- Header -->
@@ -98,9 +108,10 @@
 <ng-template #matchCardTemplate let-match>
   <!-- Compact view - always visible -->
   <div class="match-compact-row" (click)="toggleMatchExpand(match)">
+    <span *ngIf="hasFavoriteTeam(match)" class="favorite-star">★</span>
     <div class="match-compact-teams">
       <div class="team-block">
-        <img *ngIf="match.homeTeamLogo" [src]="match.homeTeamLogo"
+        <img *ngIf="getTeamLogo(match.homeTeam, match)" [src]="getTeamLogo(match.homeTeam, match)"
              [alt]="match.homeTeam | teamTranslate" class="team-logo-small" (error)="onImageError($event)">
         <span class="team-name">{{ match.homeTeam | teamTranslate }}</span>
       </div>
@@ -140,7 +151,7 @@
         </div>
       </div>
       <div class="team-block">
-        <img *ngIf="match.awayTeamLogo" [src]="match.awayTeamLogo"
+        <img *ngIf="getTeamLogo(match.awayTeam, match)" [src]="getTeamLogo(match.awayTeam, match)"
              [alt]="match.awayTeam | teamTranslate" class="team-logo-small" (error)="onImageError($event)">
         <span class="team-name">{{ match.awayTeam | teamTranslate }}</span>
       </div>
@@ -152,10 +163,10 @@
     <div class="match-expanded-content">
       <!-- Team logo backgrounds -->
       <div class="match-bg-logos">
-        <div class="bg-logo bg-logo-home" *ngIf="match.homeTeamLogo"
-             [style.background-image]="'url(' + match.homeTeamLogo + ')'"></div>
-        <div class="bg-logo bg-logo-away" *ngIf="match.awayTeamLogo"
-             [style.background-image]="'url(' + match.awayTeamLogo + ')'"></div>
+        <div class="bg-logo bg-logo-home" *ngIf="getTeamLogo(match.homeTeam, match)"
+             [style.background-image]="'url(' + getTeamLogo(match.homeTeam, match) + ')'"></div>
+        <div class="bg-logo bg-logo-away" *ngIf="getTeamLogo(match.awayTeam, match)"
+             [style.background-image]="'url(' + getTeamLogo(match.awayTeam, match) + ')'"></div>
       </div>
 
       <!-- Match Details Tabs (only for live/finished matches with API data) -->
@@ -539,7 +550,7 @@
             <!-- Home Team Form -->
             <div class="team-form-column">
               <div class="team-form-header">
-                <img *ngIf="currentExpandedMatch.homeTeamLogo" [src]="currentExpandedMatch.homeTeamLogo" class="team-form-logo" (error)="onImageError($event)">
+                <img *ngIf="getTeamLogo(currentExpandedMatch.homeTeam, currentExpandedMatch)" [src]="getTeamLogo(currentExpandedMatch.homeTeam, currentExpandedMatch)" class="team-form-logo" (error)="onImageError($event)">
                 <span class="team-form-name">{{ currentExpandedMatch.homeTeam | teamTranslate }}</span>
               </div>
               <div *ngIf="homeTeamRecentMatches.length === 0" class="team-form-empty">
@@ -559,7 +570,7 @@
             <!-- Away Team Form -->
             <div class="team-form-column">
               <div class="team-form-header">
-                <img *ngIf="currentExpandedMatch.awayTeamLogo" [src]="currentExpandedMatch.awayTeamLogo" class="team-form-logo" (error)="onImageError($event)">
+                <img *ngIf="getTeamLogo(currentExpandedMatch.awayTeam, currentExpandedMatch)" [src]="getTeamLogo(currentExpandedMatch.awayTeam, currentExpandedMatch)" class="team-form-logo" (error)="onImageError($event)">
                 <span class="team-form-name">{{ currentExpandedMatch.awayTeam | teamTranslate }}</span>
               </div>
               <div *ngIf="awayTeamRecentMatches.length === 0" class="team-form-empty">

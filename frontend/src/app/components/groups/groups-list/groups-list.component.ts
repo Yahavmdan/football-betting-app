@@ -2,7 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { GroupService } from '../../../services/group.service';
+import { AuthService } from '../../../services/auth.service';
 import { Group } from '../../../models/group.model';
+import { User } from '../../../models/user.model';
 import { TranslatePipe } from '../../../services/translate.pipe';
 import { ToastService } from '../../shared/toast/toast.service';
 import { TranslationService } from '../../../services/translation.service';
@@ -18,15 +20,25 @@ export class GroupsListComponent implements OnInit {
   groups: Group[] = [];
   loading = true;
   cancellingGroupId: string | null = null;
+  currentUser: User | null = null;
 
   constructor(
     private groupService: GroupService,
+    private authService: AuthService,
     private toastService: ToastService,
     private translationService: TranslationService
   ) {}
 
   ngOnInit(): void {
+    this.authService.currentUser$.subscribe(user => {
+      this.currentUser = user;
+    });
     this.loadGroups();
+  }
+
+  getProfilePictureUrl(path: string): string {
+    if (!path) return '';
+    return path;
   }
 
   loadGroups(): void {

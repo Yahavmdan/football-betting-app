@@ -13,7 +13,9 @@ import { League } from '../../models/league.model';
 import { Subject } from 'rxjs';
 import { debounceTime, takeUntil, take } from 'rxjs/operators';
 
-// Tournament IDs (World Cup, Euros, etc.)
+// Tournament IDs (World Cup, Euros, etc.) - these should NOT appear in leagues section
+const TOURNAMENT_IDS = ['1', '2', '3', '4', '848'];
+
 const TOURNAMENTS = [
   { id: '1', logo: 'https://media.api-sports.io/football/leagues/1.png' },
   { id: '2', logo: 'https://media.api-sports.io/football/leagues/2.png' },
@@ -113,7 +115,10 @@ export class PreferencesSetupComponent implements OnInit, OnDestroy {
     this.loadingLeagues = true;
     this.matchService.getAvailableLeagues().subscribe({
       next: (response) => {
-        this.availableLeagues = response.data;
+        // Filter out tournaments from leagues list (they have their own section)
+        this.availableLeagues = response.data.filter(
+          (league: League) => !TOURNAMENT_IDS.includes(league.id)
+        );
         this.loadingLeagues = false;
 
         // Load teams for already selected leagues
