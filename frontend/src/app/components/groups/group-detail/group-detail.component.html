@@ -1022,8 +1022,8 @@
                                              [style.--grid-row]="getPlayerRow(player.grid, 0)"
                                              [style.--grid-col]="getPlayerCol(player.grid)"
                                              [style.--total-cols]="getRowPlayerCount(matchLineups[0].startXI, player.grid)">
-                                            <span class="pitch-player-number">{{ player.number }}</span>
-                                            <span class="pitch-player-name">{{ getShortName(player.name) }}</span>
+                                            <img class="pitch-player-image" [src]="`https://media.api-sports.io/football/players/${player.id}.png`" alt="player image">
+                                            <span class="home pitch-player-name">{{ player.number + ' ' + getShortName(player.name)}}</span>
                                         </div>
                                     </div>
 
@@ -1038,8 +1038,8 @@
                                              [style.--grid-row]="getPlayerRow(player.grid, 1)"
                                              [style.--grid-col]="getPlayerCol(player.grid)"
                                              [style.--total-cols]="getRowPlayerCount(matchLineups[1].startXI, player.grid)">
-                                            <span class="pitch-player-number">{{ player.number }}</span>
-                                            <span class="pitch-player-name">{{ getShortName(player.name) }}</span>
+                                            <img class="pitch-player-image" [src]="`https://media.api-sports.io/football/players/${player.id}.png`" alt="player image">
+                                            <span class="away pitch-player-name">{{ player.number + ' ' + getShortName(player.name)}}</span>
                                         </div>
                                     </div>
                                 </div>

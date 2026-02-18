@@ -5,6 +5,19 @@
     animation: fadeIn 0.5s ease-out;
 }
 
+.pitch-team.home-team .pitch-player-image, .pitch-team.away-team .pitch-player-image {
+    width: 30px;
+    border-radius: 50%;
+}
+
+.pitch-player .away.pitch-player-name {
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.47) 0%, rgba(190, 24, 93, 0.59) 100%);;
+}
+
+.pitch-player .home.pitch-player-name {
+    background: linear-gradient(135deg, rgba(72, 94, 236, 0.55) 0%, rgba(24, 27, 190, 0.6) 100%);;
+}
+
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -6115,15 +6128,15 @@ h2 {
 }
 
 .pitch-half.home-half .pitch-arc {
-  bottom: 28%;
+  bottom: 23%;
   border-bottom: none;
-  clip-path: inset(50% 0 0 0);
+  clip-path: inset(0 0 50% 0);
 }
 
 .pitch-half.away-half .pitch-arc {
-  top: 28%;
+  top: 23%;
   border-top: none;
-  clip-path: inset(0 0 50% 0);
+  clip-path: inset(50% 0 0 0);
 }
 
 /* Team positioning on pitch */
@@ -6197,28 +6210,6 @@ h2 {
   /* Row 1 = goalkeeper at top, higher rows go down */
   top: calc((var(--grid-row) - 1) * 18% + 5%);
   left: calc((var(--grid-col) - 0.5) * (100% / var(--total-cols)));
-}
-
-.pitch-player-number {
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: white;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.pitch-team.home-team .pitch-player-number {
-  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-}
-
-.pitch-team.away-team .pitch-player-number {
-  background: linear-gradient(135deg, #ec4899 0%, #be185d 100%);
 }
 
 .pitch-player-name {
@@ -6310,12 +6301,6 @@ h2 {
 @media (max-width: 400px) {
   .football-pitch {
     aspect-ratio: 0.8;
-  }
-
-  .pitch-player-number {
-    width: 24px;
-    height: 24px;
-    font-size: 0.65rem;
   }
 
   .pitch-player-name {
