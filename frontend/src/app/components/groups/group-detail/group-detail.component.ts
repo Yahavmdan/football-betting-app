@@ -219,7 +219,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     private translationService: TranslationService,
     private el: ElementRef,
     private toastService: ToastService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.groupId = this.route.snapshot.params['id'];
@@ -737,7 +737,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
 
     // Start or stop events refresh interval based on visibility
     if (this.showMatchEvents && this.expandedMatch &&
-        (this.expandedMatch.status === 'LIVE' || this.isMatchLive(this.expandedMatch))) {
+      (this.expandedMatch.status === 'LIVE' || this.isMatchLive(this.expandedMatch))) {
       this.startEventsRefreshInterval();
     } else {
       this.stopEventsRefreshInterval();
@@ -812,31 +812,24 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
       }
     });
 
-    // Refresh events if showing
+    // Refresh events and active tabs if showing
     if (this.showMatchEvents && this.expandedMatch.externalApiId) {
-      this.matchService.getMatchEvents(this.expandedMatch._id).subscribe({
-        next: (response) => {
-          this.matchEvents = (response.data || []).map(e => ({
-            ...e,
-            type: (e.type.charAt(0).toUpperCase() + e.type.slice(1).toLowerCase()) as any
-          }));
-          if (this.expandedMatch) {
-            this.processedEvents = this.buildProcessedEvents(this.matchEvents, this.expandedMatch);
-          }
-        },
-        error: (error) => {
-          console.error('Failed to refresh match events:', error);
-        }
-      });
+      if (this.activeMatchTab === 'events' || this.matchEvents.length > 0) {
+        this.loadMatchEvents(this.expandedMatch, true);
+      }
+      if (this.activeMatchTab === 'lineups' && this.matchLineups.length > 0) {
+        this.loadMatchLineups(this.expandedMatch, true);
+      }
+      if (this.activeMatchTab === 'statistics' && this.matchStatistics.length > 0) {
+        this.loadMatchStatistics(this.expandedMatch, true);
+      }
     }
   }
 
-  loadMatchEvents(match: Match): void {
+  loadMatchEvents(match: Match, silent: boolean = false): void {
     if (!match.externalApiId) return;
 
-    this.loadingMatchEvents = true;
-    this.matchEvents = [];
-    this.processedEvents = [];
+    if (!silent) this.loadingMatchEvents = true;
 
     this.matchService.getMatchEvents(match._id).subscribe({
       next: (response) => {
@@ -855,11 +848,10 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  loadMatchLineups(match: Match): void {
+  loadMatchLineups(match: Match, silent: boolean = false): void {
     if (!match.externalApiId) return;
 
-    this.loadingMatchLineups = true;
-    this.matchLineups = [];
+    if (!silent) this.loadingMatchLineups = true;
 
     this.matchService.getMatchLineups(match._id).subscribe({
       next: (response) => {
@@ -873,11 +865,10 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  loadMatchStatistics(match: Match): void {
+  loadMatchStatistics(match: Match, silent: boolean = false): void {
     if (!match.externalApiId) return;
 
-    this.loadingMatchStatistics = true;
-    this.matchStatistics = [];
+    if (!silent) this.loadingMatchStatistics = true;
 
     this.matchService.getMatchStatistics(match._id).subscribe({
       next: (response) => {
@@ -1396,14 +1387,14 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
 
   hasActiveFilters(): boolean {
     return this.filters.showFinished ||
-           this.filters.showNotStarted ||
-           this.filters.showOngoing ||
-           !!this.filters.dateFrom ||
-           !!this.filters.dateTo ||
-           this.filters.selectedMembers.length > 0 ||
-           this.filters.selectedTeams.length > 0 ||
-           this.filters.homeScore !== null ||
-           this.filters.awayScore !== null;
+      this.filters.showNotStarted ||
+      this.filters.showOngoing ||
+      !!this.filters.dateFrom ||
+      !!this.filters.dateTo ||
+      this.filters.selectedMembers.length > 0 ||
+      this.filters.selectedTeams.length > 0 ||
+      this.filters.homeScore !== null ||
+      this.filters.awayScore !== null;
   }
 
   getActiveFilterCount(): number {
@@ -1460,8 +1451,8 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
         const isOngoing = match.status === 'LIVE' || (match.status === 'SCHEDULED' && matchDate <= now);
 
         return (this.filters.showFinished && isFinished) ||
-               (this.filters.showNotStarted && isNotStarted) ||
-               (this.filters.showOngoing && isOngoing);
+          (this.filters.showNotStarted && isNotStarted) ||
+          (this.filters.showOngoing && isOngoing);
       });
     }
 
@@ -1938,7 +1929,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
       this.startLiveRefreshIfNeeded();
       // Restart events refresh if events section is expanded for a live match
       if (this.showMatchEvents && this.expandedMatch &&
-          (this.expandedMatch.status === 'LIVE' || this.isMatchLive(this.expandedMatch))) {
+        (this.expandedMatch.status === 'LIVE' || this.isMatchLive(this.expandedMatch))) {
         this.startEventsRefreshInterval();
         // Also do an immediate refresh on visibility restore
         this.refreshExpandedMatchData();
@@ -2004,9 +1995,9 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
             const existing = this.matches[index];
             // Check if match data actually changed
             if (existing.status !== updatedMatch.status ||
-                existing.elapsed !== updatedMatch.elapsed ||
-                existing.result?.homeScore !== updatedMatch.result?.homeScore ||
-                existing.result?.awayScore !== updatedMatch.result?.awayScore) {
+              existing.elapsed !== updatedMatch.elapsed ||
+              existing.result?.homeScore !== updatedMatch.result?.homeScore ||
+              existing.result?.awayScore !== updatedMatch.result?.awayScore) {
               // Preserve round info
               if (existing.round) updatedMatch.round = existing.round;
               this.matches[index] = updatedMatch;
@@ -2225,7 +2216,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   submitInlineBet(): void {
     // Prevent betting on started/finished matches
     const match = this.filteredMatches.find(m => m._id === this.inlineBetData.matchId) ||
-                  this.matches.find(m => m._id === this.inlineBetData.matchId);
+      this.matches.find(m => m._id === this.inlineBetData.matchId);
     if (match && !this.canPlaceBet(match)) {
       this.toastService.show(
         this.translationService.translate('bets.matchStarted'),
@@ -2251,7 +2242,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     // For API matches (externalApiId), include the full match data so backend can create it if needed
     if (this.inlineBetData.matchId.startsWith('apifootball_')) {
       const match = this.filteredMatches.find(m => m._id === this.inlineBetData.matchId) ||
-                    this.matches.find(m => m._id === this.inlineBetData.matchId);
+        this.matches.find(m => m._id === this.inlineBetData.matchId);
       if (match) {
         betDataToSubmit.matchData = {
           externalApiId: match.externalApiId,

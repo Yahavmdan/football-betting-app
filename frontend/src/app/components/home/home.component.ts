@@ -1,15 +1,15 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {RouterModule} from '@angular/router';
-import {MatchService, PersonalizedMatch} from '../../services/match.service';
-import {PreferencesService} from '../../services/preferences.service';
-import {AuthService} from '../../services/auth.service';
-import {TranslationService} from '../../services/translation.service';
-import {TranslatePipe} from '../../services/translate.pipe';
-import {TeamTranslatePipe} from '../../pipes/team-translate.pipe';
-import {MatchEvent, MatchLineup, MatchTeamStatistics} from '../../models/match.model';
-import {User} from '../../models/user.model';
-import {getTeamByName} from '../../data/teams.data';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { MatchService, PersonalizedMatch } from '../../services/match.service';
+import { PreferencesService } from '../../services/preferences.service';
+import { AuthService } from '../../services/auth.service';
+import { TranslationService } from '../../services/translation.service';
+import { TranslatePipe } from '../../services/translate.pipe';
+import { TeamTranslatePipe } from '../../pipes/team-translate.pipe';
+import { MatchEvent, MatchLineup, MatchTeamStatistics } from '../../models/match.model';
+import { User } from '../../models/user.model';
+import { getTeamByName } from '../../data/teams.data';
 
 interface LeagueGroup {
     league: {
@@ -105,7 +105,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         if (!silent) {
             this.loading = true;
         }
-        this.matchService.getPersonalizedMatches().subscribe({
+        this.matchService.getPersonalizedMatches(silent).subscribe({
             next: (response) => {
                 this.hasPreferences = response.data.hasPreferences;
                 this.allMatches = response.data.matches;
@@ -125,13 +125,39 @@ export class HomeComponent implements OnInit, OnDestroy {
                     }))
                     .sort((a, b) => a.league.name.localeCompare(b.league.name));
 
-                this.loading = false;
+                // Re-fetch details for the currently expanded match during silent refresh
+                if (silent && this.expandedMatchId) {
+                    this.refreshExpandedMatchDetails();
+                }
+
+                if (!silent) {
+                    this.loading = false;
+                }
             },
             error: (error) => {
                 console.error('Failed to load personalized matches:', error);
-                this.loading = false;
+                if (!silent) {
+                    this.loading = false;
+                }
             }
         });
+    }
+
+    /** Re-fetch events/lineups/statistics for the currently expanded match */
+    private refreshExpandedMatchDetails(): void {
+        if (!this.expandedMatchId) return;
+
+        // Always refresh events (most important for live matches)
+        if (this.activeMatchTab === 'events' || this.matchEvents.length > 0) {
+            this.loadMatchEvents(this.expandedMatchId, true);
+        }
+        // Also refresh the active tab data
+        if (this.activeMatchTab === 'lineups' && this.matchLineups.length > 0) {
+            this.loadMatchLineups(this.expandedMatchId, true);
+        }
+        if (this.activeMatchTab === 'statistics' && this.matchStatistics.length > 0) {
+            this.loadMatchStatistics(this.expandedMatchId, true);
+        }
     }
 
     toggleLeagueCollapse(leagueGroup: LeagueGroup): void {
@@ -183,8 +209,8 @@ export class HomeComponent implements OnInit, OnDestroy {
         }
     }
 
-    loadMatchEvents(matchId: string): void {
-        this.loadingMatchEvents = true;
+    loadMatchEvents(matchId: string, silent: boolean = false): void {
+        if (!silent) this.loadingMatchEvents = true;
         this.matchService.getMatchEvents(matchId).subscribe({
             next: (response) => {
                 this.matchEvents = response.data || [];
@@ -198,8 +224,8 @@ export class HomeComponent implements OnInit, OnDestroy {
         });
     }
 
-    loadMatchLineups(matchId: string): void {
-        this.loadingMatchLineups = true;
+    loadMatchLineups(matchId: string, silent: boolean = false): void {
+        if (!silent) this.loadingMatchLineups = true;
         this.matchService.getMatchLineups(matchId).subscribe({
             next: (response) => {
                 this.matchLineups = response.data || [];
@@ -212,8 +238,8 @@ export class HomeComponent implements OnInit, OnDestroy {
         });
     }
 
-    loadMatchStatistics(matchId: string): void {
-        this.loadingMatchStatistics = true;
+    loadMatchStatistics(matchId: string, silent: boolean = false): void {
+        if (!silent) this.loadingMatchStatistics = true;
         this.matchService.getMatchStatistics(matchId).subscribe({
             next: (response) => {
                 this.matchStatistics = response.data || [];
@@ -289,21 +315,21 @@ export class HomeComponent implements OnInit, OnDestroy {
 
             // Add FT marker before first event after 90
             if (totalTime > 90 && !addedFT) {
-                processed.push({isMarker: true, markerType: 'FT', label: "90'"});
+                processed.push({ isMarker: true, markerType: 'FT', label: "90'" });
                 addedFT = true;
             }
 
             // Add HT marker before first event after 45
             if (totalTime > 45 && totalTime <= 90 && !addedHT) {
-                processed.push({isMarker: true, markerType: 'HT', label: "45'"});
+                processed.push({ isMarker: true, markerType: 'HT', label: "45'" });
                 addedHT = true;
             }
 
-            processed.push({event});
+            processed.push({ event });
         }
 
         // Add kickoff marker at the end
-        processed.push({isMarker: true, markerType: 'KO', label: "0'"});
+        processed.push({ isMarker: true, markerType: 'KO', label: "0'" });
 
         return processed;
     }
@@ -348,24 +374,24 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     translateStatName(statType: string): string {
         const translations: { [key: string]: { en: string; he: string } } = {
-            'Shots on Goal': {en: 'Shots on Goal', he: 'בעיטות למסגרת'},
-            'Shots off Goal': {en: 'Shots off Goal', he: 'בעיטות מחוץ למסגרת'},
-            'Total Shots': {en: 'Total Shots', he: 'סה"כ בעיטות'},
-            'Blocked Shots': {en: 'Blocked Shots', he: 'בעיטות חסומות'},
-            'Shots insidebox': {en: 'Shots Inside Box', he: 'בעיטות מתוך הרחבה'},
-            'Shots outsidebox': {en: 'Shots Outside Box', he: 'בעיטות מחוץ לרחבה'},
-            'Fouls': {en: 'Fouls', he: 'עבירות'},
-            'Corner Kicks': {en: 'Corner Kicks', he: 'קרנות'},
-            'Offsides': {en: 'Offsides', he: 'נבדלים'},
-            'Ball Possession': {en: 'Ball Possession', he: 'אחזקת כדור'},
-            'Yellow Cards': {en: 'Yellow Cards', he: 'כרטיסים צהובים'},
-            'Red Cards': {en: 'Red Cards', he: 'כרטיסים אדומים'},
-            'Goalkeeper Saves': {en: 'Goalkeeper Saves', he: 'הצלות שוער'},
-            'Total passes': {en: 'Total Passes', he: 'סה"כ מסירות'},
-            'Passes accurate': {en: 'Accurate Passes', he: 'מסירות מדויקות'},
-            'Passes %': {en: 'Pass Accuracy', he: 'דיוק מסירות'},
-            'expected_goals': {en: 'Expected Goals', he: 'גולים צפויים'},
-            'goals_prevented': {en: 'Goals Prevented', he: 'שערים שנמנעו'}
+            'Shots on Goal': { en: 'Shots on Goal', he: 'בעיטות למסגרת' },
+            'Shots off Goal': { en: 'Shots off Goal', he: 'בעיטות מחוץ למסגרת' },
+            'Total Shots': { en: 'Total Shots', he: 'סה"כ בעיטות' },
+            'Blocked Shots': { en: 'Blocked Shots', he: 'בעיטות חסומות' },
+            'Shots insidebox': { en: 'Shots Inside Box', he: 'בעיטות מתוך הרחבה' },
+            'Shots outsidebox': { en: 'Shots Outside Box', he: 'בעיטות מחוץ לרחבה' },
+            'Fouls': { en: 'Fouls', he: 'עבירות' },
+            'Corner Kicks': { en: 'Corner Kicks', he: 'קרנות' },
+            'Offsides': { en: 'Offsides', he: 'נבדלים' },
+            'Ball Possession': { en: 'Ball Possession', he: 'אחזקת כדור' },
+            'Yellow Cards': { en: 'Yellow Cards', he: 'כרטיסים צהובים' },
+            'Red Cards': { en: 'Red Cards', he: 'כרטיסים אדומים' },
+            'Goalkeeper Saves': { en: 'Goalkeeper Saves', he: 'הצלות שוער' },
+            'Total passes': { en: 'Total Passes', he: 'סה"כ מסירות' },
+            'Passes accurate': { en: 'Accurate Passes', he: 'מסירות מדויקות' },
+            'Passes %': { en: 'Pass Accuracy', he: 'דיוק מסירות' },
+            'expected_goals': { en: 'Expected Goals', he: 'גולים צפויים' },
+            'goals_prevented': { en: 'Goals Prevented', he: 'שערים שנמנעו' }
         };
 
         const lang = this.translationService.getCurrentLanguage();

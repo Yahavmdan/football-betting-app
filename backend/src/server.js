@@ -60,6 +60,13 @@ app.use(express.urlencoded({ extended: true }));
 // Serve static files for uploaded images
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
+// === MOCK LIVE MATCH (for local testing only) ===
+// Comment out the next line to disable mock live match
+if (process.env.NODE_ENV !== 'production') {
+  const mockLiveMatch = require('./scripts/mockLiveMatch');
+  mockLiveMatch.setupRoutes(app);
+}
+
 app.use('/api/auth', authRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/matches', matchRoutes);

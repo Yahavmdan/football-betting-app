@@ -230,29 +230,43 @@
                 <div *ngIf="!item.isMarker && item.event" class="timeline-row"
                      [class.home-event]="item.event.team.id === match.homeTeamId"
                      [class.away-event]="item.event.team.id !== match.homeTeamId"
-                     [class.goal-row]="item.event.type === 'Goal'">
+                     [class.goal-row]="item.event.type === 'Goal' && item.event.detail !== 'Missed Penalty'">
                   <!-- Home side -->
                   <div class="timeline-side home-side">
                     <ng-container *ngIf="item.event.team.id === match.homeTeamId">
-                      <!-- GOAL event -->
-                      <div class="event-content goal" *ngIf="item.event.type === 'Goal'">
+                      <!-- GOAL event (Normal, Own Goal, Penalty - scored) -->
+                      <div class="event-content goal" *ngIf="item.event.type === 'Goal' && item.event.detail !== 'Missed Penalty'"
+                           [class.own-goal]="item.event.detail === 'Own Goal'">
                         <div class="goal-icon-wrap">
                           <span class="goal-ball-emoji">&#9917;</span>
                           <div class="goal-ripple"></div>
                         </div>
                         <div class="event-info">
-                          <span class="goal-label">{{ 'matches.goalLabel' | translate }}</span>
+                          <span class="goal-label">{{ item.event.detail === 'Own Goal' ? ('matches.ownGoalLabel' | translate) : item.event.detail === 'Penalty' ? ('matches.penaltyGoalLabel' | translate) : ('matches.goalLabel' | translate) }}</span>
                           <span class="goal-scorer">{{ item.event.player?.name || '-' }}</span>
                           <span *ngIf="item.event.assist?.name" class="goal-assist">{{ 'matches.assistLabel' | translate }}: {{ item.event.assist?.name }}</span>
                         </div>
                       </div>
+                      <!-- MISSED PENALTY event -->
+                      <div class="event-content missed-penalty" *ngIf="item.event.type === 'Goal' && item.event.detail === 'Missed Penalty'">
+                        <div class="event-icon"><span class="missed-penalty-icon">✕</span></div>
+                        <div class="event-info">
+                          <span class="event-detail">{{ 'matches.missedPenalty' | translate }}</span>
+                          <span class="event-player">{{ item.event.player?.name || '-' }}</span>
+                        </div>
+                      </div>
                       <!-- CARD event -->
                       <div class="event-content" *ngIf="item.event.type === 'Card'"
-                           [class.card-yellow]="item.event.detail.includes('Yellow')"
-                           [class.card-red]="item.event.detail.includes('Red')">
+                           [class.card-yellow]="item.event.detail === 'Yellow Card'"
+                           [class.card-red]="item.event.detail === 'Red Card'"
+                           [class.card-second-yellow]="item.event.detail === 'Second Yellow card'">
                         <div class="event-icon">
-                          <span *ngIf="item.event.detail.includes('Yellow')" class="card-icon yellow"></span>
-                          <span *ngIf="item.event.detail.includes('Red')" class="card-icon red"></span>
+                          <span *ngIf="item.event.detail === 'Yellow Card'" class="card-icon yellow"></span>
+                          <span *ngIf="item.event.detail === 'Red Card'" class="card-icon red"></span>
+                          <ng-container *ngIf="item.event.detail === 'Second Yellow card'">
+                            <span class="card-icon yellow"></span>
+                            <span class="card-icon red second-yellow-red"></span>
+                          </ng-container>
                         </div>
                         <div class="event-info">
                           <span class="event-player">{{ item.event.player?.name || '-' }}</span>
@@ -286,6 +300,7 @@
                       <div class="event-content var" *ngIf="item.event.type === 'Var'">
                         <div class="event-icon"><span class="var-badge">VAR</span></div>
                         <div class="event-info">
+                          <span class="event-detail">{{ item.event.detail }}</span>
                           <span class="event-player">{{ item.event.player?.name || '-' }}</span>
                         </div>
                       </div>
@@ -298,25 +313,39 @@
                   <!-- Away side -->
                   <div class="timeline-side away-side">
                     <ng-container *ngIf="item.event.team.id !== match.homeTeamId">
-                      <!-- GOAL event -->
-                      <div class="event-content goal" *ngIf="item.event.type === 'Goal'">
+                      <!-- GOAL event (Normal, Own Goal, Penalty - scored) -->
+                      <div class="event-content goal" *ngIf="item.event.type === 'Goal' && item.event.detail !== 'Missed Penalty'"
+                           [class.own-goal]="item.event.detail === 'Own Goal'">
                         <div class="goal-icon-wrap">
                           <span class="goal-ball-emoji">&#9917;</span>
                           <div class="goal-ripple"></div>
                         </div>
                         <div class="event-info">
-                          <span class="goal-label">{{ 'matches.goalLabel' | translate }}</span>
+                          <span class="goal-label">{{ item.event.detail === 'Own Goal' ? ('matches.ownGoalLabel' | translate) : item.event.detail === 'Penalty' ? ('matches.penaltyGoalLabel' | translate) : ('matches.goalLabel' | translate) }}</span>
                           <span class="goal-scorer">{{ item.event.player?.name || '-' }}</span>
                           <span *ngIf="item.event.assist?.name" class="goal-assist">{{ 'matches.assistLabel' | translate }}: {{ item.event.assist?.name }}</span>
                         </div>
                       </div>
+                      <!-- MISSED PENALTY event -->
+                      <div class="event-content missed-penalty" *ngIf="item.event.type === 'Goal' && item.event.detail === 'Missed Penalty'">
+                        <div class="event-icon"><span class="missed-penalty-icon">✕</span></div>
+                        <div class="event-info">
+                          <span class="event-detail">{{ 'matches.missedPenalty' | translate }}</span>
+                          <span class="event-player">{{ item.event.player?.name || '-' }}</span>
+                        </div>
+                      </div>
                       <!-- CARD event -->
                       <div class="event-content" *ngIf="item.event.type === 'Card'"
-                           [class.card-yellow]="item.event.detail.includes('Yellow')"
-                           [class.card-red]="item.event.detail.includes('Red')">
+                           [class.card-yellow]="item.event.detail === 'Yellow Card'"
+                           [class.card-red]="item.event.detail === 'Red Card'"
+                           [class.card-second-yellow]="item.event.detail === 'Second Yellow card'">
                         <div class="event-icon">
-                          <span *ngIf="item.event.detail.includes('Yellow')" class="card-icon yellow"></span>
-                          <span *ngIf="item.event.detail.includes('Red')" class="card-icon red"></span>
+                          <span *ngIf="item.event.detail === 'Yellow Card'" class="card-icon yellow"></span>
+                          <span *ngIf="item.event.detail === 'Red Card'" class="card-icon red"></span>
+                          <ng-container *ngIf="item.event.detail === 'Second Yellow card'">
+                            <span class="card-icon yellow"></span>
+                            <span class="card-icon red second-yellow-red"></span>
+                          </ng-container>
                         </div>
                         <div class="event-info">
                           <span class="event-player">{{ item.event.player?.name || '-' }}</span>
@@ -350,6 +379,7 @@
                       <div class="event-content var" *ngIf="item.event.type === 'Var'">
                         <div class="event-icon"><span class="var-badge">VAR</span></div>
                         <div class="event-info">
+                          <span class="event-detail">{{ item.event.detail }}</span>
                           <span class="event-player">{{ item.event.player?.name || '-' }}</span>
                         </div>
                       </div>

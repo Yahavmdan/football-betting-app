@@ -1302,6 +1302,55 @@
     line-height: 1.3;
 }
 
+/* Event detail text (used in VAR decisions etc.) */
+.event-detail {
+    font-size: 0.6rem;
+    font-weight: 600;
+    color: #a78bfa;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Missed Penalty */
+.event-content.missed-penalty .event-icon {
+    background: rgba(239, 68, 68, 0.15);
+}
+
+.missed-penalty-icon {
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: #f87171;
+}
+
+.event-content.missed-penalty .event-detail {
+    color: #f87171;
+    font-weight: 700;
+}
+
+/* Own Goal - slightly muted goal styling */
+.event-content.own-goal .goal-label {
+    color: #f87171;
+    animation: none;
+}
+
+.event-content.own-goal .goal-ripple {
+    border-color: rgba(248, 113, 113, 0.5);
+}
+
+/* Second Yellow Card (yellow + red overlap) */
+.event-content.card-second-yellow .event-icon {
+    background: rgba(251, 191, 36, 0.15);
+    width: 30px;
+}
+
+.card-icon.red.second-yellow-red {
+    margin-left: -4px;
+    position: relative;
+    z-index: 1;
+}
+
 /* =========================== */
 /* Football Pitch / Lineups */
 /* =========================== */

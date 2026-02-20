@@ -13,7 +13,7 @@ const SILENT_HEADERS = new HttpHeaders().set('X-Skip-Loading', 'true');
 export class MatchService {
   private apiUrl = `${environment.apiUrl}/matches`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getMatches(groupId?: string): Observable<{ success: boolean; data: Match[] }> {
     const options = groupId ? { params: { groupId } } : {};
@@ -208,8 +208,9 @@ export class MatchService {
   }
 
   // Get personalized matches based on user preferences
-  getPersonalizedMatches(): Observable<PersonalizedMatchesResponse> {
-    return this.http.get<PersonalizedMatchesResponse>(`${this.apiUrl}/personalized`);
+  getPersonalizedMatches(silent: boolean = false): Observable<PersonalizedMatchesResponse> {
+    const options = silent ? { headers: SILENT_HEADERS } : {};
+    return this.http.get<PersonalizedMatchesResponse>(`${this.apiUrl}/personalized`, options);
   }
 }
 
