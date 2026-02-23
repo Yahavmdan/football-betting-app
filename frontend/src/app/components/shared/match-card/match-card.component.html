@@ -1,0 +1,520 @@
+<div class="match-card compact" [class.has-bet]="showBetIndicators && context.hasBetOnMatch && context.hasBetOnMatch(matchId)"
+  [class.expanded]="expandedMatchId === matchId" [class.live]="match.status === 'LIVE'">
+  <div class="match-compact-row" (click)="context.toggleMatchExpand(match)">
+    <div class="match-compact-teams">
+      <div class="team-block">
+        <span *ngIf="showBetIndicators && context.getBetOutcome && context.getBetOutcome(matchId) === '1'"
+          class="bet-coin-icon"><span>$</span><span>$</span></span>
+        <img *ngIf="context.getTeamLogo(match.homeTeam, match)" [src]="context.getTeamLogo(match.homeTeam, match)"
+          [alt]="match.homeTeam | teamTranslate" class="team-logo-small" (error)="context.onImageError($event)">
+        <span class="team-name">{{ match.homeTeam | teamTranslate }}</span>
+      </div>
+      <div class="score-block">
+        <span *ngIf="showBetIndicators && context.getBetOutcome && context.getBetOutcome(matchId) === 'X'"
+          class="bet-coin-icon"><span>$</span><span>$</span></span>
+        <ng-container
+          *ngIf="match.status === 'FINISHED' || match.status === 'LIVE' || (match.result && match.result.homeScore !== null); else noScoreYet">
+          <div class="score-row">
+            <span class="score-inline">{{ match.result?.homeScore }}</span>
+            <span class="vs-compact">-</span>
+            <span class="score-inline">{{ match.result?.awayScore }}</span>
+          </div>
+          <span *ngIf="match.status !== 'LIVE' && match.status !== 'FINISHED'" class="time-under-score">{{ match.matchDate
+            | date:'HH:mm' }}</span>
+        </ng-container>
+        <ng-template #noScoreYet>
+          <span class="time-instead-score">{{ match.matchDate | date:'HH:mm' }}</span>
+        </ng-template>
+        <div class="score-status-row">
+          <span class="status-compact" [class.finished]="match.status === 'FINISHED' || isLikelyFinished"
+            [class.started]="match.status === 'SCHEDULED' && context.isMatchInPast(match.matchDate) && !isLikelyFinished"
+            [class.live]="match.status === 'LIVE'">
+            <span *ngIf="match.status === 'LIVE'" class="live-indicator"></span>
+            <ng-container *ngIf="match.status === 'LIVE'">
+              <ng-container *ngIf="match.statusShort === 'HT'; else notHalfTime"><span class="live-time">{{ 'matches.halfTime'
+                  | translate }}</span></ng-container>
+              <ng-template #notHalfTime>
+                <ng-container *ngIf="match.elapsed !== undefined && match.elapsed !== null; else liveNoTime"><span
+                    class="live-time">{{ match.elapsed }}'<span *ngIf="match.extraTime" class="extra-time">(+{{
+                      match.extraTime }}
+                      )</span></span></ng-container>
+                <ng-template #liveNoTime>{{ 'matches.live' | translate }}</ng-template>
+              </ng-template>
+            </ng-container>
+            <ng-container *ngIf="match.status !== 'LIVE'">
+              {{ isLikelyFinished ? ('matches.finished' | translate) :
+              (match.status === 'SCHEDULED' && context.isMatchInPast(match.matchDate)) ? ('matches.started' | translate) :
+              ('matches.' + match.status.toLowerCase() | translate) }}
+              <span *ngIf="match.status === 'SCHEDULED' || match.status === 'FINISHED' || isLikelyFinished" class="status-date">{{ match.matchDate
+                | date:'dd/MM' }}</span>
+            </ng-container>
+          </span>
+        </div>
+      </div>
+      <div class="team-block">
+        <span *ngIf="showBetIndicators && context.getBetOutcome && context.getBetOutcome(matchId) === '2'"
+          class="bet-coin-icon"><span>$</span><span>$</span></span>
+        <img *ngIf="context.getTeamLogo(match.awayTeam, match)" [src]="context.getTeamLogo(match.awayTeam, match)"
+          [alt]="match.awayTeam | teamTranslate" class="team-logo-small" (error)="context.onImageError($event)">
+        <span class="team-name">{{ match.awayTeam | teamTranslate }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="match-expanded-wrapper" [class.expanded]="expandedMatchId === matchId">
+    <div class="match-expanded-content">
+      <div class="match-bg-logos">
+        <div class="bg-logo bg-logo-home" *ngIf="context.getTeamLogo(match.homeTeam, match)"
+          [style.background-image]="'url(' + context.getTeamLogo(match.homeTeam, match) + ')'"></div>
+        <div class="bg-logo bg-logo-away" *ngIf="context.getTeamLogo(match.awayTeam, match)"
+          [style.background-image]="'url(' + context.getTeamLogo(match.awayTeam, match) + ')'"></div>
+      </div>
+
+      <div class="match-details-tabs" *ngIf="match.externalApiId && (match.status === 'LIVE' || match.status === 'FINISHED' || isLikelyFinished)">
+        <div class="tabs-header">
+          <button class="tab-btn" [class.active]="context.activeMatchTab === 'events'"
+            (click)="context.selectMatchTab('events'); $event.stopPropagation()">
+            {{ 'matches.events' | translate }}
+          </button>
+          <button class="tab-btn" [class.active]="context.activeMatchTab === 'lineups'"
+            (click)="context.selectMatchTab('lineups'); $event.stopPropagation()">
+            {{ 'matches.lineups' | translate }}
+          </button>
+          <button class="tab-btn" [class.active]="context.activeMatchTab === 'statistics'"
+            (click)="context.selectMatchTab('statistics'); $event.stopPropagation()">
+            {{ 'matches.statistics' | translate }}
+          </button>
+        </div>
+
+        <div class="tabs-content">
+          <div class="tab-panel" *ngIf="context.activeMatchTab === 'events'">
+            <div *ngIf="context.loadingMatchEvents" class="section-loading">
+              <div class="inline-spinner"></div>
+            </div>
+            <div *ngIf="!context.loadingMatchEvents && context.matchEvents.length === 0" class="events-empty">
+              {{ 'matches.noEvents' | translate }}
+            </div>
+            <div *ngIf="!context.loadingMatchEvents && context.processedEvents.length > 0" class="events-timeline">
+              <ng-container *ngFor="let item of context.processedEvents">
+                <div *ngIf="item.isMarker" class="timeline-marker-row">
+                  <div class="timeline-side home-side"></div>
+                  <div class="timeline-center marker-center">
+                    <span class="marker-badge" [class.ht]="item.markerType === 'HT'" [class.ft]="item.markerType === 'FT'"
+                      [class.kickoff]="item.markerType === 'KO'">
+                      {{ item.markerType === 'HT' ? ('matches.halfTime' | translate) : (item.markerType === 'FT' ?
+                      ('matches.fullTime' | translate) : ('matches.kickOff' | translate)) }}
+                      <span *ngIf="item.label" class="marker-time">{{ item.label }}</span>
+                    </span>
+                  </div>
+                  <div class="timeline-side away-side"></div>
+                </div>
+
+                <div *ngIf="!item.isMarker && item.event" class="timeline-row"
+                  [class.home-event]="item.event.team.id === match.homeTeamId"
+                  [class.away-event]="item.event.team.id !== match.homeTeamId"
+                  [class.goal-row]="item.event.type === 'Goal' && item.event.detail !== 'Missed Penalty'">
+                  <div class="timeline-side home-side">
+                    <ng-container *ngIf="item.event.team.id === match.homeTeamId">
+                      <div class="event-content goal" *ngIf="item.event.type === 'Goal' && item.event.detail !== 'Missed Penalty'"
+                        [class.own-goal]="item.event.detail === 'Own Goal'">
+                        <div class="goal-icon-wrap"><span class="goal-ball-emoji">&#9917;</span><div class="goal-ripple"></div></div>
+                        <div class="event-info">
+                          <span class="goal-label event-text-main">{{ item.event.detail === 'Own Goal' ? ('matches.ownGoalLabel' | translate) :
+                            item.event.detail === 'Penalty' ? ('matches.penaltyGoalLabel' | translate) : ('matches.goalLabel' |
+                            translate) }}</span>
+                          <span class="goal-scorer event-text-main">{{ item.event.player?.name || '-' }}</span>
+                          <span *ngIf="item.event.assist?.name" class="goal-assist event-text-sub">{{ 'matches.assistLabel' | translate }}: {{
+                            item.event.assist?.name }}</span>
+                        </div>
+                      </div>
+                      <div class="event-content missed-penalty" *ngIf="item.event.type === 'Goal' && item.event.detail === 'Missed Penalty'">
+                        <div class="event-icon"><span class="missed-penalty-icon">✕</span></div>
+                        <div class="event-info">
+                          <span class="event-detail event-text-main">{{ 'matches.missedPenalty' | translate }}</span>
+                          <span class="event-player event-text-main">{{ item.event.player?.name || '-' }}</span>
+                        </div>
+                      </div>
+                      <div class="event-content" *ngIf="item.event.type === 'Card'"
+                        [class.card-yellow]="item.event.detail === 'Yellow Card'"
+                        [class.card-red]="item.event.detail === 'Red Card'"
+                        [class.card-second-yellow]="item.event.detail === 'Second Yellow card'">
+                        <div class="event-icon">
+                          <span *ngIf="item.event.detail === 'Yellow Card'" class="card-icon yellow"></span>
+                          <span *ngIf="item.event.detail === 'Red Card'" class="card-icon red"></span>
+                          <ng-container *ngIf="item.event.detail === 'Second Yellow card'">
+                            <span class="card-icon yellow"></span>
+                            <span class="card-icon red second-yellow-red"></span>
+                          </ng-container>
+                        </div>
+                        <div class="event-info">
+                          <span class="event-player event-text-main">{{ item.event.player?.name || '-' }}</span>
+                        </div>
+                      </div>
+                      <div class="event-content subst" *ngIf="item.event.type === 'Subst'">
+                        <div class="subst-icon-wrap">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 4v6h6" stroke="#4ade80" />
+                            <path d="M23 20v-6h-6" stroke="#f87171" />
+                            <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10" stroke="#4ade80" />
+                            <path d="M3.51 15A9 9 0 0 0 18.36 18.36L23 14" stroke="#f87171" />
+                          </svg>
+                        </div>
+                        <div class="subst-players">
+                          <div class="subst-player-row player-in" *ngIf="item.event.assist?.name">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="none"
+                              stroke="#4ade80" stroke-width="3" stroke-linecap="round">
+                              <path d="M5 12h14" />
+                              <path d="M12 5l7 7-7 7" />
+                            </svg>
+                            <span class="subst-player-name event-text-main">{{ item.event.assist?.name }}</span>
+                          </div>
+                          <div class="subst-player-row player-out">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="none"
+                              stroke="#f87171" stroke-width="3" stroke-linecap="round">
+                              <path d="M19 12H5" />
+                              <path d="M12 19l-7-7 7-7" />
+                            </svg>
+                            <span class="subst-player-name event-text-main">{{ item.event.player?.name }}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="event-content var" *ngIf="item.event.type === 'Var'">
+                        <div class="event-icon"><span class="var-badge">VAR</span></div>
+                        <div class="event-info">
+                          <span class="event-detail event-text-main">{{ translateEventDetail(item.event.detail) }}</span>
+                          <span class="event-player event-text-main">{{ item.event.player?.name || '-' }}</span>
+                        </div>
+                      </div>
+                    </ng-container>
+                  </div>
+                  <div class="timeline-center">
+                    <span class="event-time" [class.goal-time]="item.event.type === 'Goal'">{{ item.event.time.elapsed }}<span
+                        *ngIf="item.event.time.extra">+{{ item.event.time.extra }}</span>'</span>
+                  </div>
+                  <div class="timeline-side away-side">
+                    <ng-container *ngIf="item.event.team.id !== match.homeTeamId">
+                      <div class="event-content goal" *ngIf="item.event.type === 'Goal' && item.event.detail !== 'Missed Penalty'"
+                        [class.own-goal]="item.event.detail === 'Own Goal'">
+                        <div class="goal-icon-wrap"><span class="goal-ball-emoji">&#9917;</span><div class="goal-ripple"></div></div>
+                        <div class="event-info">
+                          <span class="goal-label event-text-main">{{ item.event.detail === 'Own Goal' ? ('matches.ownGoalLabel' | translate) :
+                            item.event.detail === 'Penalty' ? ('matches.penaltyGoalLabel' | translate) : ('matches.goalLabel' |
+                            translate) }}</span>
+                          <span class="goal-scorer event-text-main">{{ item.event.player?.name || '-' }}</span>
+                          <span *ngIf="item.event.assist?.name" class="goal-assist event-text-sub">{{ 'matches.assistLabel' | translate }}: {{
+                            item.event.assist?.name }}</span>
+                        </div>
+                      </div>
+                      <div class="event-content missed-penalty" *ngIf="item.event.type === 'Goal' && item.event.detail === 'Missed Penalty'">
+                        <div class="event-icon"><span class="missed-penalty-icon">✕</span></div>
+                        <div class="event-info">
+                          <span class="event-detail event-text-main">{{ 'matches.missedPenalty' | translate }}</span>
+                          <span class="event-player event-text-main">{{ item.event.player?.name || '-' }}</span>
+                        </div>
+                      </div>
+                      <div class="event-content" *ngIf="item.event.type === 'Card'"
+                        [class.card-yellow]="item.event.detail === 'Yellow Card'"
+                        [class.card-red]="item.event.detail === 'Red Card'"
+                        [class.card-second-yellow]="item.event.detail === 'Second Yellow card'">
+                        <div class="event-icon">
+                          <span *ngIf="item.event.detail === 'Yellow Card'" class="card-icon yellow"></span>
+                          <span *ngIf="item.event.detail === 'Red Card'" class="card-icon red"></span>
+                          <ng-container *ngIf="item.event.detail === 'Second Yellow card'">
+                            <span class="card-icon yellow"></span>
+                            <span class="card-icon red second-yellow-red"></span>
+                          </ng-container>
+                        </div>
+                        <div class="event-info">
+                          <span class="event-player event-text-main">{{ item.event.player?.name || '-' }}</span>
+                        </div>
+                      </div>
+                      <div class="event-content subst" *ngIf="item.event.type === 'Subst'">
+                        <div class="subst-icon-wrap">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 4v6h6" stroke="#4ade80" />
+                            <path d="M23 20v-6h-6" stroke="#f87171" />
+                            <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10" stroke="#4ade80" />
+                            <path d="M3.51 15A9 9 0 0 0 18.36 18.36L23 14" stroke="#f87171" />
+                          </svg>
+                        </div>
+                        <div class="subst-players">
+                          <div class="subst-player-row player-in" *ngIf="item.event.assist?.name">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="none"
+                              stroke="#4ade80" stroke-width="3" stroke-linecap="round">
+                              <path d="M5 12h14" />
+                              <path d="M12 5l7 7-7 7" />
+                            </svg>
+                            <span class="subst-player-name event-text-main">{{ item.event.assist?.name }}</span>
+                          </div>
+                          <div class="subst-player-row player-out">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="none"
+                              stroke="#f87171" stroke-width="3" stroke-linecap="round">
+                              <path d="M19 12H5" />
+                              <path d="M12 19l-7-7 7-7" />
+                            </svg>
+                            <span class="subst-player-name event-text-main">{{ item.event.player?.name }}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="event-content var" *ngIf="item.event.type === 'Var'">
+                        <div class="event-icon"><span class="var-badge">VAR</span></div>
+                        <div class="event-info">
+                          <span class="event-detail event-text-main">{{ translateEventDetail(item.event.detail) }}</span>
+                          <span class="event-player event-text-main">{{ item.event.player?.name || '-' }}</span>
+                        </div>
+                      </div>
+                    </ng-container>
+                  </div>
+                </div>
+              </ng-container>
+              <div class="timeline-marker-row" *ngIf="!hasKickoffMarker()">
+                <div class="timeline-side home-side"></div>
+                <div class="timeline-center marker-center">
+                  <span class="marker-badge kickoff">{{ 'matches.kickOff' | translate }}</span>
+                </div>
+                <div class="timeline-side away-side"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-panel" *ngIf="context.activeMatchTab === 'lineups'">
+            <div *ngIf="context.loadingMatchLineups" class="section-loading"><div class="inline-spinner"></div></div>
+            <div *ngIf="!context.loadingMatchLineups && context.matchLineups.length === 0" class="events-empty">{{ 'matches.noLineups' | translate }}</div>
+            <div *ngIf="!context.loadingMatchLineups && context.matchLineups.length > 0" class="lineups-container">
+              <div class="football-pitch">
+                <div class="pitch-half home-half"><div class="pitch-goal"></div><div class="pitch-box"></div><div class="pitch-box-small"></div><div class="pitch-arc"></div></div>
+                <div class="pitch-center-line"></div><div class="pitch-center-circle"></div>
+                <div class="pitch-half away-half"><div class="pitch-goal"></div><div class="pitch-box"></div><div class="pitch-box-small"></div><div class="pitch-arc"></div></div>
+                <div class="pitch-team home-team" *ngIf="context.matchLineups[0]">
+                  <div class="team-formation-label"><img *ngIf="context.matchLineups[0].team.logo" [src]="context.matchLineups[0].team.logo" class="formation-team-logo" alt=""><span>{{ context.matchLineups[0].formation }}</span></div>
+                  <div *ngFor="let player of context.matchLineups[0].startXI" class="pitch-player"
+                    [style.--grid-row]="context.getPlayerRow(player.grid, 0)" [style.--grid-col]="context.getPlayerCol(player.grid)"
+                    [style.--total-cols]="context.getRowPlayerCount(context.matchLineups[0].startXI, player.grid)">
+                    <img class="pitch-player-image" [src]="`https://media.api-sports.io/football/players/${player.id}.png`" alt="player image">
+                    <span class="home pitch-player-name">{{ player.number + ' ' + context.getShortName(player.name)}}</span>
+                  </div>
+                </div>
+                <div class="pitch-team away-team" *ngIf="context.matchLineups[1]">
+                  <div class="team-formation-label"><img *ngIf="context.matchLineups[1].team.logo" [src]="context.matchLineups[1].team.logo" class="formation-team-logo" alt=""><span>{{ context.matchLineups[1].formation }}</span></div>
+                  <div *ngFor="let player of context.matchLineups[1].startXI" class="pitch-player"
+                    [style.--grid-row]="context.getPlayerRow(player.grid, 1)" [style.--grid-col]="context.getPlayerCol(player.grid)"
+                    [style.--total-cols]="context.getRowPlayerCount(context.matchLineups[1].startXI, player.grid)">
+                    <img class="pitch-player-image" [src]="`https://media.api-sports.io/football/players/${player.id}.png`" alt="player image">
+                    <span class="away pitch-player-name">{{ player.number + ' ' + context.getShortName(player.name)}}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-panel" *ngIf="context.activeMatchTab === 'statistics'">
+            <div *ngIf="context.loadingMatchStatistics" class="section-loading"><div class="inline-spinner"></div></div>
+            <div *ngIf="!context.loadingMatchStatistics && context.matchStatistics.length === 0" class="events-empty">{{ 'matches.noStatistics' | translate }}</div>
+            <div *ngIf="!context.loadingMatchStatistics && context.matchStatistics.length > 0" class="statistics-container">
+              <div class="stats-header">
+                <div class="stats-team home"><img *ngIf="context.matchStatistics[0]?.team?.logo" [src]="context.matchStatistics[0]?.team?.logo" class="stats-team-logo" alt=""><span>{{ context.matchStatistics[0]?.team?.name }}</span></div>
+                <div class="stats-team away"><img *ngIf="context.matchStatistics[1]?.team?.logo" [src]="context.matchStatistics[1]?.team?.logo" class="stats-team-logo" alt=""><span>{{ context.matchStatistics[1]?.team?.name }}</span></div>
+              </div>
+              <div class="stats-list">
+                <ng-container *ngFor="let stat of context.matchStatistics[0]?.statistics || []">
+                  <div class="stat-row">
+                    <div class="stat-value home">{{ context.getStatValue(context.matchStatistics, 0, stat.type) }}</div>
+                    <div class="stat-bar-wrapper">
+                      <div class="stat-bar-side home-side"><div class="stat-bar home" [style.width.%]="context.getStatPercentage(context.matchStatistics, 0, stat.type)"></div></div>
+                      <div class="stat-bar-side away-side"><div class="stat-bar away" [style.width.%]="context.getStatPercentage(context.matchStatistics, 1, stat.type)"></div></div>
+                    </div>
+                    <div class="stat-value away">{{ context.getStatValue(context.matchStatistics, 1, stat.type) }}</div>
+                  </div>
+                  <div class="stat-label-row">{{ context.translateStatName(stat.type) }}</div>
+                </ng-container>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="showBettingSection" class="betting-section">
+        <h4 class="betting-title collapsible-header" (click)="context.showBetting = !context.showBetting; $event.stopPropagation()">
+          <span>{{ 'matches.betting' | translate }}</span>
+          <svg class="collapse-arrow" [class.open]="context.showBetting" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </h4>
+        <div class="collapsible-content" [class.open]="context.showBetting">
+          <div class="match-actions-row" *ngIf="context.canManageGroup() && !context.isAutomaticGroup()">
+            <span *ngIf="context.isMatchInPast(match.matchDate) && match.status === 'SCHEDULED' && !context.canManageGroup()"
+              class="past-match-label">
+              {{ 'matches.matchStartedLabel' | translate }}
+            </span>
+            <button *ngIf="context.canUpdateScore(match)" (click)="context.openScoreUpdate(match); $event.stopPropagation()"
+              class="btn-action">
+              {{ 'matches.updateScore' | translate }}
+            </button>
+            <button *ngIf="match.status === 'SCHEDULED' && match.result && match.result.homeScore !== null"
+              (click)="context.markAsFinished(matchId); $event.stopPropagation()" class="btn-action btn-finish">
+              {{ 'matches.markAsFinished' | translate }}
+            </button>
+          </div>
+          <div *ngIf="context.editingMatchId === matchId && !context.isAutomaticGroup()" class="score-update-form">
+            <div class="score-form-row">
+              <div class="score-form-group">
+                <label>{{ match.homeTeam | teamTranslate }}</label>
+                <input type="number" [(ngModel)]="context.updateScoreData.homeScore" class="score-input" min="0">
+              </div>
+              <div class="score-form-group">
+                <label>{{ match.awayTeam | teamTranslate }}</label>
+                <input type="number" [(ngModel)]="context.updateScoreData.awayScore" class="score-input" min="0">
+              </div>
+            </div>
+            <div class="score-button-row">
+              <button (click)="context.submitScoreUpdate(matchId)"
+                [disabled]="context.loadingScoreUpdate || context.updateScoreData.homeScore === null || context.updateScoreData.awayScore === null"
+                class="btn-primary btn-small">
+                {{ context.loadingScoreUpdate ? ('auth.loading' | translate) : ('matches.saveScore' | translate) }}
+              </button>
+              <button (click)="context.cancelScoreUpdate()" class="btn-secondary btn-small">
+                {{ 'groups.cancel' | translate }}
+              </button>
+            </div>
+          </div>
+          <p *ngIf="context.placingBetForMatch === matchId && context.canPlaceBet(match)" class="bet-instruction">{{ 'bets.clickOnYourBet' | translate }}</p>
+          <div *ngIf="context.placingBetForMatch === matchId && context.canPlaceBet(match)" class="inline-outcome-buttons">
+            <button type="button" class="inline-outcome-btn" [class.selected]="context.inlineBetData.outcome === '1'"
+              [disabled]="context.inlineLoadingBet" (click)="context.selectInlineOutcome('1'); $event.stopPropagation()">
+              <img *ngIf="context.getTeamLogo(match.homeTeam, match)" [src]="context.getTeamLogo(match.homeTeam, match)"
+                class="inline-outcome-logo" (error)="context.onImageError($event)">
+              <span class="inline-outcome-number">1</span>
+              <span *ngIf="context.getMatchRelativePoints(match)" class="inline-outcome-odds">x{{ context.getMatchRelativePoints(match)?.homeWin }}</span>
+            </button>
+            <button type="button" class="inline-outcome-btn inline-outcome-draw" [class.selected]="context.inlineBetData.outcome === 'X'"
+              [disabled]="context.inlineLoadingBet" (click)="context.selectInlineOutcome('X'); $event.stopPropagation()">
+              <span class="inline-outcome-number">X</span>
+              <span *ngIf="context.getMatchRelativePoints(match)" class="inline-outcome-odds">x{{ context.getMatchRelativePoints(match)?.draw }}</span>
+            </button>
+            <button type="button" class="inline-outcome-btn" [class.selected]="context.inlineBetData.outcome === '2'"
+              [disabled]="context.inlineLoadingBet" (click)="context.selectInlineOutcome('2'); $event.stopPropagation()">
+              <img *ngIf="context.getTeamLogo(match.awayTeam, match)" [src]="context.getTeamLogo(match.awayTeam, match)"
+                class="inline-outcome-logo" (error)="context.onImageError($event)">
+              <span class="inline-outcome-number">2</span>
+              <span *ngIf="context.getMatchRelativePoints(match)" class="inline-outcome-odds">x{{ context.getMatchRelativePoints(match)?.awayWin }}</span>
+            </button>
+          </div>
+          <div *ngIf="context.placingBetForMatch === matchId && context.canPlaceBet(match) && context.group && context.group.betType === 'relative' && context.inlineBetData.outcome"
+            class="inline-wager-section">
+            <div class="inline-wager-row">
+              <div class="inline-credits-display">
+                <span class="inline-credits-label">{{ 'bets.availableCredits' | translate }}:</span>
+                <span class="inline-credits-value">{{ context.inlineEffectiveCredits | number:'1.0-1' }}</span>
+              </div>
+              <div class="inline-wager-input-group" (click)="$event.stopPropagation()">
+                <input type="number" [(ngModel)]="context.inlineWagerAmount" min="1" [max]="context.inlineEffectiveCredits"
+                  step="1" class="inline-wager-input" [placeholder]="'bets.enterWagerAmount' | translate"
+                  [disabled]="context.inlineLoadingBet || context.inlineEffectiveCredits <= 0">
+              </div>
+            </div>
+            <div *ngIf="context.inlineWagerAmount && context.inlineBetData.outcome && context.getMatchRelativePoints(match)"
+              class="inline-potential-win">
+              <span class="inline-potential-label">{{ 'bets.potentialWin' | translate }}:</span>
+              <span class="inline-potential-value">{{ context.calculateInlinePotentialWin(match) | number:'1.0-1' }} {{ 'groups.credits' | translate }}</span>
+            </div>
+            <button type="button" class="inline-submit-bet"
+              [disabled]="context.inlineLoadingBet || !context.inlineWagerAmount || context.inlineEffectiveCredits <= 0"
+              (click)="context.submitInlineBet(); $event.stopPropagation()">
+              <span *ngIf="context.inlineLoadingBet" class="inline-spinner btn-spinner"></span>
+              {{ context.inlineLoadingBet ? ('bets.placingBet' | translate) : (context.inlineExistingBet ? ('bets.updateBet' | translate) : ('matches.placeBet' | translate)) }}
+            </button>
+          </div>
+          <div *ngIf="context.inlineLoadingBet && context.group && context.group.betType !== 'relative'" class="inline-bet-loading">
+            <span class="inline-spinner btn-spinner"></span>
+          </div>
+          <div *ngIf="context.viewingBetsForMatch === matchId">
+            <div *ngIf="context.loadingMemberBets" class="section-loading"><div class="inline-spinner"></div></div>
+            <div *ngIf="!context.loadingMemberBets && context.memberBets.length > 0" class="member-bets-list">
+              <div *ngFor="let memberBet of context.memberBets" class="member-bet-item">
+                <span class="member-name">{{ memberBet.user.username }}</span>
+                <span *ngIf="memberBet.hasBet" class="bet-time">{{ memberBet.bet?.createdAt | date:'dd/MM/yy, HH:mm' }}</span>
+                <div class="bet-info">
+                  <span *ngIf="memberBet.hasBet" class="bet-outcome"
+                    [class.home]="memberBet.bet?.outcome === '1'" [class.draw]="memberBet.bet?.outcome === 'X'"
+                    [class.away]="memberBet.bet?.outcome === '2'">
+                    {{ memberBet.bet?.outcome === '1' ? (match.homeTeam | teamTranslate) : (memberBet.bet?.outcome === '2' ?
+                    (match.awayTeam | teamTranslate) : ('bets.draw' | translate)) }}
+                  </span>
+                  <span *ngIf="memberBet.hasBet && context.group.betType === 'relative' && memberBet.bet?.wagerAmount" class="bet-wager">
+                    {{ memberBet.bet?.wagerAmount | number:'1.0-1' }} {{ 'groups.credits' | translate }}
+                  </span>
+                  <span *ngIf="!memberBet.hasBet" class="no-bet">{{ 'bets.noBet' | translate }}</span>
+                </div>
+              </div>
+            </div>
+            <div *ngIf="!context.loadingMemberBets && context.memberBets.length === 0" class="empty-bets">
+              {{ 'groups.noMembers' | translate }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="head-to-head-section">
+        <h4 class="h2h-title collapsible-header" (click)="context.toggleHeadToHead(); $event.stopPropagation()">
+          <span>{{ 'matches.headToHead' | translate }}</span>
+          <svg class="collapse-arrow" [class.open]="context.showHeadToHead" xmlns="http://www.w3.org/2000/svg" width="16"
+            height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </h4>
+        <div class="collapsible-content" [class.open]="context.showHeadToHead">
+          <div *ngIf="context.loadingHeadToHead" class="section-loading"><div class="inline-spinner"></div></div>
+          <div *ngIf="!context.loadingHeadToHead && context.headToHeadMatches.length === 0" class="h2h-empty">{{ 'matches.noHeadToHead' | translate }}</div>
+          <div *ngIf="!context.loadingHeadToHead && context.headToHeadMatches.length > 0" class="h2h-list">
+            <div *ngFor="let h2hMatch of context.headToHeadMatches" class="h2h-item">
+              <span class="h2h-date">{{ h2hMatch.matchDate | date:'dd/MM/yy' }}</span>
+              <div class="h2h-teams">
+                <span class="h2h-team">{{ h2hMatch.homeTeam | teamTranslate }}</span>
+                <span class="h2h-score">{{ h2hMatch.result?.homeScore }} - {{ h2hMatch.result?.awayScore }}</span>
+                <span class="h2h-team">{{ h2hMatch.awayTeam | teamTranslate }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="team-form-section">
+        <h4 class="team-form-title collapsible-header" (click)="context.toggleTeamForm(); $event.stopPropagation()">
+          <span>{{ 'matches.teamForm' | translate }}</span>
+          <svg class="collapse-arrow" [class.open]="context.showTeamForm" xmlns="http://www.w3.org/2000/svg" width="16"
+            height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </h4>
+        <div class="collapsible-content" [class.open]="context.showTeamForm">
+          <div *ngIf="context.loadingTeamForm" class="section-loading"><div class="inline-spinner"></div></div>
+          <div *ngIf="!context.loadingTeamForm" class="team-form-container">
+            <div class="team-form-column">
+              <div class="team-form-header">
+                <img *ngIf="context.getTeamLogo(match.homeTeam, match)" [src]="context.getTeamLogo(match.homeTeam, match)"
+                  class="team-form-logo" (error)="context.onImageError($event)">
+                <span class="team-form-name">{{ match.homeTeam | teamTranslate }}</span>
+              </div>
+              <div *ngIf="context.homeTeamRecentMatches.length === 0" class="team-form-empty">{{ 'matches.noRecentMatches' |
+                translate }}</div>
+            </div>
+            <div class="team-form-column">
+              <div class="team-form-header">
+                <img *ngIf="context.getTeamLogo(match.awayTeam, match)" [src]="context.getTeamLogo(match.awayTeam, match)"
+                  class="team-form-logo" (error)="context.onImageError($event)">
+                <span class="team-form-name">{{ match.awayTeam | teamTranslate }}</span>
+              </div>
+              <div *ngIf="context.awayTeamRecentMatches.length === 0" class="team-form-empty">{{ 'matches.noRecentMatches' |
+                translate }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -17,15 +17,17 @@ import { getTeamByName, getAllTeams, getTranslatedTeamName, Team } from '../../.
 import { environment } from '../../../../environments/environment';
 import { AppSelectComponent, SelectOption } from '../../shared/app-select/app-select.component';
 import { ToastService } from '../../shared/toast/toast.service';
+import { MatchCardComponent } from '../../shared/match-card/match-card.component';
 
 @Component({
   selector: 'app-group-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslatePipe, TeamTranslatePipe, AppSelectComponent],
+  imports: [CommonModule, FormsModule, RouterModule, TranslatePipe, TeamTranslatePipe, AppSelectComponent, MatchCardComponent],
   templateUrl: './group-detail.component.html',
   styleUrls: ['./group-detail.component.css']
 })
 export class GroupDetailComponent implements OnInit, OnDestroy {
+  readonly matchCardContext = this;
   @HostListener('window:scroll')
   onWindowScroll(): void {
     const separator = this.el.nativeElement.querySelector('.round-separator');
@@ -306,10 +308,8 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
 
   hasLiveMatches(): boolean {
     const now = new Date();
-    // Check all matches, not just filtered ones, to ensure we track live matches
-    // even when filters are applied
     const liveMatches = this.matches.filter(match => {
-      // Match is live if status is LIVE OR (status is SCHEDULED and matchDate is in the past)
+      if (this.isMatchLikelyFinished(match)) return false;
       const matchDate = new Date(match.matchDate);
       return match.status === 'LIVE' || (match.status === 'SCHEDULED' && matchDate <= now);
     });
@@ -600,6 +600,13 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     return new Date(matchDate) <= new Date();
   }
 
+  private isMatchLikelyFinished(match: Match): boolean {
+    if (match.status !== 'SCHEDULED') return false;
+    const matchTime = new Date(match.matchDate).getTime();
+    const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
+    return (Date.now() - matchTime) > THREE_HOURS_MS;
+  }
+
   toggleMatchExpand(match: Match): void {
     const matchId = match._id;
     if (this.expandedMatchId === matchId) {
@@ -745,6 +752,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   }
 
   private isMatchLive(match: Match): boolean {
+    if (this.isMatchLikelyFinished(match)) return false;
     const now = new Date();
     const matchDate = new Date(match.matchDate);
     return match.status === 'LIVE' || (match.status === 'SCHEDULED' && matchDate <= now);
@@ -1445,10 +1453,10 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     if (hasStatusFilter) {
       filtered = filtered.filter(match => {
         const matchDate = new Date(match.matchDate);
-        const isFinished = match.status === 'FINISHED';
+        const likelyFinished = this.isMatchLikelyFinished(match);
+        const isFinished = match.status === 'FINISHED' || likelyFinished;
         const isNotStarted = match.status === 'SCHEDULED' && matchDate > now;
-        // Ongoing includes: LIVE status OR SCHEDULED with past matchDate (started but not marked as LIVE yet)
-        const isOngoing = match.status === 'LIVE' || (match.status === 'SCHEDULED' && matchDate <= now);
+        const isOngoing = !likelyFinished && (match.status === 'LIVE' || (match.status === 'SCHEDULED' && matchDate <= now));
 
         return (this.filters.showFinished && isFinished) ||
           (this.filters.showNotStarted && isNotStarted) ||

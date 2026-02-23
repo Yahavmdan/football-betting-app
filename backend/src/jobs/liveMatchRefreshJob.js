@@ -222,11 +222,11 @@ async function fixStuckMatches() {
     const now = new Date();
     // Look for matches that started more than 3 hours ago but are still LIVE or SCHEDULED
     const threeHoursAgo = new Date(now.getTime() - 3 * 60 * 60 * 1000);
-    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
     const stuckMatches = await Match.find({
       status: { $in: ['LIVE', 'SCHEDULED'] },
-      matchDate: { $gte: oneDayAgo, $lt: threeHoursAgo },
+      matchDate: { $gte: sevenDaysAgo, $lt: threeHoursAgo },
       externalApiId: { $exists: true, $regex: /^apifootball_/ }
     });
 

@@ -6,10 +6,10 @@ import { PreferencesService } from '../../services/preferences.service';
 import { AuthService } from '../../services/auth.service';
 import { TranslationService } from '../../services/translation.service';
 import { TranslatePipe } from '../../services/translate.pipe';
-import { TeamTranslatePipe } from '../../pipes/team-translate.pipe';
 import { MatchEvent, MatchLineup, MatchTeamStatistics } from '../../models/match.model';
 import { User } from '../../models/user.model';
 import { getTeamByName } from '../../data/teams.data';
+import { MatchCardComponent } from '../shared/match-card/match-card.component';
 
 interface LeagueGroup {
     league: {
@@ -31,11 +31,12 @@ interface ProcessedEvent {
 @Component({
     selector: 'app-home',
     standalone: true,
-    imports: [CommonModule, RouterModule, TranslatePipe, TeamTranslatePipe],
+    imports: [CommonModule, RouterModule, TranslatePipe, MatchCardComponent],
     templateUrl: './home.component.html',
     styleUrls: ['./home.component.css']
 })
 export class HomeComponent implements OnInit, OnDestroy {
+    readonly matchCardContext = this;
     currentUser: User | null = null;
     loading = true;
     hasPreferences = false;

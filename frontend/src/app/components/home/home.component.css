@@ -483,6 +483,10 @@
 .matches-list-inner {
     min-height: 0;
     overflow: hidden;
+    gap: 0.6rem;
+    display: flex;
+    flex-direction: column;
+
 }
 
 .league-section.collapsed .matches-list {

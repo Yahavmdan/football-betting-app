@@ -1,0 +1,23 @@
+@import "../../groups/group-detail/group-detail.component.css";
+
+/* Unified typography for all timeline event text */
+.events-timeline .event-text-main {
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--text-primary);
+}
+
+.events-timeline .event-text-sub {
+  font-size: 0.65rem;
+  line-height: 1.2;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.match-card {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+  user-drag: none;
+}

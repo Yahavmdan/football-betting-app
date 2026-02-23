@@ -220,7 +220,29 @@
     "startingXI": "Starting XI",
     "substitutes": "Substitutes",
     "statistics": "Statistics",
-    "noStatistics": "Statistics not available"
+    "noStatistics": "Statistics not available",
+    "eventDetails": {
+      "goalDisallowed": "Goal Disallowed",
+      "goalCancelled": "Goal Cancelled",
+      "goalConfirmed": "Goal Confirmed",
+      "penaltyConfirmed": "Penalty Confirmed",
+      "penaltyCancelled": "Penalty Cancelled",
+      "penaltyRetaken": "Penalty Retaken",
+      "missedPenalty": "Missed Penalty",
+      "substitution": "Substitution",
+      "yellowCard": "Yellow Card",
+      "redCard": "Red Card",
+      "secondYellowCard": "Second Yellow Card",
+      "reasons": {
+        "offside": "Offside",
+        "handball": "Handball",
+        "foul": "Foul",
+        "simulation": "Simulation",
+        "obstruction": "Obstruction",
+        "dangerousPlay": "Dangerous Play",
+        "noGoal": "No Goal"
+      }
+    }
   },
   "bets": {
     "placeYourBet": "Place Your Bet",

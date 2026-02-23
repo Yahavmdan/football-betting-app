@@ -220,7 +220,29 @@
     "startingXI": "הרכב פתיחה",
     "substitutes": "מחליפים",
     "statistics": "סטטיסטיקות",
-    "noStatistics": "סטטיסטיקות לא זמינות"
+    "noStatistics": "סטטיסטיקות לא זמינות",
+    "eventDetails": {
+      "goalDisallowed": "שער נפסל",
+      "goalCancelled": "שער בוטל",
+      "goalConfirmed": "שער אושר",
+      "penaltyConfirmed": "פנדל אושר",
+      "penaltyCancelled": "פנדל בוטל",
+      "penaltyRetaken": "פנדל חוזר",
+      "missedPenalty": "פנדל שהוחמץ",
+      "substitution": "חילוף",
+      "yellowCard": "כרטיס צהוב",
+      "redCard": "כרטיס אדום",
+      "secondYellowCard": "כרטיס צהוב שני",
+      "reasons": {
+        "offside": "נבדל",
+        "handball": "יד",
+        "foul": "עבירה",
+        "simulation": "התחזות",
+        "obstruction": "חסימה",
+        "dangerousPlay": "משחק מסוכן",
+        "noGoal": "לא שער"
+      }
+    }
   },
   "bets": {
     "placeYourBet": "בצע את ההימור שלך",
