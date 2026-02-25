@@ -24,6 +24,11 @@ export interface TrashTalk {
   updatedAt: Date | null;
 }
 
+export interface StatsAdjustment {
+  totalBets: number;
+  correctPredictions: number;
+}
+
 export interface GroupMember {
   user: {
     _id: string;
@@ -36,6 +41,7 @@ export interface GroupMember {
   points: number;
   hasOngoingBets?: boolean;
   trashTalk?: TrashTalk;
+  statsAdjustment?: StatsAdjustment;
 }
 
 export interface PendingMember {

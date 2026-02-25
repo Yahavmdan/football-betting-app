@@ -4136,6 +4136,171 @@ h2 {
     font-weight: 500;
 }
 
+/* Admin Controls */
+.admin-controls {
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    background: linear-gradient(135deg, #fef3c7 0%, #fff7ed 100%);
+    border-radius: 10px;
+    border: 1px solid #f59e0b33;
+}
+
+.admin-controls-title {
+    margin: 0 0 0.6rem 0;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #92400e;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.admin-control-row {
+    padding: 0.5rem 0;
+    border-top: 1px solid #f59e0b22;
+}
+
+.admin-control-row:first-of-type {
+    border-top: none;
+}
+
+.admin-control-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.35rem;
+}
+
+.admin-control-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.admin-control-current {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+
+.admin-control-hint {
+    font-size: 0.65rem;
+    color: #6b7280;
+    font-weight: 400;
+}
+
+.admin-control-actions {
+    display: flex;
+    gap: 0.35rem;
+}
+
+.btn-admin-edit {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.3rem 0.6rem;
+    background: #f59e0b;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.btn-admin-edit:hover {
+    background: #d97706;
+}
+
+.admin-edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.admin-input {
+    width: 100%;
+    padding: 0.4rem 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    background: white;
+    color: #1a1a2e;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.admin-input:focus {
+    border-color: #f59e0b;
+    box-shadow: 0 0 0 2px #f59e0b33;
+}
+
+.admin-stats-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem;
+}
+
+.admin-stats-field label {
+    display: block;
+    font-size: 0.65rem;
+    color: #6b7280;
+    margin-bottom: 0.2rem;
+}
+
+.admin-edit-buttons {
+    display: flex;
+    gap: 0.35rem;
+    margin-top: 0.2rem;
+}
+
+.btn-admin-save {
+    flex: 1;
+    padding: 0.35rem 0.5rem;
+    background: #22c55e;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.btn-admin-save:hover {
+    background: #16a34a;
+}
+
+.btn-admin-save:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+}
+
+.btn-admin-cancel {
+    flex: 1;
+    padding: 0.35rem 0.5rem;
+    background: #6b7280;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.btn-admin-cancel:hover {
+    background: #4b5563;
+}
+
+.btn-admin-cancel:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+}
+
 /* Inline Bet Panel Styles */
 .inline-bet-panel {
     margin-top: 1rem;
@@ -5730,6 +5895,46 @@ h2 {
 
 :host-context(.dark-theme) .breakdown-value {
     color: #d1d5db;
+}
+
+:host-context(.dark-theme) .admin-controls {
+    background: linear-gradient(135deg, #422006 0%, #1c1917 100%);
+    border-color: #78350f55;
+}
+
+:host-context(.dark-theme) .admin-controls-title {
+    color: #fbbf24;
+}
+
+:host-context(.dark-theme) .admin-control-row {
+    border-top-color: #78350f33;
+}
+
+:host-context(.dark-theme) .admin-control-label {
+    color: #d1d5db;
+}
+
+:host-context(.dark-theme) .admin-control-current {
+    color: #f9fafb;
+}
+
+:host-context(.dark-theme) .admin-control-hint {
+    color: #9ca3af;
+}
+
+:host-context(.dark-theme) .admin-input {
+    background: #374151;
+    border-color: #4b5563;
+    color: #f9fafb;
+}
+
+:host-context(.dark-theme) .admin-input:focus {
+    border-color: #f59e0b;
+    box-shadow: 0 0 0 2px #f59e0b33;
+}
+
+:host-context(.dark-theme) .admin-stats-field label {
+    color: #9ca3af;
 }
 
 :host-context(.dark-theme) .inline-bet-panel {

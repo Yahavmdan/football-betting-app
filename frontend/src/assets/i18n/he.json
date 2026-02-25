@@ -316,6 +316,7 @@
     "delete": "מחק",
     "save": "שמור",
     "saving": "שומר...",
+    "cancel": "ביטול",
     "copy": "העתק",
     "refresh": "רענן",
     "today": "היום",
@@ -454,6 +455,13 @@
     "successRate": "אחוז הצלחה",
     "correct": "נכונים",
     "groups": "קבוצות"
+  },
+  "admin": {
+    "adjustments": "התאמות מנהל",
+    "points": "נקודות",
+    "statsAdjustment": "התאמת סטטיסטיקות",
+    "betsAdjustment": "הימורים +/-",
+    "winsAdjustment": "ניצחונות +/-"
   },
   "standings": {
     "leagueTable": "טבלת הליגה",

@@ -760,6 +760,121 @@ exports.cancelJoinRequest = async (req, res) => {
   }
 };
 
+// Adjust member points (admin only)
+exports.adjustMemberPoints = async (req, res) => {
+  try {
+    const { id: groupId, userId } = req.params;
+    const { points } = req.body;
+
+    if (!req.user.isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: 'Only admins can adjust member points'
+      });
+    }
+
+    if (typeof points !== 'number') {
+      return res.status(400).json({
+        success: false,
+        message: 'Points value is required and must be a number'
+      });
+    }
+
+    const group = await Group.findById(groupId);
+
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        message: 'Group not found'
+      });
+    }
+
+    const memberIndex = group.members.findIndex(
+      m => m.user.toString() === userId
+    );
+
+    if (memberIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found in group members'
+      });
+    }
+
+    group.members[memberIndex].points = points;
+    await group.save({ validateModifiedOnly: true });
+
+    res.status(200).json({
+      success: true,
+      message: 'Member points updated successfully',
+      data: { points: group.members[memberIndex].points }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Adjust member statistics (admin only)
+exports.adjustMemberStats = async (req, res) => {
+  try {
+    const { id: groupId, userId } = req.params;
+    const { totalBets, correctPredictions } = req.body;
+
+    if (!req.user.isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: 'Only admins can adjust member statistics'
+      });
+    }
+
+    const group = await Group.findById(groupId);
+
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        message: 'Group not found'
+      });
+    }
+
+    const memberIndex = group.members.findIndex(
+      m => m.user.toString() === userId
+    );
+
+    if (memberIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found in group members'
+      });
+    }
+
+    if (!group.members[memberIndex].statsAdjustment) {
+      group.members[memberIndex].statsAdjustment = { totalBets: 0, correctPredictions: 0 };
+    }
+
+    if (typeof totalBets === 'number') {
+      group.members[memberIndex].statsAdjustment.totalBets = totalBets;
+    }
+    if (typeof correctPredictions === 'number') {
+      group.members[memberIndex].statsAdjustment.correctPredictions = correctPredictions;
+    }
+
+    await group.save({ validateModifiedOnly: true });
+
+    res.status(200).json({
+      success: true,
+      message: 'Member statistics adjustment updated successfully',
+      data: { statsAdjustment: group.members[memberIndex].statsAdjustment }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
 // Kick member from group (admin/creator only)
 exports.kickMember = async (req, res) => {
   try {

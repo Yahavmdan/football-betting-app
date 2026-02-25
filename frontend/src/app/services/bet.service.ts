@@ -69,6 +69,10 @@ export interface UserStatistics {
   groupStats: BetStats;
   globalStats: BetStats;
   groupsCount: number;
+  statsAdjustment?: {
+    totalBets: number;
+    correctPredictions: number;
+  } | null;
 }
 
 export interface BetStats {

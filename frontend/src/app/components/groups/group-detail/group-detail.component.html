@@ -765,6 +765,96 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Admin Controls -->
+                <div *ngIf="authService.isAdmin() && viewingProfilePicture && !loadingStatistics" class="admin-controls">
+                    <h4 class="admin-controls-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                        </svg>
+                        {{ 'admin.adjustments' | translate }}
+                    </h4>
+
+                    <!-- Points Adjustment -->
+                    <div class="admin-control-row">
+                        <div class="admin-control-header">
+                            <span class="admin-control-label">{{ 'admin.points' | translate }}</span>
+                            <span class="admin-control-current" *ngIf="!adminEditingPoints">{{ getMemberPoints(viewingProfilePicture._id) }}</span>
+                        </div>
+                        <div *ngIf="!adminEditingPoints" class="admin-control-actions">
+                            <button class="btn-admin-edit" (click)="startEditingPoints()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                </svg>
+                                {{ 'common.edit' | translate }}
+                            </button>
+                        </div>
+                        <div *ngIf="adminEditingPoints" class="admin-edit-form">
+                            <input type="number" [(ngModel)]="adminPointsValue" class="admin-input"
+                                step="any" [disabled]="loadingAdminAdjustment" />
+                            <div class="admin-edit-buttons">
+                                <button class="btn-admin-save" (click)="savePointsAdjustment()"
+                                    [disabled]="loadingAdminAdjustment">
+                                    {{ loadingAdminAdjustment ? '...' : ('common.save' | translate) }}
+                                </button>
+                                <button class="btn-admin-cancel" (click)="cancelEditingPoints()"
+                                    [disabled]="loadingAdminAdjustment">
+                                    {{ 'common.cancel' | translate }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats Adjustment -->
+                    <div class="admin-control-row">
+                        <div class="admin-control-header">
+                            <span class="admin-control-label">{{ 'admin.statsAdjustment' | translate }}</span>
+                            <span class="admin-control-hint" *ngIf="!adminEditingStats && userStatistics?.statsAdjustment">
+                                ({{ userStatistics!.statsAdjustment!.totalBets >= 0 ? '+' : '' }}{{ userStatistics!.statsAdjustment!.totalBets }} {{ 'stats.totalBets' | translate }},
+                                {{ userStatistics!.statsAdjustment!.correctPredictions >= 0 ? '+' : '' }}{{ userStatistics!.statsAdjustment!.correctPredictions }} {{ 'stats.correct' | translate }})
+                            </span>
+                        </div>
+                        <div *ngIf="!adminEditingStats" class="admin-control-actions">
+                            <button class="btn-admin-edit" (click)="startEditingStats()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                </svg>
+                                {{ 'common.edit' | translate }}
+                            </button>
+                        </div>
+                        <div *ngIf="adminEditingStats" class="admin-edit-form">
+                            <div class="admin-stats-fields">
+                                <div class="admin-stats-field">
+                                    <label>{{ 'admin.betsAdjustment' | translate }}</label>
+                                    <input type="number" [(ngModel)]="adminStatsTotalBets" class="admin-input"
+                                        [disabled]="loadingAdminAdjustment" />
+                                </div>
+                                <div class="admin-stats-field">
+                                    <label>{{ 'admin.winsAdjustment' | translate }}</label>
+                                    <input type="number" [(ngModel)]="adminStatsCorrectPredictions" class="admin-input"
+                                        [disabled]="loadingAdminAdjustment" />
+                                </div>
+                            </div>
+                            <div class="admin-edit-buttons">
+                                <button class="btn-admin-save" (click)="saveStatsAdjustment()"
+                                    [disabled]="loadingAdminAdjustment">
+                                    {{ loadingAdminAdjustment ? '...' : ('common.save' | translate) }}
+                                </button>
+                                <button class="btn-admin-cancel" (click)="cancelEditingStats()"
+                                    [disabled]="loadingAdminAdjustment">
+                                    {{ 'common.cancel' | translate }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

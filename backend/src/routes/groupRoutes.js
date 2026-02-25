@@ -17,7 +17,9 @@ const {
   rejectMember,
   cancelJoinRequest,
   kickMember,
-  updateTrashTalk
+  updateTrashTalk,
+  adjustMemberPoints,
+  adjustMemberStats
 } = require('../controllers/groupController');
 const { protect } = require('../middleware/auth');
 
@@ -39,6 +41,10 @@ router.post('/:id/approve/:userId', protect, approveMember);
 router.post('/:id/reject/:userId', protect, rejectMember);
 router.post('/:id/cancel-join', protect, cancelJoinRequest);
 router.post('/:id/kick/:userId', protect, kickMember);
+
+// Admin: adjust member points and stats
+router.put('/:id/members/:userId/points', protect, adjustMemberPoints);
+router.put('/:id/members/:userId/stats', protect, adjustMemberStats);
 
 // Trash talk
 router.post('/:id/trash-talk', protect, updateTrashTalk);
