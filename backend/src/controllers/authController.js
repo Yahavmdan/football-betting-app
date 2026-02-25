@@ -9,7 +9,7 @@ const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 exports.register = async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { username, email, password, language } = req.body;
 
     const userExists = await User.findOne({ $or: [{ email }, { username }] });
 
@@ -31,7 +31,7 @@ exports.register = async (req, res) => {
     });
 
     try {
-      await emailService.sendVerificationOTP(email, otp);
+      await emailService.sendVerificationOTP(email, otp, language || 'en');
     } catch (err) {
       console.error('Failed to send verification email:', err);
     }
@@ -60,7 +60,7 @@ exports.register = async (req, res) => {
 
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, language } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({
@@ -103,7 +103,7 @@ exports.login = async (req, res) => {
       await user.save();
 
       try {
-        await emailService.sendVerificationOTP(user.email, otp);
+        await emailService.sendVerificationOTP(user.email, otp, language || user.settings?.language || 'en');
       } catch (err) {
         console.error('Failed to send verification email on login:', err);
       }
@@ -395,7 +395,7 @@ exports.verifyEmail = async (req, res) => {
 
 exports.resendVerification = async (req, res) => {
   try {
-    const { email } = req.body;
+    const { email, language } = req.body;
 
     if (!email) {
       return res.status(400).json({
@@ -426,7 +426,7 @@ exports.resendVerification = async (req, res) => {
     await user.save();
 
     try {
-      await emailService.sendVerificationOTP(email, otp);
+      await emailService.sendVerificationOTP(email, otp, language || user.settings?.language || 'en');
     } catch (err) {
       console.error('Failed to send verification email:', err);
       return res.status(500).json({

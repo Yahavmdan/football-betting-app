@@ -13,6 +13,7 @@
   gap: 8px;
   justify-content: center;
   margin-bottom: 1.5rem;
+  direction: ltr;
 }
 
 .otp-box {

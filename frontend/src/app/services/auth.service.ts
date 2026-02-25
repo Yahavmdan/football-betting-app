@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { AuthResponse, LoginCredentials, RegisterCredentials, User } from '../models/user.model';
 import { environment } from '../../environments/environment';
+import { TranslationService } from './translation.service';
 
 @Injectable({
   providedIn: 'root'
@@ -12,7 +13,7 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private translationService: TranslationService) {
     this.loadUserFromStorage();
   }
 
@@ -25,11 +26,17 @@ export class AuthService {
   }
 
   register(credentials: RegisterCredentials): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/register`, credentials);
+    return this.http.post<AuthResponse>(`${this.apiUrl}/register`, {
+      ...credentials,
+      language: this.translationService.getCurrentLanguage()
+    });
   }
 
   login(credentials: LoginCredentials): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials).pipe(
+    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, {
+      ...credentials,
+      language: this.translationService.getCurrentLanguage()
+    }).pipe(
       tap(response => {
         if (response.success) {
           this.setAuthData(response.data);
@@ -71,7 +78,10 @@ export class AuthService {
   }
 
   resendVerification(email: string): Observable<{ success: boolean; message: string }> {
-    return this.http.post<{ success: boolean; message: string }>(`${this.apiUrl}/resend-verification`, { email });
+    return this.http.post<{ success: boolean; message: string }>(`${this.apiUrl}/resend-verification`, {
+      email,
+      language: this.translationService.getCurrentLanguage()
+    });
   }
 
   logout(): void {
