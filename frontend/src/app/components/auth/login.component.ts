@@ -180,7 +180,10 @@ export class LoginComponent implements OnInit, AfterViewInit {
           });
           return;
         }
-        this.toastService.show(error.error?.message || this.translationService.translate('auth.loginFailed'), 'error');
+        const msg = error.error?.messageKey
+          ? this.translationService.translate(error.error.messageKey)
+          : (error.error?.message || this.translationService.translate('auth.loginFailed'));
+        this.toastService.show(msg, 'error');
         this.loading = false;
       }
     });

@@ -74,7 +74,9 @@
     "resendFailed": "שליחת הקוד מחדש נכשלה. נסה שוב.",
     "emailVerified": "האימייל אומת!",
     "redirectingHome": "מעביר אותך לאפליקציה...",
-    "verificationFailed": "קוד לא תקין או שפג תוקפו. נסה שוב."
+    "verificationFailed": "קוד לא תקין או שפג תוקפו. נסה שוב.",
+    "emailRequired": "אימייל הוא שדה חובה",
+    "emailInvalid": "נא להזין כתובת אימייל תקינה"
   },
   "groups": {
     "myGroups": "הקבוצות שלי",

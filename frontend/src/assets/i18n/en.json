@@ -74,7 +74,9 @@
     "resendFailed": "Failed to resend code. Please try again.",
     "emailVerified": "Email Verified!",
     "redirectingHome": "Redirecting you to the app...",
-    "verificationFailed": "Invalid or expired code. Please try again."
+    "verificationFailed": "Invalid or expired code. Please try again.",
+    "emailRequired": "Email is required",
+    "emailInvalid": "Please enter a valid email address"
   },
   "groups": {
     "myGroups": "My Groups",
