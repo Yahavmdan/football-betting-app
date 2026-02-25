@@ -41,6 +41,9 @@
         {{ loading ? ('auth.loading' | translate) : ('auth.login' | translate) }}
       </button>
     </form>
+    <p class="forgot-password-link">
+      <a routerLink="/forgot-password">{{ 'auth.forgotPasswordLink' | translate }}</a>
+    </p>
 
     <div class="divider">
       <span>{{ 'auth.or' | translate }}</span>

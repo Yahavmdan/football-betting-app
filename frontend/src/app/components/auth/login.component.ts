@@ -174,6 +174,12 @@ export class LoginComponent implements OnInit, AfterViewInit {
         }
       },
       error: (error) => {
+        if (error.error?.message === 'EMAIL_NOT_VERIFIED') {
+          void this.router.navigate(['/verify-email'], {
+            state: { email: error.error.email }
+          });
+          return;
+        }
         this.toastService.show(error.error?.message || this.translationService.translate('auth.loginFailed'), 'error');
         this.loading = false;
       }

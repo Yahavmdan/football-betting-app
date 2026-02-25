@@ -1,0 +1,100 @@
+.otp-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.otp-icon {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+}
+
+.otp-inputs {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.otp-box {
+  width: 48px;
+  height: 56px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: 700;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+  color: #1a1a2e;
+  transition: all 0.2s ease;
+  outline: none;
+  caret-color: #4ade80;
+}
+
+.otp-box:focus {
+  border-color: #4ade80;
+  background: white;
+  box-shadow: 0 0 0 4px rgba(74, 222, 128, 0.15);
+}
+
+.otp-box.filled {
+  border-color: #4ade80;
+  background: #f0fdf4;
+}
+
+.otp-box:disabled {
+  opacity: 0.6;
+}
+
+.resend-section {
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
+.resend-text {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  margin: 0 0 0.5rem;
+}
+
+.resend-cooldown {
+  color: #64748b;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.resend-btn {
+  background: none;
+  border: none;
+  color: #22c55e;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  transition: color 0.2s ease;
+}
+
+.resend-btn:hover:not(:disabled) {
+  color: #16a34a;
+  text-decoration: underline;
+}
+
+.resend-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+:host-context(.dark-theme) .otp-box {
+  background: #1e293b;
+  border-color: #334155;
+  color: #f1f5f9;
+}
+
+:host-context(.dark-theme) .otp-box:focus {
+  border-color: #4ade80;
+  background: #1a3a2a;
+}
+
+:host-context(.dark-theme) .otp-box.filled {
+  background: #1a3a2a;
+  border-color: #4ade80;
+}
