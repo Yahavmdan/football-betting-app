@@ -53,6 +53,16 @@ const groupSchema = new mongoose.Schema({
         type: Date,
         default: null
       }
+    },
+    statsAdjustment: {
+      totalBets: {
+        type: Number,
+        default: 0
+      },
+      correctPredictions: {
+        type: Number,
+        default: 0
+      }
     }
   }],
   pendingMembers: [{

@@ -131,6 +131,14 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   userStatistics: UserStatistics | null = null;
   loadingStatistics = false;
 
+  // Admin adjustments
+  adminEditingPoints = false;
+  adminPointsValue: number | null = null;
+  adminEditingStats = false;
+  adminStatsTotalBets: number = 0;
+  adminStatsCorrectPredictions: number = 0;
+  loadingAdminAdjustment = false;
+
   // Trash talk
   showTrashTalkInput = false;
   trashTalkMessage = '';
@@ -1776,6 +1784,85 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   closeProfilePicture(): void {
     this.viewingProfilePicture = null;
     this.userStatistics = null;
+    this.adminEditingPoints = false;
+    this.adminEditingStats = false;
+  }
+
+  // Admin adjustment methods
+  startEditingPoints(): void {
+    if (!this.viewingProfilePicture) return;
+    const member = this.leaderboard.find(m => m.user._id === this.viewingProfilePicture!._id);
+    this.adminPointsValue = member?.points ?? 0;
+    this.adminEditingPoints = true;
+  }
+
+  cancelEditingPoints(): void {
+    this.adminEditingPoints = false;
+    this.adminPointsValue = null;
+  }
+
+  savePointsAdjustment(): void {
+    if (!this.viewingProfilePicture || this.adminPointsValue === null) return;
+    this.loadingAdminAdjustment = true;
+
+    this.groupService.adjustMemberPoints(this.groupId, this.viewingProfilePicture._id, this.adminPointsValue).subscribe({
+      next: () => {
+        this.loadingAdminAdjustment = false;
+        this.adminEditingPoints = false;
+        this.toastService.show('Points updated successfully', 'success');
+        this.loadLeaderboard();
+      },
+      error: (error) => {
+        this.loadingAdminAdjustment = false;
+        this.toastService.show(error.error?.message || 'Failed to update points', 'error');
+      }
+    });
+  }
+
+  startEditingStats(): void {
+    if (!this.userStatistics) return;
+    this.adminStatsTotalBets = this.userStatistics.statsAdjustment?.totalBets ?? 0;
+    this.adminStatsCorrectPredictions = this.userStatistics.statsAdjustment?.correctPredictions ?? 0;
+    this.adminEditingStats = true;
+  }
+
+  cancelEditingStats(): void {
+    this.adminEditingStats = false;
+  }
+
+  saveStatsAdjustment(): void {
+    if (!this.viewingProfilePicture) return;
+    this.loadingAdminAdjustment = true;
+
+    this.groupService.adjustMemberStats(
+      this.groupId,
+      this.viewingProfilePicture._id,
+      this.adminStatsTotalBets,
+      this.adminStatsCorrectPredictions
+    ).subscribe({
+      next: (response) => {
+        this.loadingAdminAdjustment = false;
+        this.adminEditingStats = false;
+        this.toastService.show('Statistics updated successfully', 'success');
+        // Refresh stats
+        if (this.viewingProfilePicture) {
+          this.betService.getUserStatistics(this.viewingProfilePicture._id, this.groupId).subscribe({
+            next: (res) => {
+              this.userStatistics = res.data;
+            }
+          });
+        }
+      },
+      error: (error) => {
+        this.loadingAdminAdjustment = false;
+        this.toastService.show(error.error?.message || 'Failed to update statistics', 'error');
+      }
+    });
+  }
+
+  getMemberPoints(userId: string): number {
+    const member = this.leaderboard.find(m => m.user._id === userId);
+    return member?.points ?? 0;
   }
 
   // Trash talk methods

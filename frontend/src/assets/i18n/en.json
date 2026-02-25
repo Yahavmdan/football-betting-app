@@ -316,6 +316,7 @@
     "delete": "Delete",
     "save": "Save",
     "saving": "Saving...",
+    "cancel": "Cancel",
     "copy": "Copy",
     "refresh": "Refresh",
     "today": "Today",
@@ -454,6 +455,13 @@
     "successRate": "Success Rate",
     "correct": "Correct",
     "groups": "Groups"
+  },
+  "admin": {
+    "adjustments": "Admin Adjustments",
+    "points": "Points",
+    "statsAdjustment": "Stats Adjustment",
+    "betsAdjustment": "Bets +/-",
+    "winsAdjustment": "Wins +/-"
   },
   "standings": {
     "leagueTable": "League Table",
