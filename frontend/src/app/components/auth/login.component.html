@@ -22,8 +22,19 @@
           [(ngModel)]="credentials.email"
           required
           email
+          #emailInput="ngModel"
           class="form-control"
+          [class.invalid]="emailInput.invalid && emailInput.touched"
         />
+        @if (emailInput.invalid && emailInput.touched) {
+          <div class="field-error">
+            @if (emailInput.errors?.['required']) {
+              {{ 'auth.emailRequired' | translate }}
+            } @else if (emailInput.errors?.['email']) {
+              {{ 'auth.emailInvalid' | translate }}
+            }
+          </div>
+        }
       </div>
       <div class="form-group">
         <label for="password">{{ 'auth.password' | translate }}</label>

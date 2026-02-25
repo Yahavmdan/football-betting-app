@@ -7,9 +7,19 @@ const emailService = require('../services/emailService');
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 exports.register = async (req, res) => {
   try {
     const { username, email, password, language } = req.body;
+
+    if (!email || !EMAIL_REGEX.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please enter a valid email address',
+        messageKey: 'auth.emailInvalid'
+      });
+    }
 
     const userExists = await User.findOne({ $or: [{ email }, { username }] });
 
@@ -66,6 +76,14 @@ exports.login = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'Please provide email and password'
+      });
+    }
+
+    if (!EMAIL_REGEX.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please enter a valid email address',
+        messageKey: 'auth.emailInvalid'
       });
     }
 
@@ -454,7 +472,16 @@ exports.forgotPassword = async (req, res) => {
     if (!email) {
       return res.status(400).json({
         success: false,
-        message: 'Email is required'
+        message: 'Email is required',
+        messageKey: 'auth.emailRequired'
+      });
+    }
+
+    if (!EMAIL_REGEX.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please enter a valid email address',
+        messageKey: 'auth.emailInvalid'
       });
     }
 

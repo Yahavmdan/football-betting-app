@@ -35,10 +35,10 @@ export class ForgotPasswordComponent {
         this.loading = false;
       },
       error: (error) => {
-        this.toastService.show(
-          error.error?.message || this.translationService.translate('auth.forgotPasswordFailed'),
-          'error'
-        );
+        const msg = error.error?.messageKey
+          ? this.translationService.translate(error.error.messageKey)
+          : (error.error?.message || this.translationService.translate('auth.forgotPasswordFailed'));
+        this.toastService.show(msg, 'error');
         this.loading = false;
       }
     });

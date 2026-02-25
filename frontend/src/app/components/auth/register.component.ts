@@ -171,7 +171,10 @@ export class RegisterComponent implements OnInit, AfterViewInit {
         });
       },
       error: (error) => {
-        this.toastService.show(error.error?.message || this.translationService.translate('auth.registerFailed'), 'error');
+        const msg = error.error?.messageKey
+          ? this.translationService.translate(error.error.messageKey)
+          : (error.error?.message || this.translationService.translate('auth.registerFailed'));
+        this.toastService.show(msg, 'error');
         this.loading = false;
       }
     });
