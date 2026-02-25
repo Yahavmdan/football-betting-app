@@ -27,6 +27,18 @@ export const routes: Routes = [
     loadComponent: () => import('./components/auth/register.component').then(m => m.RegisterComponent)
   },
   {
+    path: 'forgot-password',
+    loadComponent: () => import('./components/auth/forgot-password.component').then(m => m.ForgotPasswordComponent)
+  },
+  {
+    path: 'reset-password/:token',
+    loadComponent: () => import('./components/auth/reset-password.component').then(m => m.ResetPasswordComponent)
+  },
+  {
+    path: 'verify-email',
+    loadComponent: () => import('./components/auth/verify-email.component').then(m => m.VerifyEmailComponent)
+  },
+  {
     // Shareable join link - redirects to join page with code pre-filled
     path: 'join/:code',
     canActivate: [authGuard],
