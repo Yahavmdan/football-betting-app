@@ -1,4 +1,5 @@
 .container {
+    --container-padding: 2rem;
     max-width: 1400px;
     margin: 0 auto;
     padding: 2rem;
@@ -25,27 +26,6 @@
     to {
         opacity: 1;
     }
-}
-
-.back-btn {
-    background: rgba(74, 222, 128, 0.1);
-    border: none;
-    color: #22c55e;
-    cursor: pointer;
-    font-size: 0.95rem;
-    font-weight: 600;
-    margin-bottom: 1.5rem;
-    padding: 0.75rem 1.25rem;
-    border-radius: 10px;
-    transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.back-btn:hover {
-    background: rgba(74, 222, 128, 0.2);
-    transform: translateX(-4px);
 }
 
 .group-header {
@@ -1298,7 +1278,7 @@ h2 {
     border-bottom: 1px solid rgba(34, 197, 94, 0.15);
     margin-bottom: 0.5rem;
     position: sticky;
-    top: 70px;
+    top: 100px;
     z-index: 10;
 }
 
@@ -1336,7 +1316,7 @@ h2 {
     background: rgba(241, 245, 249, 0.82);
     border-bottom: 1px solid #e2e8f0;
     position: sticky;
-    top: 111px;
+    top: 145px;
     z-index: 9;
     margin-bottom: 0.25rem;
 }
@@ -3144,6 +3124,7 @@ h2 {
 
 @media (max-width: 768px) {
     .container {
+        --container-padding: 1rem;
         padding: 1rem;
     }
 
@@ -4610,6 +4591,7 @@ h2 {
 /* Small screen responsive styles (300-400px) */
 @media (max-width: 400px) {
     .container {
+        --container-padding: 0.75rem;
         padding: 0.75rem;
     }
 

@@ -18,11 +18,12 @@ import { environment } from '../../../../environments/environment';
 import { AppSelectComponent, SelectOption } from '../../shared/app-select/app-select.component';
 import { ToastService } from '../../shared/toast/toast.service';
 import { MatchCardComponent } from '../../shared/match-card/match-card.component';
+import { DashboardTabsComponent } from '../../shared/dashboard-tabs/dashboard-tabs.component';
 
 @Component({
   selector: 'app-group-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslatePipe, TeamTranslatePipe, AppSelectComponent, MatchCardComponent],
+  imports: [CommonModule, FormsModule, RouterModule, TranslatePipe, TeamTranslatePipe, AppSelectComponent, MatchCardComponent, DashboardTabsComponent],
   templateUrl: './group-detail.component.html',
   styleUrls: ['./group-detail.component.css']
 })
@@ -432,6 +433,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
 
   toggleStandings(): void {
     this.showStandings = !this.showStandings;
+    document.body.style.overflow = this.showStandings ? 'hidden' : '';
     if (this.showStandings && !this.loadingStandings) {
       this.loadStandings();
     }
@@ -1387,10 +1389,12 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   // Filter methods
   openFilterDialog(): void {
     this.showFilterDialog = true;
+    document.body.style.overflow = 'hidden';
   }
 
   closeFilterDialog(): void {
     this.showFilterDialog = false;
+    document.body.style.overflow = '';
   }
 
   hasActiveFilters(): boolean {
@@ -1760,6 +1764,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
     this.viewingProfilePicture = user;
     this.userStatistics = null;
     this.loadingStatistics = true;
+    document.body.style.overflow = 'hidden';
 
     this.betService.getUserStatistics(user._id, this.groupId).subscribe({
       next: (response) => {
@@ -1776,6 +1781,7 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   closeProfilePicture(): void {
     this.viewingProfilePicture = null;
     this.userStatistics = null;
+    document.body.style.overflow = '';
   }
 
   // Trash talk methods

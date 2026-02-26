@@ -253,15 +253,18 @@ export class FeedbackButtonComponent {
 
   toggleDialog(): void {
     this.isDialogOpen = !this.isDialogOpen;
+    document.body.style.overflow = this.isDialogOpen ? 'hidden' : '';
   }
 
   closeDialog(): void {
     this.isDialogOpen = false;
+    document.body.style.overflow = '';
     this.clearImage();
   }
 
   minimize(): void {
     this.isDialogOpen = false;
+    document.body.style.overflow = '';
   }
 
   triggerFileInput(): void {

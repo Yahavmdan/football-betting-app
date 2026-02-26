@@ -10,11 +10,12 @@ import { ToastService } from '../shared/toast/toast.service';
 import { User, TelegramSettings } from '../../models/user.model';
 import { AppSelectComponent, SelectOption } from '../shared/app-select/app-select.component';
 import { AppToggleComponent } from '../shared/app-toggle/app-toggle.component';
+import { DashboardTabsComponent } from '../shared/dashboard-tabs/dashboard-tabs.component';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TranslatePipe, AppSelectComponent, AppToggleComponent],
+  imports: [CommonModule, FormsModule, RouterModule, TranslatePipe, AppSelectComponent, AppToggleComponent, DashboardTabsComponent],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.css']
 })

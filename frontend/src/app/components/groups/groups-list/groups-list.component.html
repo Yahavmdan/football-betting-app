@@ -1,23 +1,5 @@
 <div class="container">
-  <!-- Navigation Tabs -->
-  <div class="dashboard-tabs">
-    <a routerLink="/home" class="dashboard-tab">
-      <span>{{ 'nav.matches' | translate }}</span>
-    </a>
-    <a routerLink="/groups" class="dashboard-tab active">
-      <span>{{ 'nav.groups' | translate }}</span>
-    </a>
-    <a routerLink="/profile" class="dashboard-tab profile-tab">
-      <img *ngIf="currentUser?.profilePicture"
-           [src]="currentUser!.profilePicture!"
-           alt="Profile"
-           class="tab-profile-picture">
-      <span *ngIf="!currentUser?.profilePicture" class="tab-profile-placeholder">
-        {{ currentUser?.username?.charAt(0)?.toUpperCase() }}
-      </span>
-      <span class="profile-tab-name">{{ currentUser?.username }}</span>
-    </a>
-  </div>
+  <app-dashboard-tabs activeTab="groups"></app-dashboard-tabs>
 
   <div class="header">
     <h1>{{ 'groups.myGroups' | translate }}</h1>

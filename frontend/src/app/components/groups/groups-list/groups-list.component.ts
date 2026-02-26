@@ -8,11 +8,12 @@ import { User } from '../../../models/user.model';
 import { TranslatePipe } from '../../../services/translate.pipe';
 import { ToastService } from '../../shared/toast/toast.service';
 import { TranslationService } from '../../../services/translation.service';
+import { DashboardTabsComponent } from '../../shared/dashboard-tabs/dashboard-tabs.component';
 
 @Component({
   selector: 'app-groups-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslatePipe],
+  imports: [CommonModule, RouterModule, TranslatePipe, DashboardTabsComponent],
   templateUrl: './groups-list.component.html',
   styleUrls: ['./groups-list.component.css']
 })

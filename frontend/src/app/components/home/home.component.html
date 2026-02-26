@@ -1,23 +1,5 @@
 <div class="home-container">
-  <!-- Navigation Tabs -->
-  <div class="dashboard-tabs">
-    <a routerLink="/home" class="dashboard-tab active">
-      <span>{{ 'nav.matches' | translate }}</span>
-    </a>
-    <a routerLink="/groups" class="dashboard-tab">
-      <span>{{ 'nav.groups' | translate }}</span>
-    </a>
-    <a routerLink="/profile" class="dashboard-tab profile-tab">
-      <img *ngIf="currentUser?.profilePicture"
-           [src]="currentUser!.profilePicture!"
-           alt="Profile"
-           class="tab-profile-picture">
-      <span *ngIf="!currentUser?.profilePicture" class="tab-profile-placeholder">
-        {{ currentUser?.username?.charAt(0)?.toUpperCase() }}
-      </span>
-      <span class="profile-tab-name">{{ currentUser?.username }}</span>
-    </a>
-  </div>
+  <app-dashboard-tabs activeTab="matches"></app-dashboard-tabs>
 
   <!-- Header -->
   <div class="home-header">
@@ -77,9 +59,21 @@
             <img *ngIf="leagueGroup.league.logo" [src]="leagueGroup.league.logo" [alt]="'leagues.' + leagueGroup.league.id | translate" class="league-logo">
           </div>
           <h3>{{ 'leagues.' + leagueGroup.league.id | translate }}</h3>
+          <button class="btn-standings-toggle" [class.active]="activeStandingsLeague === leagueGroup"
+            (click)="toggleLeagueStandings(leagueGroup, $event)"
+            [title]="'standings.leagueTable' | translate">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+            </svg>
+          </button>
           <span class="match-count">{{ leagueGroup.matches.length }}</span>
           <span class="collapse-icon" [class.collapsed]="leagueGroup.isCollapsed">▼</span>
         </div>
+
         <div class="matches-list">
           <div class="matches-list-inner">
             <app-match-card *ngFor="let match of leagueGroup.matches" [match]="match" [context]="matchCardContext"
@@ -92,6 +86,86 @@
 
     <div *ngIf="leagueGroups.length === 0 && allMatches.length === 0" class="no-matches">
       <p>{{ 'home.noMatches' | translate }}</p>
+    </div>
+  </div>
+
+  <!-- League Standings Modal Overlay -->
+  <div *ngIf="activeStandingsLeague" class="standings-overlay" (click)="closeStandings()">
+    <div class="standings-modal" (click)="$event.stopPropagation()">
+      <div class="standings-header">
+        <div class="standings-title">
+          <img *ngIf="activeStandingsLeague.league.logo" [src]="activeStandingsLeague.league.logo"
+            class="standings-league-logo" alt="">
+          <h3>{{ 'leagues.' + activeStandingsLeague.league.id | translate }}</h3>
+          <span *ngIf="activeStandingsLeague.standings?.league?.season" class="season-badge">
+            {{ activeStandingsLeague.standings?.league?.season }}/{{ (activeStandingsLeague.standings?.league?.season || 0) + 1 }}
+          </span>
+        </div>
+        <button class="btn-close-standings" (click)="closeStandings()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div *ngIf="activeStandingsLeague.loadingStandings" class="standings-loading">
+        <div class="inline-spinner"></div>
+      </div>
+
+      <div *ngIf="!activeStandingsLeague.loadingStandings && !activeStandingsLeague.standings" class="standings-error">
+        {{ 'standings.loadError' | translate }}
+      </div>
+
+      <div *ngIf="!activeStandingsLeague.loadingStandings && activeStandingsLeague.standings" class="standings-table-wrapper">
+        <table class="standings-table">
+          <thead>
+            <tr>
+              <th class="col-rank">#</th>
+              <th class="col-team">{{ 'standings.team' | translate }}</th>
+              <th class="col-played">{{ 'standings.played' | translate }}</th>
+              <th class="col-won">{{ 'standings.won' | translate }}</th>
+              <th class="col-drawn">{{ 'standings.drawn' | translate }}</th>
+              <th class="col-lost">{{ 'standings.lost' | translate }}</th>
+              <th class="col-gf">{{ 'standings.gf' | translate }}</th>
+              <th class="col-ga">{{ 'standings.ga' | translate }}</th>
+              <th class="col-gd">{{ 'standings.gd' | translate }}</th>
+              <th class="col-points">{{ 'standings.pts' | translate }}</th>
+              <th class="col-form">{{ 'standings.form' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let team of activeStandingsLeague.standings.standings"
+              [class.champions-league]="team.description?.includes('Champions')"
+              [class.europa-league]="team.description?.includes('Europa') || team.description?.includes('Confederation')"
+              [class.relegation]="team.description?.includes('Relegation')">
+              <td class="col-rank">{{ team.rank }}</td>
+              <td class="col-team">
+                <img [src]="team.team.logo" [alt]="team.team.name | teamTranslate" class="team-logo-tiny">
+                <span class="team-name-standings">{{ team.team.name | teamTranslate }}</span>
+              </td>
+              <td class="col-played">{{ team.played }}</td>
+              <td class="col-won">{{ team.won }}</td>
+              <td class="col-drawn">{{ team.drawn }}</td>
+              <td class="col-lost">{{ team.lost }}</td>
+              <td class="col-gf">{{ team.goalsFor }}</td>
+              <td class="col-ga">{{ team.goalsAgainst }}</td>
+              <td class="col-gd" [class.positive]="team.goalsDiff > 0" [class.negative]="team.goalsDiff < 0">
+                {{ team.goalsDiff > 0 ? '+' : '' }}{{ team.goalsDiff }}
+              </td>
+              <td class="col-points"><strong>{{ team.points }}</strong></td>
+              <td class="col-form">
+                <div class="form-badges">
+                  <span *ngFor="let result of team.form.split('')" class="form-badge"
+                    [class.win]="result === 'W'" [class.draw]="result === 'D'"
+                    [class.loss]="result === 'L'">{{ result }}</span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>

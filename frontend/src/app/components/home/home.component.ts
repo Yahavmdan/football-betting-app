@@ -1,15 +1,17 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { MatchService, PersonalizedMatch } from '../../services/match.service';
+import { MatchService, PersonalizedMatch, LeagueStandings } from '../../services/match.service';
 import { PreferencesService } from '../../services/preferences.service';
 import { AuthService } from '../../services/auth.service';
 import { TranslationService } from '../../services/translation.service';
 import { TranslatePipe } from '../../services/translate.pipe';
+import { TeamTranslatePipe } from '../../pipes/team-translate.pipe';
 import { MatchEvent, MatchLineup, MatchTeamStatistics } from '../../models/match.model';
 import { User } from '../../models/user.model';
 import { getTeamByName } from '../../data/teams.data';
 import { MatchCardComponent } from '../shared/match-card/match-card.component';
+import { DashboardTabsComponent } from '../shared/dashboard-tabs/dashboard-tabs.component';
 
 interface LeagueGroup {
     league: {
@@ -19,6 +21,8 @@ interface LeagueGroup {
     };
     matches: PersonalizedMatch[];
     isCollapsed: boolean;
+    standings: LeagueStandings | null;
+    loadingStandings: boolean;
 }
 
 interface ProcessedEvent {
@@ -31,7 +35,7 @@ interface ProcessedEvent {
 @Component({
     selector: 'app-home',
     standalone: true,
-    imports: [CommonModule, RouterModule, TranslatePipe, MatchCardComponent],
+    imports: [CommonModule, RouterModule, TranslatePipe, TeamTranslatePipe, MatchCardComponent, DashboardTabsComponent],
     templateUrl: './home.component.html',
     styleUrls: ['./home.component.css']
 })
@@ -44,6 +48,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     allMatches: PersonalizedMatch[] = [];
     liveMatches: PersonalizedMatch[] = [];
     leagueGroups: LeagueGroup[] = [];
+    activeStandingsLeague: LeagueGroup | null = null;
 
     // Expanded match state
     expandedMatchId: string | null = null;
@@ -118,12 +123,21 @@ export class HomeComponent implements OnInit, OnDestroy {
                     this.leagueGroups.map(g => [g.league.id, g.isCollapsed])
                 );
 
+                const previousStandingsState = new Map(
+                    this.leagueGroups.map(g => [g.league.id, { standings: g.standings, loadingStandings: g.loadingStandings }])
+                );
+
                 this.leagueGroups = Object.entries(response.data.groupedByLeague)
-                    .map(([leagueId, data]) => ({
-                        league: data.league,
-                        matches: data.matches,
-                        isCollapsed: previousCollapsedState.get(data.league.id) ?? false
-                    }))
+                    .map(([leagueId, data]) => {
+                        const prev = previousStandingsState.get(data.league.id);
+                        return {
+                            league: data.league,
+                            matches: data.matches,
+                            isCollapsed: previousCollapsedState.get(data.league.id) ?? false,
+                            standings: prev?.standings ?? null,
+                            loadingStandings: prev?.loadingStandings ?? false
+                        };
+                    })
                     .sort((a, b) => a.league.name.localeCompare(b.league.name));
 
                 // Re-fetch details for the currently expanded match during silent refresh
@@ -163,6 +177,38 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     toggleLeagueCollapse(leagueGroup: LeagueGroup): void {
         leagueGroup.isCollapsed = !leagueGroup.isCollapsed;
+    }
+
+    toggleLeagueStandings(leagueGroup: LeagueGroup, event: Event): void {
+        event.stopPropagation();
+        if (this.activeStandingsLeague === leagueGroup) {
+            this.closeStandings();
+            return;
+        }
+        this.activeStandingsLeague = leagueGroup;
+        document.body.style.overflow = 'hidden';
+        if (!leagueGroup.standings) {
+            this.loadLeagueStandings(leagueGroup);
+        }
+    }
+
+    closeStandings(): void {
+        this.activeStandingsLeague = null;
+        document.body.style.overflow = '';
+    }
+
+    private loadLeagueStandings(leagueGroup: LeagueGroup): void {
+        leagueGroup.loadingStandings = true;
+        this.matchService.getLeagueStandings(leagueGroup.league.id).subscribe({
+            next: (response) => {
+                leagueGroup.standings = response.data;
+                leagueGroup.loadingStandings = false;
+            },
+            error: (error) => {
+                console.error('Failed to load standings:', error);
+                leagueGroup.loadingStandings = false;
+            }
+        });
     }
 
     toggleMatchExpand(match: PersonalizedMatch): void {

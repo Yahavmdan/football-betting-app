@@ -439,7 +439,8 @@
     "ga": "GA",
     "gd": "GD",
     "pts": "Pts",
-    "form": "Last 5"
+    "form": "Last 5",
+    "loadError": "Failed to load standings"
   },
   "game": {
     "title": "Waiting for the extra time to end? play a little game in the meanwhile!",

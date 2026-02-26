@@ -1,0 +1,20 @@
+<div class="dashboard-tabs-wrapper" [class.stuck]="isStuck">
+  <div class="dashboard-tabs">
+    <a routerLink="/home" class="dashboard-tab" [class.active]="activeTab === 'matches'">
+      <span>{{ 'nav.matches' | translate }}</span>
+    </a>
+    <a routerLink="/groups" class="dashboard-tab" [class.active]="activeTab === 'groups'">
+      <span>{{ 'nav.groups' | translate }}</span>
+    </a>
+    <a routerLink="/profile" class="dashboard-tab profile-tab" [class.active]="activeTab === 'profile'">
+      <img *ngIf="currentUser?.profilePicture"
+           [src]="currentUser!.profilePicture!"
+           alt="Profile"
+           class="tab-profile-picture">
+      <span *ngIf="!currentUser?.profilePicture" class="tab-profile-placeholder">
+        {{ currentUser?.username?.charAt(0)?.toUpperCase() }}
+      </span>
+      <span class="profile-tab-name">{{ currentUser?.username }}</span>
+    </a>
+  </div>
+</div>
