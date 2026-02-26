@@ -8,11 +8,9 @@
 
 .dashboard-tabs-wrapper {
     background: var(--bg-primary, #ffffff);
-    padding: 0.6rem 1rem 0.5rem;
-    width: 100vw;
-    position: relative;
-    left: 50%;
-    transform: translateX(-50%);
+    padding: 0.6rem var(--container-padding, 1rem) 0.5rem;
+    margin-left: calc(-1 * var(--container-padding, 1rem));
+    margin-right: calc(-1 * var(--container-padding, 1rem));
     transition: padding 0.2s ease;
 }
 
@@ -93,7 +91,7 @@
 
 /* Stuck / compact state */
 .dashboard-tabs-wrapper.stuck {
-    padding: 0.2rem 1rem;
+    padding: 0.2rem var(--container-padding, 1rem);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
