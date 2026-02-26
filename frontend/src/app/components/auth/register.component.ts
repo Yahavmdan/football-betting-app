@@ -166,16 +166,15 @@ export class RegisterComponent implements OnInit, AfterViewInit {
 
     this.authService.register(this.credentials).subscribe({
       next: () => {
-        const redirectUrl = sessionStorage.getItem(REDIRECT_URL_KEY);
-        if (redirectUrl) {
-          sessionStorage.removeItem(REDIRECT_URL_KEY);
-          void this.router.navigateByUrl(redirectUrl);
-        } else {
-          void this.router.navigate(['/home']);
-        }
+        void this.router.navigate(['/verify-email'], {
+          state: { email: this.credentials.email }
+        });
       },
       error: (error) => {
-        this.toastService.show(error.error?.message || this.translationService.translate('auth.registerFailed'), 'error');
+        const msg = error.error?.messageKey
+          ? this.translationService.translate(error.error.messageKey)
+          : (error.error?.message || this.translationService.translate('auth.registerFailed'));
+        this.toastService.show(msg, 'error');
         this.loading = false;
       }
     });

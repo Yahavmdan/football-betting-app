@@ -174,7 +174,16 @@ export class LoginComponent implements OnInit, AfterViewInit {
         }
       },
       error: (error) => {
-        this.toastService.show(error.error?.message || this.translationService.translate('auth.loginFailed'), 'error');
+        if (error.error?.message === 'EMAIL_NOT_VERIFIED') {
+          void this.router.navigate(['/verify-email'], {
+            state: { email: error.error.email }
+          });
+          return;
+        }
+        const msg = error.error?.messageKey
+          ? this.translationService.translate(error.error.messageKey)
+          : (error.error?.message || this.translationService.translate('auth.loginFailed'));
+        this.toastService.show(msg, 'error');
         this.loading = false;
       }
     });

@@ -99,6 +99,11 @@ export class HomeComponent implements OnInit, OnDestroy {
             if (user) {
                 this.loadPersonalizedMatches();
                 this.startAutoRefresh();
+            } else {
+                this.stopAutoRefresh();
+                this.allMatches = [];
+                this.liveMatches = [];
+                this.leagueGroups = [];
             }
         });
     }
@@ -546,12 +551,14 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
 
     private startAutoRefresh(): void {
-        if (this.refreshInterval) return;
+        if (this.refreshInterval || !this.currentUser) return;
 
         this.refreshInterval = setInterval(() => {
-            // Only refresh if there are live matches
+            if (!this.currentUser) {
+                this.stopAutoRefresh();
+                return;
+            }
             if (this.liveMatches.length > 0) {
-                // Silent refresh - no loading spinner
                 this.loadPersonalizedMatches(true);
             }
         }, this.REFRESH_INTERVAL_MS);

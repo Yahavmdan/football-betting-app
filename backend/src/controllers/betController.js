@@ -617,6 +617,22 @@ exports.getUserStatistics = async (req, res) => {
     const groupMatches = await Match.find({ _id: { $in: groupMatchIds } });
     const groupStats = calculateStats(groupBets, groupMatches);
 
+    // Apply statsAdjustment from group member if present
+    const group = await Group.findById(groupId);
+    let statsAdjustment = null;
+    if (group) {
+      const member = group.members.find(m => m.user.toString() === userId);
+      if (member && member.statsAdjustment) {
+        statsAdjustment = member.statsAdjustment;
+        groupStats.totalBets += member.statsAdjustment.totalBets || 0;
+        groupStats.calculatedBets += member.statsAdjustment.totalBets || 0;
+        groupStats.correctPredictions += member.statsAdjustment.correctPredictions || 0;
+        groupStats.successRate = groupStats.calculatedBets > 0
+          ? Math.round((groupStats.correctPredictions / groupStats.calculatedBets) * 100)
+          : 0;
+      }
+    }
+
     // Get global stats (all groups)
     const globalBets = await Bet.find({ user: userId });
     const globalMatchIds = globalBets.map(b => b.match);
@@ -633,7 +649,8 @@ exports.getUserStatistics = async (req, res) => {
       data: {
         groupStats,
         globalStats,
-        groupsCount
+        groupsCount,
+        statsAdjustment
       }
     });
   } catch (error) {

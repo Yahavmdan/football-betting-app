@@ -30,6 +30,7 @@ export interface User {
   email: string;
   profilePicture?: string | null;
   isAdmin?: boolean;
+  isEmailVerified?: boolean;
   groups?: string[];
   settings?: UserSettings;
   lastActive?: Date;
@@ -45,6 +46,7 @@ export interface AuthResponse {
     email: string;
     profilePicture?: string | null;
     isAdmin: boolean;
+    isEmailVerified?: boolean;
     token: string;
   };
 }

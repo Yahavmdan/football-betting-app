@@ -84,4 +84,14 @@ export class GroupService {
   updateTrashTalk(groupId: string, message: string | null, teamLogo?: string | null, bgColor?: string | null, textColor?: string | null): Observable<{ success: boolean; message: string; data: any }> {
     return this.http.post<{ success: boolean; message: string; data: any }>(`${this.apiUrl}/${groupId}/trash-talk`, { message, teamLogo, bgColor, textColor });
   }
+
+  // Admin: adjust member points
+  adjustMemberPoints(groupId: string, userId: string, points: number): Observable<{ success: boolean; message: string; data: { points: number } }> {
+    return this.http.put<{ success: boolean; message: string; data: { points: number } }>(`${this.apiUrl}/${groupId}/members/${userId}/points`, { points });
+  }
+
+  // Admin: adjust member stats
+  adjustMemberStats(groupId: string, userId: string, totalBets: number, correctPredictions: number): Observable<{ success: boolean; message: string; data: { statsAdjustment: { totalBets: number; correctPredictions: number } } }> {
+    return this.http.put<{ success: boolean; message: string; data: { statsAdjustment: { totalBets: number; correctPredictions: number } } }>(`${this.apiUrl}/${groupId}/members/${userId}/stats`, { totalBets, correctPredictions });
+  }
 }

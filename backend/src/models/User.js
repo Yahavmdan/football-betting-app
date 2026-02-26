@@ -35,8 +35,16 @@ const userSchema = new mongoose.Schema({
   facebookId: {
     type: String,
     unique: true,
-    sparse: true  // Allows multiple null values
+    sparse: true
   },
+  isEmailVerified: {
+    type: Boolean,
+    default: false
+  },
+  emailVerificationToken: String,
+  emailVerificationExpires: Date,
+  passwordResetToken: String,
+  passwordResetExpires: Date,
   groups: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Group'

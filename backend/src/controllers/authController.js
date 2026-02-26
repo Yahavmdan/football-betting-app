@@ -2,12 +2,24 @@ const User = require('../models/User');
 const generateToken = require('../utils/generateToken');
 const { OAuth2Client } = require('google-auth-library');
 const axios = require('axios');
+const crypto = require('crypto');
+const emailService = require('../services/emailService');
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 exports.register = async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { username, email, password, language } = req.body;
+
+    if (!email || !EMAIL_REGEX.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please enter a valid email address',
+        messageKey: 'auth.emailInvalid'
+      });
+    }
 
     const userExists = await User.findOne({ $or: [{ email }, { username }] });
 
@@ -18,11 +30,21 @@ exports.register = async (req, res) => {
       });
     }
 
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
     const user = await User.create({
       username,
       email,
-      password
+      password,
+      emailVerificationToken: otp,
+      emailVerificationExpires: new Date(Date.now() + 10 * 60 * 1000)
     });
+
+    try {
+      await emailService.sendVerificationOTP(email, otp, language || 'en');
+    } catch (err) {
+      console.error('Failed to send verification email:', err);
+    }
 
     const token = generateToken(user._id);
 
@@ -34,6 +56,7 @@ exports.register = async (req, res) => {
         email: user.email,
         profilePicture: user.profilePicture,
         isAdmin: user.isAdmin,
+        isEmailVerified: user.isEmailVerified,
         token
       }
     });
@@ -47,12 +70,20 @@ exports.register = async (req, res) => {
 
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, language } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({
         success: false,
         message: 'Please provide email and password'
+      });
+    }
+
+    if (!EMAIL_REGEX.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please enter a valid email address',
+        messageKey: 'auth.emailInvalid'
       });
     }
 
@@ -83,6 +114,25 @@ exports.login = async (req, res) => {
       });
     }
 
+    if (!user.isEmailVerified) {
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      user.emailVerificationToken = otp;
+      user.emailVerificationExpires = new Date(Date.now() + 10 * 60 * 1000);
+      await user.save();
+
+      try {
+        await emailService.sendVerificationOTP(user.email, otp, language || user.settings?.language || 'en');
+      } catch (err) {
+        console.error('Failed to send verification email on login:', err);
+      }
+
+      return res.status(403).json({
+        success: false,
+        message: 'EMAIL_NOT_VERIFIED',
+        email: user.email
+      });
+    }
+
     // Mark user as online immediately on login
     user.lastActive = new Date();
     await user.save();
@@ -97,6 +147,7 @@ exports.login = async (req, res) => {
         email: user.email,
         profilePicture: user.profilePicture,
         isAdmin: user.isAdmin,
+        isEmailVerified: user.isEmailVerified,
         token
       }
     });
@@ -191,7 +242,8 @@ exports.googleAuth = async (req, res) => {
           username,
           email,
           googleId,
-          profilePicture: picture || null
+          profilePicture: picture || null,
+          isEmailVerified: true
         });
       }
     }
@@ -210,6 +262,7 @@ exports.googleAuth = async (req, res) => {
         email: user.email,
         profilePicture: user.profilePicture,
         isAdmin: user.isAdmin,
+        isEmailVerified: user.isEmailVerified,
         token
       }
     });
@@ -273,7 +326,8 @@ exports.facebookAuth = async (req, res) => {
           username,
           email: email || `fb_${facebookId}@placeholder.com`,
           facebookId,
-          profilePicture
+          profilePicture,
+          isEmailVerified: true
         });
       }
     }
@@ -292,6 +346,7 @@ exports.facebookAuth = async (req, res) => {
         email: user.email,
         profilePicture: user.profilePicture,
         isAdmin: user.isAdmin,
+        isEmailVerified: user.isEmailVerified,
         token
       }
     });
@@ -300,6 +355,216 @@ exports.facebookAuth = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Facebook authentication failed'
+    });
+  }
+};
+
+exports.verifyEmail = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email and verification code are required'
+      });
+    }
+
+    const user = await User.findOne({
+      email,
+      emailVerificationToken: otp,
+      emailVerificationExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or expired verification code'
+      });
+    }
+
+    user.isEmailVerified = true;
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpires = undefined;
+    await user.save();
+
+    const token = generateToken(user._id);
+
+    res.status(200).json({
+      success: true,
+      message: 'Email verified successfully',
+      data: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        profilePicture: user.profilePicture,
+        isAdmin: user.isAdmin,
+        isEmailVerified: true,
+        token
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+exports.resendVerification = async (req, res) => {
+  try {
+    const { email, language } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email is required'
+      });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(200).json({
+        success: true,
+        message: 'If an account with that email exists, a verification email has been sent'
+      });
+    }
+
+    if (user.isEmailVerified) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email is already verified'
+      });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    user.emailVerificationToken = otp;
+    user.emailVerificationExpires = new Date(Date.now() + 10 * 60 * 1000);
+    await user.save();
+
+    try {
+      await emailService.sendVerificationOTP(email, otp, language || user.settings?.language || 'en');
+    } catch (err) {
+      console.error('Failed to send verification email:', err);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to send verification email. Please try again later.'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Verification email sent'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email is required',
+        messageKey: 'auth.emailRequired'
+      });
+    }
+
+    if (!EMAIL_REGEX.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please enter a valid email address',
+        messageKey: 'auth.emailInvalid'
+      });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(200).json({
+        success: true,
+        message: 'If an account with that email exists, a password reset link has been sent'
+      });
+    }
+
+    // Don't allow reset for OAuth-only users
+    if (!user.password && (user.googleId || user.facebookId)) {
+      const provider = user.googleId ? 'Google' : 'Facebook';
+      return res.status(400).json({
+        success: false,
+        message: `This account uses ${provider} login. Password reset is not available.`
+      });
+    }
+
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    user.passwordResetToken = resetToken;
+    user.passwordResetExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+    await user.save();
+
+    await emailService.sendPasswordResetEmail(email, resetToken);
+
+    res.status(200).json({
+      success: true,
+      message: 'If an account with that email exists, a password reset link has been sent'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+exports.resetPassword = async (req, res) => {
+  try {
+    const { token, password } = req.body;
+
+    if (!token || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Token and new password are required'
+      });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must be at least 6 characters'
+      });
+    }
+
+    const user = await User.findOne({
+      passwordResetToken: token,
+      passwordResetExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or expired reset link'
+      });
+    }
+
+    user.password = password;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Password reset successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
     });
   }
 };

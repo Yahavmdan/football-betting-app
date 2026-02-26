@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { AuthResponse, LoginCredentials, RegisterCredentials, User } from '../models/user.model';
 import { environment } from '../../environments/environment';
+import { TranslationService } from './translation.service';
 
 @Injectable({
   providedIn: 'root'
@@ -12,7 +13,7 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private translationService: TranslationService) {
     this.loadUserFromStorage();
   }
 
@@ -25,17 +26,17 @@ export class AuthService {
   }
 
   register(credentials: RegisterCredentials): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/register`, credentials).pipe(
-      tap(response => {
-        if (response.success) {
-          this.setAuthData(response.data);
-        }
-      })
-    );
+    return this.http.post<AuthResponse>(`${this.apiUrl}/register`, {
+      ...credentials,
+      language: this.translationService.getCurrentLanguage()
+    });
   }
 
   login(credentials: LoginCredentials): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials).pipe(
+    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, {
+      ...credentials,
+      language: this.translationService.getCurrentLanguage()
+    }).pipe(
       tap(response => {
         if (response.success) {
           this.setAuthData(response.data);
@@ -64,6 +65,25 @@ export class AuthService {
     );
   }
 
+  forgotPassword(email: string): Observable<{ success: boolean; message: string }> {
+    return this.http.post<{ success: boolean; message: string }>(`${this.apiUrl}/forgot-password`, { email });
+  }
+
+  resetPassword(token: string, password: string): Observable<{ success: boolean; message: string }> {
+    return this.http.post<{ success: boolean; message: string }>(`${this.apiUrl}/reset-password`, { token, password });
+  }
+
+  verifyEmail(email: string, otp: string): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/verify-email`, { email, otp });
+  }
+
+  resendVerification(email: string): Observable<{ success: boolean; message: string }> {
+    return this.http.post<{ success: boolean; message: string }>(`${this.apiUrl}/resend-verification`, {
+      email,
+      language: this.translationService.getCurrentLanguage()
+    });
+  }
+
   logout(): void {
     // Call backend to mark user as offline
     this.http.post(`${this.apiUrl}/logout`, {}).subscribe({
@@ -74,14 +94,19 @@ export class AuthService {
     this.currentUserSubject.next(null);
   }
 
-  private setAuthData(data: { id: string; username: string; email: string; profilePicture?: string | null; isAdmin: boolean; token: string }): void {
+  setAuthDataPublic(data: { id: string; username: string; email: string; profilePicture?: string | null; isAdmin: boolean; isEmailVerified?: boolean; token: string }): void {
+    this.setAuthData(data);
+  }
+
+  private setAuthData(data: { id: string; username: string; email: string; profilePicture?: string | null; isAdmin: boolean; isEmailVerified?: boolean; token: string }): void {
     localStorage.setItem('token', data.token);
     const user: User = {
       id: data.id,
       username: data.username,
       email: data.email,
       profilePicture: data.profilePicture || null,
-      isAdmin: data.isAdmin
+      isAdmin: data.isAdmin,
+      isEmailVerified: data.isEmailVerified ?? false
     };
     localStorage.setItem('user', JSON.stringify(user));
     this.currentUserSubject.next(user);
