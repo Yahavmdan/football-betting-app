@@ -44,6 +44,16 @@ exports.placeBet = async (req, res) => {
       });
     }
 
+    // Update matchDate from frontend data if it has changed (handles stale DB dates)
+    if (matchData && matchData.matchDate && match.status === 'SCHEDULED') {
+      const freshDate = new Date(matchData.matchDate);
+      const storedDate = new Date(match.matchDate);
+      if (freshDate.getTime() !== storedDate.getTime() && !isNaN(freshDate.getTime())) {
+        match.matchDate = freshDate;
+        await match.save();
+      }
+    }
+
     // Ensure the match is associated with this group
     if (!match.groups.includes(groupId)) {
       match.groups.push(groupId);
@@ -57,7 +67,19 @@ exports.placeBet = async (req, res) => {
       });
     }
 
-    if (new Date() >= new Date(match.matchDate)) {
+    // Check if the match kickoff time has passed.
+    // If the stored matchDate is at midnight (no time info), use end of day
+    // to avoid blocking bets all day when kickoff time is unknown.
+    const matchDateTime = new Date(match.matchDate);
+    const isMidnight = matchDateTime.getUTCHours() === 0 &&
+                       matchDateTime.getUTCMinutes() === 0 &&
+                       matchDateTime.getUTCSeconds() === 0 &&
+                       matchDateTime.getUTCMilliseconds() === 0;
+    if (isMidnight) {
+      matchDateTime.setUTCHours(23, 59, 59, 999);
+    }
+
+    if (new Date() >= matchDateTime) {
       return res.status(400).json({
         success: false,
         message: 'Cannot place bet on a match that has already started'

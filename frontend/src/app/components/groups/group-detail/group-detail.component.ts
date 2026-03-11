@@ -607,7 +607,14 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
   }
 
   isMatchInPast(matchDate: Date | string): boolean {
-    return new Date(matchDate) <= new Date();
+    const dt = new Date(matchDate);
+    // If matchDate is at midnight (no kickoff time stored), use end of day
+    // so users aren't blocked from betting all day when time is unknown
+    if (dt.getUTCHours() === 0 && dt.getUTCMinutes() === 0 &&
+        dt.getUTCSeconds() === 0 && dt.getUTCMilliseconds() === 0) {
+      dt.setUTCHours(23, 59, 59, 999);
+    }
+    return dt <= new Date();
   }
 
   private isMatchLikelyFinished(match: Match): boolean {
@@ -2339,25 +2346,23 @@ export class GroupDetailComponent implements OnInit, OnDestroy {
       betDataToSubmit.wagerAmount = this.inlineWagerAmount;
     }
 
-    // For API matches (externalApiId), include the full match data so backend can create it if needed
-    if (this.inlineBetData.matchId.startsWith('apifootball_')) {
-      const match = this.filteredMatches.find(m => m._id === this.inlineBetData.matchId) ||
-        this.matches.find(m => m._id === this.inlineBetData.matchId);
-      if (match) {
-        betDataToSubmit.matchData = {
-          externalApiId: match.externalApiId,
-          homeTeam: match.homeTeam,
-          awayTeam: match.awayTeam,
-          matchDate: match.matchDate,
-          status: match.status,
-          competition: match.competition,
-          season: match.season,
-          homeTeamId: (match as any).homeTeamId,
-          awayTeamId: (match as any).awayTeamId,
-          homeTeamLogo: (match as any).homeTeamLogo,
-          awayTeamLogo: (match as any).awayTeamLogo
-        };
-      }
+    // For API matches, include the full match data so backend can create/update it if needed
+    const matchForData = this.filteredMatches.find(m => m._id === this.inlineBetData.matchId) ||
+      this.matches.find(m => m._id === this.inlineBetData.matchId);
+    if (matchForData && matchForData.externalApiId) {
+      betDataToSubmit.matchData = {
+        externalApiId: matchForData.externalApiId,
+        homeTeam: matchForData.homeTeam,
+        awayTeam: matchForData.awayTeam,
+        matchDate: matchForData.matchDate,
+        status: matchForData.status,
+        competition: matchForData.competition,
+        season: matchForData.season,
+        homeTeamId: (matchForData as any).homeTeamId,
+        awayTeamId: (matchForData as any).awayTeamId,
+        homeTeamLogo: (matchForData as any).homeTeamLogo,
+        awayTeamLogo: (matchForData as any).awayTeamLogo
+      };
     }
 
     this.betService.placeBet(betDataToSubmit).subscribe({
