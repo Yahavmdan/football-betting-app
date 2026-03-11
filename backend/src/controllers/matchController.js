@@ -98,6 +98,7 @@ exports.getMatches = async (req, res) => {
             match.elapsed = freshData.elapsed;
             match.extraTime = freshData.extraTime;
             match.statusShort = freshData.statusShort;
+            if (freshData.matchDate) match.matchDate = freshData.matchDate;
             if (freshData.round) match.round = freshData.round;
             if (freshData.homeTeamId) match.homeTeamId = freshData.homeTeamId;
             if (freshData.awayTeamId) match.awayTeamId = freshData.awayTeamId;
@@ -115,6 +116,7 @@ exports.getMatches = async (req, res) => {
                 match.elapsed = finalData.elapsed;
                 match.extraTime = finalData.extraTime;
                 match.statusShort = finalData.statusShort;
+                if (finalData.matchDate) match.matchDate = finalData.matchDate;
                 if (finalData.round) match.round = finalData.round;
                 if (finalData.homeTeamId) match.homeTeamId = finalData.homeTeamId;
                 if (finalData.awayTeamId) match.awayTeamId = finalData.awayTeamId;
@@ -767,6 +769,16 @@ exports.syncLeagueFixturesToGroup = async (req, res) => {
       }
 
       if (match) {
+        // Update matchDate if match hasn't started yet and API has a different time
+        if (match.status === 'SCHEDULED' && fixtureData.matchDate) {
+          const newTime = new Date(fixtureData.matchDate).getTime();
+          const oldTime = new Date(match.matchDate).getTime();
+          if (newTime !== oldTime) {
+            console.log(`[Sync] Updating kickoff time for ${match.homeTeam} vs ${match.awayTeam}: ${match.matchDate} -> ${fixtureData.matchDate}`);
+            match.matchDate = fixtureData.matchDate;
+          }
+        }
+
         // Match exists, check if it's already in this group
         if (!match.groups.includes(groupId)) {
           match.groups.push(groupId);
@@ -791,6 +803,7 @@ exports.syncLeagueFixturesToGroup = async (req, res) => {
           addedCount++;
         } else {
           // Already in group, but update odds if relative mode and match not started
+          let needsSave = match.isModified();
           if (isRelativeGroup && oddsData && match.status === 'SCHEDULED') {
             const rpIndex = match.relativePoints?.findIndex(rp => rp.group?.toString() === groupId);
             if (rpIndex >= 0) {
@@ -801,9 +814,10 @@ exports.syncLeagueFixturesToGroup = async (req, res) => {
                 awayWin: oddsData.awayWin,
                 fromApi: true
               };
-              await match.save();
+              needsSave = true;
             }
           }
+          if (needsSave) await match.save();
           skippedCount++;
         }
       } else {
@@ -1603,6 +1617,7 @@ exports.refreshLiveMatches = async (req, res) => {
         match.elapsed = freshData.elapsed;
         match.extraTime = freshData.extraTime;
         match.statusShort = freshData.statusShort;
+        if (freshData.matchDate) match.matchDate = freshData.matchDate;
         if (freshData.round) match.round = freshData.round;
         if (freshData.homeTeamId) match.homeTeamId = freshData.homeTeamId;
         if (freshData.awayTeamId) match.awayTeamId = freshData.awayTeamId;
@@ -1700,6 +1715,7 @@ exports.refreshSingleMatch = async (req, res) => {
     match.statusShort = freshData.statusShort;
     match.elapsed = freshData.elapsed;
     match.extraTime = freshData.extraTime;
+    if (freshData.matchDate) match.matchDate = freshData.matchDate;
     if (freshData.round) match.round = freshData.round;
     if (freshData.homeTeamId) match.homeTeamId = freshData.homeTeamId;
     if (freshData.awayTeamId) match.awayTeamId = freshData.awayTeamId;
@@ -1816,6 +1832,7 @@ exports.addLiveFixturesToGroup = async (req, res) => {
         match.elapsed = fixture.elapsed;
         match.extraTime = fixture.extraTime;
         match.statusShort = fixture.statusShort;
+        if (fixture.matchDate) match.matchDate = fixture.matchDate;
         if (fixture.round) match.round = fixture.round;
         if (fixture.homeTeamId) match.homeTeamId = fixture.homeTeamId;
         if (fixture.awayTeamId) match.awayTeamId = fixture.awayTeamId;

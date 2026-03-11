@@ -3,6 +3,7 @@ const FixtureCache = require('../models/FixtureCache');
 
 const API_BASE_URL = 'https://v3.football.api-sports.io';
 const API_KEY = '9db1098dbfd9fb7f2b28db8dd673c245';
+const TIMEZONE = 'Asia/Jerusalem';
 
 // Hard-coded supported leagues (no API calls needed)
 const SUPPORTED_LEAGUES = [
@@ -74,7 +75,8 @@ async function fetchFixturesFromAPI(leagueId, season) {
     const url = `${API_BASE_URL}/fixtures`;
     const params = {
       league: leagueId,
-      season: season
+      season: season,
+      timezone: TIMEZONE
     };
 
     console.log('=== API-Football Request ===');
@@ -281,7 +283,8 @@ async function getFilteredFixtures(leagueId, season = null, filters = {}) {
 
   const params = {
     league: leagueId,
-    season: currentSeason
+    season: currentSeason,
+    timezone: TIMEZONE
   };
 
   // Validate and swap dates if reversed
@@ -433,7 +436,8 @@ async function getLiveFixtures() {
         'x-apisports-key': API_KEY
       },
       params: {
-        live: 'all'
+        live: 'all',
+        timezone: TIMEZONE
       }
     });
 
@@ -483,7 +487,8 @@ async function getHeadToHead(team1Id, team2Id, last = 5) {
       },
       params: {
         h2h: `${team1Id}-${team2Id}`,
-        last: last
+        last: last,
+        timezone: TIMEZONE
       }
     });
 
@@ -529,7 +534,8 @@ async function getTeamRecentMatches(teamId, last = 5) {
       params: {
         team: teamId,
         last: last,
-        status: 'FT-AET-PEN' // Only finished matches
+        status: 'FT-AET-PEN',
+        timezone: TIMEZONE
       }
     });
 
@@ -577,7 +583,8 @@ async function getFixtureById(fixtureId) {
         'x-apisports-key': API_KEY
       },
       params: {
-        id: numericId
+        id: numericId,
+        timezone: TIMEZONE
       }
     });
 

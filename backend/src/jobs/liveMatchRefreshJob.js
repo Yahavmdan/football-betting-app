@@ -117,6 +117,7 @@ async function refreshLiveMatches() {
         match.elapsed = freshData.elapsed;
         match.extraTime = freshData.extraTime;
         match.statusShort = freshData.statusShort;
+        if (freshData.matchDate) match.matchDate = freshData.matchDate;
         if (freshData.round) match.round = freshData.round;
         if (freshData.homeTeamId) match.homeTeamId = freshData.homeTeamId;
         if (freshData.awayTeamId) match.awayTeamId = freshData.awayTeamId;
@@ -143,6 +144,7 @@ async function refreshLiveMatches() {
             match.elapsed = finalData.elapsed;
             match.extraTime = finalData.extraTime;
             match.statusShort = finalData.statusShort;
+            if (finalData.matchDate) match.matchDate = finalData.matchDate;
             if (finalData.round) match.round = finalData.round;
 
             await match.save();
@@ -245,6 +247,7 @@ async function fixStuckMatches() {
           match.elapsed = freshData.elapsed;
           match.extraTime = freshData.extraTime;
           match.statusShort = freshData.statusShort;
+          if (freshData.matchDate) match.matchDate = freshData.matchDate;
           if (freshData.round) match.round = freshData.round;
 
           await match.save();
