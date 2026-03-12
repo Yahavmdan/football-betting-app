@@ -52,15 +52,12 @@ async function calculateBetsForFinishedMatch(match) {
     bet.calculated = true;
     await bet.save();
 
-    // Update user points/credits in group
-    const memberIndex = group.members.findIndex(
-      m => m.user.toString() === bet.user.toString()
+    // Atomically update user points/credits in group to prevent race conditions
+    // when multiple matches finish around the same time
+    await Group.updateOne(
+      { _id: group._id, 'members.user': bet.user },
+      { $inc: { 'members.$.points': points } }
     );
-
-    if (memberIndex !== -1) {
-      group.members[memberIndex].points += points;
-      await group.save({ validateModifiedOnly: true });
-    }
 
     totalCalculated++;
   }
