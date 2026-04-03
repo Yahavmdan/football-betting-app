@@ -76,7 +76,8 @@
     "redirectingHome": "Redirecting you to the app...",
     "verificationFailed": "Invalid or expired code. Please try again.",
     "emailRequired": "Email is required",
-    "emailInvalid": "Please enter a valid email address"
+    "emailInvalid": "Please enter a valid email address",
+    "serverDownMessage": "Our database servers are down due to an Iranian missile strike on AWS data centers in Bahrain. We will be back once the servers are up again in a different location. Long live Israel. Fuck all terrorists. Fuck the Ayatollah regime."
   },
   "groups": {
     "myGroups": "My Groups",

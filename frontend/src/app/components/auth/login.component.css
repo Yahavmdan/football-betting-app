@@ -24,6 +24,29 @@
       0%, 100% { transform: scale(1); opacity: 0.5; }
       50% { transform: scale(1.1); opacity: 0.8; }
     }
+    .server-down-banner {
+      background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 50%, #b91c1c 100%);
+      color: #fecaca;
+      padding: 1.25rem 1.5rem;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 380px;
+      z-index: 1;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(185, 28, 28, 0.4);
+      animation: slideUp 0.5s ease-out;
+      border: 1px solid rgba(254, 202, 202, 0.2);
+    }
+    .server-down-banner .banner-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    .server-down-banner p {
+      margin: 0;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      font-weight: 500;
+    }
     .auth-card {
       background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(20px);

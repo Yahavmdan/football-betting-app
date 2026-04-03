@@ -10,6 +10,10 @@
       <line x1="41.5" y1="30" x2="54.5" y2="30" stroke="rgba(255,255,255,0.15)" stroke-width="0.8"/>
     </svg>
   </div>
+  <div class="server-down-banner">
+    <div class="banner-icon">&#9888;</div>
+    <p>{{ 'auth.serverDownMessage' | translate }}</p>
+  </div>
   <div class="auth-card">
     <h2>{{ 'auth.login' | translate }}</h2>
     <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
