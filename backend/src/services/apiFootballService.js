@@ -59,6 +59,18 @@ function getCurrentSeason() {
   return month < 7 ? year - 1 : year;
 }
 
+// International tournaments (World Cup, Euro) are indexed by the CALENDAR YEAR
+// they are played in, not by the Aug-May club season. For these, season = current year.
+const CALENDAR_YEAR_LEAGUES = ['1', '4']; // 1 = World Cup, 4 = Euro Championship
+
+// Resolve the correct season for a given league when none is explicitly provided
+function getSeasonForLeague(leagueId) {
+  if (CALENDAR_YEAR_LEAGUES.includes(String(leagueId))) {
+    return new Date().getFullYear();
+  }
+  return getCurrentSeason();
+}
+
 // Get all supported leagues (no API call)
 function getSupportedLeagues() {
   return SUPPORTED_LEAGUES;
@@ -110,7 +122,7 @@ async function getFixtures(leagueId, season = null) {
     throw new Error('League not supported');
   }
 
-  const currentSeason = season || getCurrentSeason();
+  const currentSeason = season || getSeasonForLeague(leagueId);
 
   // Check cache first
   const cached = await FixtureCache.findOne({ leagueId, season: currentSeason });
@@ -240,13 +252,13 @@ async function getFixturesInRange(leagueId, season = null, daysBack = 7, daysFor
 
 // Clear cache for a league (useful for manual refresh)
 async function clearCache(leagueId, season = null) {
-  const currentSeason = season || getCurrentSeason();
+  const currentSeason = season || getSeasonForLeague(leagueId);
   await FixtureCache.deleteOne({ leagueId, season: currentSeason });
 }
 
 // Get teams for a specific league
 async function getTeamsForLeague(leagueId, season = null) {
-  const currentSeason = season || getCurrentSeason();
+  const currentSeason = season || getSeasonForLeague(leagueId);
 
   try {
     const response = await axios.get(`${API_BASE_URL}/teams`, {
@@ -279,7 +291,7 @@ async function getTeamsForLeague(leagueId, season = null) {
 
 // Get filtered fixtures from API (for automatic groups)
 async function getFilteredFixtures(leagueId, season = null, filters = {}) {
-  const currentSeason = season || getCurrentSeason();
+  const currentSeason = season || getSeasonForLeague(leagueId);
 
   const params = {
     league: leagueId,
@@ -628,7 +640,7 @@ async function getFixtureById(fixtureId) {
 
 // Get league standings/table
 async function getLeagueStandings(leagueId, season = null) {
-  const currentSeason = season || getCurrentSeason();
+  const currentSeason = season || getSeasonForLeague(leagueId);
 
   try {
     console.log(`=== Fetching standings for league ${leagueId}, season ${currentSeason} ===`);
