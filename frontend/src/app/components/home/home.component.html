@@ -157,7 +157,7 @@
               <td class="col-points"><strong>{{ team.points }}</strong></td>
               <td class="col-form">
                 <div class="form-badges">
-                  <span *ngFor="let result of team.form.split('')" class="form-badge"
+                  <span *ngFor="let result of (team.form || '').split('')" class="form-badge"
                     [class.win]="result === 'W'" [class.draw]="result === 'D'"
                     [class.loss]="result === 'L'">{{ result }}</span>
                 </div>
